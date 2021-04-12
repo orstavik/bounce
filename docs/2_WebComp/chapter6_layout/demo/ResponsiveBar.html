@@ -1,0 +1,53 @@
+<script src="SideBar.js"></script>
+
+<style>
+  body {
+    margin: 0; padding: 0;
+  }
+  side-bar {
+    display: block;
+  }
+  side-bar[_size="S"] {
+    border-right: 5px solid red;
+  }
+  side-bar[_size="L"] {
+    border-right: 5px solid green;
+  }
+  [slot="menu"] {
+    background-color: lightblue;
+  }
+  div#content {
+    background-color: white;
+  }
+</style>
+
+<side-bar size-settings='{"S": 0, "L": 600}'>
+  <div slot="menu">Here comes the menu</div>
+  <div id="content" style="height: 125vh;">
+    <pre>
+      content
+    a
+    b
+    c
+    d
+    e
+    f
+    g
+    h
+    i
+    j
+    k
+    l
+    m
+    n
+    o
+    p
+    q
+    r
+    s
+    t
+    u
+    v
+    </pre>
+  </div>
+</side-bar>

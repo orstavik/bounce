@@ -1,0 +1,41 @@
+<script>
+
+  class HelloSunshine extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<a href="#sunshine"><h1>Hello Sunshine</h1></a>';
+      this.shadowRoot.addEventListener('click', e => console.log('hello sunshine', e.target, e.composedPath()));
+    }
+  }
+
+  class HelloWorld extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<details><summary><a href="#world"><span>Hello</span></a> </summary>World</details>';
+      this.shadowRoot.addEventListener('click', e => console.log(e.currentTarget, e.target, e.composedPath()));
+    }
+  }
+
+  customElements.define('hello-sunshine', HelloSunshine);
+  customElements.define('hello-world', HelloWorld);
+</script>
+
+<hello-world></hello-world>
+<hello-sunshine></hello-sunshine>
+
+<script>
+  window.addEventListener('click', e => {
+    const helloWorld = document.querySelector("hello-world");
+    const helloSunshine = document.querySelector("hello-sunshine");
+    const span = helloWorld.shadowRoot.children[0].children[0].children[0].children[0];
+    const aHref = span.parentNode;
+    const summary = aHref.parentNode;
+    summary.appendChild(aHref);
+    helloSunshine.shadowRoot.children[0].appendChild(span);
+    console.log(e.composedPath());
+  }, true);
+
+  window.addEventListener('dblclick', e => window.location.hash = '');
+</script>

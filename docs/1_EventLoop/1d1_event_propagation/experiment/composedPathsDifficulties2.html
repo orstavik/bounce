@@ -1,0 +1,38 @@
+<script>
+
+  class MyEl extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "closed"});
+      shadowRoot.innerHTML = "<slot name='bob'></slot>";
+
+      shadowRoot.addEventListener('click', e=> console.log(e.composedPath()));
+    }
+  }
+
+  customElements.define("my-el", MyEl);
+
+</script>
+
+<div>
+  <my-el>
+    <h1 slot="alice">hello sunshine</h1>
+    <h2 slot="bob">hello world</h2>
+    <h3>hello my friend</h3>
+  </my-el>
+</div>
+
+<script>
+  const div = document.querySelector("div")
+  const h1 = document.querySelector("h1");
+  const h2 = document.querySelector("h2");
+  const h3 = document.querySelector("h3");
+
+  div.addEventListener("click", e=>{
+    console.log("div", e.composedPath());
+  });
+  h1.click();
+  h2.click();
+  h3.click();
+
+</script>

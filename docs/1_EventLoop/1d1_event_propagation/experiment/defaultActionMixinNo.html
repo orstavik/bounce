@@ -1,0 +1,61 @@
+<script>
+  class Alpha extends HTMLElement {
+    constructor() {
+      super();
+      this.addEventListener("click", this.onClick.bind(this), {capture: true, unstoppable: true});
+      this.addEventListener("auxclick", this.onAuxclick.bind(this), {capture: true, unstoppable: true});
+    }
+
+    boo1() {
+      console.log("boo1");
+    }
+
+    boo2() {
+      console.log("boo2");
+    }
+
+    onClick(event) {
+      if (event.button !== 0)
+        return;
+      // todo this is bad, only properties VISIBLE in the DOM such as attributes and child elements in the event path
+      // todo should be used to filter out whether or not to add a default action.
+      // if(ihavesomethingonmyserver)
+      //   return;
+      // todo this would break, no async allowed
+      // const stupid = await fetch("aSlowResource.txt");
+      const path = event.composedPath();
+      const index = path.indexOf(this);
+      if (path[index - 1].matches("div"))
+        // this.boo1();
+        event.setDefault(this.boo1.bind(this), true);
+    }
+
+    onAuxclick(event) {
+      if (event.button !== 1)
+        return;
+      const path = event.composedPath();
+      const index = path.indexOf(this);
+      if (path[index - 1].matches("div"))
+        // this.boo2();
+        event.setDefault(this.boo2.bind(this), false);
+    }
+  }
+
+  customElements.define("alpha-alpha", Alpha);
+</script>
+
+<alpha-alpha>
+  <div>div</div>
+  <span>span</span>
+</alpha-alpha>
+
+<script>
+  // document.addEventListener("click", e=> e.stopPropagation(), {capture: true});
+  const div = document.querySelector("div");
+  div.click(); //boo1
+  const span = document.querySelector("span");
+  span.click(); //no boo1
+  // const middle
+  // div.click(); //boo2
+
+</script>

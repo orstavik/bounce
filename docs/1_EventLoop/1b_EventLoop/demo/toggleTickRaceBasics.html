@@ -1,0 +1,44 @@
+<h1>double click on me</h1>
+<script>
+  function toggleTick(cb, raceEvent) {
+    const details = document.createElement("details");
+    details.style.display = "none";
+
+    const wrapper = function(){
+      task.cancel();
+      cb();
+    };
+    const task = {
+      cancel: function () {
+        raceEvent && window.removeEventListener(raceEvent, wrapper, true);
+        const cb = details.ontoggle;
+        details.ontoggle = undefined;
+        return cb;
+
+
+      }
+    };
+
+    details.ontoggle = wrapper;
+    document.body.appendChild(details);
+    details.open = true;
+    Promise.resolve().then(details.remove.bind(details));
+    raceEvent && window.addEventListener(raceEvent, wrapper, {capture: true});
+
+    return task;
+  }
+
+  window.addEventListener("mouseup", e=> console.log(e.type));
+  window.addEventListener("click", e=> console.log(e.type));
+  window.addEventListener("dblclick", e=> console.log(e.type));
+
+  window.addEventListener("mouseup", function () {
+    toggleTick(()=> console.log("toggleTick task from mouseup that race click"), "click");
+  });
+  window.addEventListener("mouseup", function () {
+    toggleTick(()=> console.log("toggleTick task from mouseup that race dblclick"), "dblclick");
+  });
+  window.addEventListener("mouseup", function () {
+    toggleTick(()=> console.log("toggleTick task from mouseup that race no events"));
+  });
+</script>

@@ -1,0 +1,35 @@
+<!--<script src="UpgradeCustomElementsDefine.js"></script>-->
+
+<script type="module">
+  import {}  from "./UpgradeCustomElementsDefine.js";
+
+  class MiddleMan extends HTMLElement {
+
+    static get defaultActions() {
+      return {
+        "mousedown": [{preventable: false, fun: MiddleMan.prototype.onMousedown}]
+      };
+    }
+
+    onMousedown() {
+      console.log("mousedown");
+    }
+  }
+
+  class RedClick extends MiddleMan {
+
+    static get defaultActions() {
+      return {
+        "click": [{preventable: true, fun: RedClick.prototype.onClick}]
+      };
+    }
+
+    onClick() {
+      this.style.background = 'red';
+    }
+  }
+
+  customElements.define('red-click', RedClick);
+</script>
+
+<red-click>hello sunshine</red-click>

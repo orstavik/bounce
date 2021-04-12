@@ -1,0 +1,142 @@
+<script src="nextTick.js"></script>
+
+<script>
+
+  (async function () {
+    //test reusability
+    //queue audio
+    //queue toggle
+    //cancel audio1
+    //queue audio2
+    //   audio2, toggle = wrong
+    //   toggle, audio2 = right
+
+    // let res = "";
+    // var audio1 = nextTickAudio(function () {
+    //   res += "audio1";
+    // });
+    // var toggle1 = nextTickToggle(function () {
+    //   res += "toggle1-";
+    // });
+    // audio1.cancel();
+    // var audio2 = nextTickAudio(function () {
+    //   res += "audio2";
+    // });
+    // await audio2;
+    // await toggle1;
+    // assert("toggle1 audio2" === res);
+  })();
+
+  (async function () {
+    const res = await nextTick(function(){
+      console.log("alpha");
+      return 42;
+    });
+    console.log(res);
+  })();
+
+  async function bobob(res){
+    const bo = await res;
+    console.log("true", bo === nextTick.cancelledTask);
+  }
+
+  (async function () {
+    const res = nextTick(function(){
+      console.log("errorororor");
+    });
+    bobob(res);
+    res.cancel();
+  })();
+
+  (async function () {
+    const res = nextTick(function(){
+      console.log("horrorerror");
+    });
+    res.cancel();
+
+    const res2 = nextTick(function(){
+      console.log("eleven");
+      return 11;
+    });
+    const resx = await res2;
+    console.log(resx);
+    // res2.cancel();
+    //
+    // const res3 = nextTick(function(){
+    //   console.log("three");
+    // });
+    // res3.cancel();
+    //
+    // const res4 = nextTick(function(){
+    //   console.log("four");
+    // });
+    // // res4.cancel();
+    //
+    // console.log(await res4);
+  })();
+
+  (async function () {
+    const res = await nextTick(function(){
+      console.log("beta");
+      return 43;
+    });
+    console.log(res);
+  })();
+  
+  setTimeout(async function () {
+    function one() {
+      console.log("one");
+    }
+
+    function two() {
+      console.log("two");
+    }
+
+    const task = nextMesoTicks([one, two], 2);
+    console.log("a")
+    const res1 = await task;                        //the result here is just true, it would be better to have the result from the methods.
+    console.log("a")
+    const res2 = await task.nextMesoTick([two]);    //the result here is just true, it would be better to have the result from the methods.
+    console.log("a")
+    const res3 = await task.nextMesoTick([two]);    //the result here is just true, it would be better to have the result from the methods.
+    console.log("a")
+  }, 50);
+
+  setTimeout(async function () {
+    function three() {
+      console.log("three");
+    }
+
+    function four() {
+      console.log("four");
+    }
+
+    const task = nextMesoTicks([three, four], 1);
+    console.log("b")
+    const res1 = await task;                        //the result here is just true, it would be better to have the result from the methods.
+    console.log("b")
+    const res2 = await task.nextMesoTick([four]);    //the result here is just true, it would be better to have the result from the methods.
+    console.log("b")
+    const res3 = await task.nextMesoTick([four]);    //the result here is just true, it would be better to have the result from the methods.
+    console.log("b")
+  }, 100);
+
+  setTimeout(async function () {
+    function five() {
+      console.log("five");
+    }
+
+    function six() {
+      console.log("six");
+    }
+
+    const task = nextMesoTicks([five, six], 1);
+    await task;
+    const task2 = task.nextMesoTick([five]);
+    const cancelled = task.cancel();
+    for (let cb of cancelled) {
+      cb();
+    }
+
+  }, 200);
+</script>

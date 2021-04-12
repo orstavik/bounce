@@ -1,0 +1,10 @@
+<script>
+  document.addEventListener("look", e => console.log(e.defaultPrevented), true);
+  const evt = new Event("look", {"bubbles":true, "cancelable": false});
+  evt.preventDefault();
+  console.log(evt.defaultPrevented);
+  console.log(evt.currentTarget);
+  document.dispatchEvent(evt);
+  //defaultPrevented only returns true if the evt is cancelable and someone has called preventDefault()
+  //the event *can have* defaultAction even if cancelable is true. cancelable only apply to preventDefault()
+</script>

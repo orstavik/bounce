@@ -1,0 +1,64 @@
+<script type="module" src="Bounce_2_EventProps.js"></script>
+
+<div>
+  <link-slot>
+    <span>
+      <outer-host></outer-host>
+    </span>
+    <h2>hello world</h2>
+  </link-slot>
+</div>
+
+<script type="module">
+
+  class OuterHost extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<link-slot><inner-host></inner-host></link-slot>';
+    }
+  }
+
+  class InnerHost extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<h1>hello sunshine</h1>';
+    }
+  }
+
+  class LinkSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<frame-slot><slot></slot></frame-slot>';
+    }
+  }
+
+  class FrameSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<slot></slot>';
+    }
+  }
+
+  customElements.define("outer-host", OuterHost);
+  customElements.define("inner-host", InnerHost);
+  customElements.define("link-slot", LinkSlot);
+  customElements.define("frame-slot", FrameSlot);
+
+  const outerHost = document.querySelector("outer-host");
+  const h1 = outerHost.shadowRoot.children[0].children[0].shadowRoot.children[0];
+  h1.addEventListener('alice', e => {
+    for (let node of e.composedPath()) {
+      let root = node.getRootNode ? node.getRootNode() : node;
+      root = root.host ? root.host.nodeName + '#shadow' : root.nodeName || 'window';
+      node.addEventListener('bob', e => console.log(root, 'capture', node.nodeName || 'window'), true);
+      node.addEventListener('bob', e => console.log(root, 'bubble', node.nodeName || 'window'));
+    }
+    console.log("setting up");
+  }, {once: true});
+  h1.dispatchEvent(new Event('alice', {composed: true, bubbles: true}));
+  h1.dispatchEvent(new Event('bob', {composed: true, bubbles: true}));
+</script>

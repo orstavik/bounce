@@ -1,0 +1,267 @@
+<script>
+  const addEventListenerOG = EventTarget.prototype.addEventListener;
+  const removeEventListenerOG = EventTarget.prototype.removeEventListener;
+
+  //the type dict is never GC.                                            dict   => WeakMap  => array of objs
+  const staticListeners = new WeakMap();                                //[type] => [target] => [{cb, options}, ...]
+
+  // dynamically remove event listener:
+  //   a) add a flag on them.
+  //   b) If they are once, then they are added a flag just before they run.
+  //   c) add an extra entry in the cleanup list array with [target, type].
+  // dynamically add event listener.
+  //   a) just add them.
+  //   b) how to find out if we suddenly are one short.
+
+  //  ? how to keep track so that we know if there is suddenly one too many listeners for the same event.
+  // are added a property to. That way they don't
+  // dynamically added event listeners are appended.
+  //
+  //Cleanup time: end of REL and no nested/active events.
+  //
+  // , when the REL ends, and there are no other active REL for that event type, it will clean up the dynamic event listeners.
+  //when we start a new event,  add/remove listeners during an event run, then we need to add those listeners in a dynamic map.
+  //when we find listeners during a run, we must crosscheck both maps
+  //when
+
+  //events can run nested. If not, we would only have one active event.
+  //but events can be nested, and so we might have several active events going on at the same time.
+  //So we must have a 
+
+  //RealQueuePosition= [BUBBLE, DocumentDontCare, element, indexDontKnow].
+  //FauxQueuePosition= [document, phase, element, listenerIndex].
+
+  //real adding is after if the element is after, otherwise before
+  //real removing is after if the element is the same or after, otherwise before.
+
+  //added the faux position is after if the element is
+  // a) in a later document, or
+  // b) the same document and the added element+eventphase is the same or after the current element+eventphase,
+  // c) otherwise faux position is before.
+  //removing the faux position is after if:
+  // a) in a later document, or
+  // b) the same document and the removed element+eventphase is after the current element+eventphase,
+  // c) the removed element+eventphase and the current element+eventphase is the same, and the removed index is after the current index,
+
+  //The burning question, do we have more or less faux tasks than real tasks?
+
+  function rel(e){
+    let currentQueue = rels.get(e);
+    if(!currentQueue)
+      currentQueue = makeCurrentQueue(e);
+    let [target, type, cb, options] = getNextFromQueue(currentQueue);
+    //try catch and dispatch event listener error.
+    const res = cb.call(target, e);
+    if(options?.once)
+      removeEventListener(target, type, cb, options);
+    if(queueIsEmpty(currentQueue))
+      cleanUpDynamicRegister(currentQueue);
+  }
+
+  function getListenersOrVoid(target, type) {
+    const targetListeners = listeners.get(target);
+    return targetListeners && targetListeners[type];
+  }
+
+  function getListenersAndSet(target, type) {
+    const targetListeners = listeners.get(target);
+    if (!targetListeners) {
+      const typeListeners = [];
+      listeners.set(target, {type: typeListeners});
+      return typeListeners;
+    }
+    return targetListeners[type] = targetListeners[type] || []
+  }
+
+  function samePhase(optA, optB){
+    optA = (capture in optA) && !!optA.capture || !!optA;
+    optB = (capture in optB) && !!optB.capture || !!optB;
+    return optA === optB;
+  }
+
+  function removeEventListener(target, type, cbIn, optionsIn){
+    const listeners = getListenersOrVoid(target, type);
+    if(!listeners)
+      return;
+    const index = listeners.findIndex(({cb, options})=> cb === cbIn && samePhase(optionsIn, options));
+    if(index >= 0)
+      return listeners.splice(index, 1)[0];
+  }
+
+  function addToEventListenerRegistry(target, type, cb, options) {
+    if(rels[type]){
+      
+    }
+    //if it is the same type as an ongoing rel, then add to dynamic, else add to static
+  }
+
+  function removeEventListenerRegistry(target, type, cb, options) {
+    //if it is the same type as an ongoing rel, then add to dynamic remove, else remove from static
+  }
+
+  //the original event listeners only work in bubble mode
+  function addEventListener(type, cb, options) {
+    const success = addToEventListenerRegistry(this, type, cb, options);
+    if (success)
+      addEventListenerOG.call(this, type, success, false);
+  }
+
+  function removeEventListener(type, cb, options) {
+    const success = removeEventListenerRegistry(this, type, cb, options);
+    if (success)
+      removeEventListenerOG.call(this, type, success, false);
+  }
+
+</script>
+
+<div>
+  <link-slot>
+    <span>
+      <outer-host></outer-host>
+    </span>
+    <h2>hello world</h2>
+  </link-slot>
+</div>
+
+<script>
+  class OuterHost extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<link-slot><inner-host></inner-host></link-slot>';
+    }
+  }
+
+  class InnerHost extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<h1>hello sunshine</h1>';
+    }
+  }
+
+  class LinkSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<frame-slot><slot></slot></frame-slot>';
+    }
+  }
+
+  class FrameSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<slot></slot>';
+    }
+  }
+
+  customElements.define("outer-host", OuterHost);
+  customElements.define("inner-host", InnerHost);
+  customElements.define("link-slot", LinkSlot);
+  customElements.define("frame-slot", FrameSlot);
+
+  window.addEventListener('click', e => console.log(e.composedPath()));
+  //when you click on Hello Sunshine you get a
+  //composed path 23 elements, 7 document contexts.
+  // [h1, document-fragment, inner-host, slot, slot, document-fragment, frame-slot, document-fragment, link-slot, document-fragment, outer-host, span, slot, slot, document-fragment, frame-slot, document-fragment, link-slot, div, body, html, document, Window]
+
+  // Innerhost = I, Outerhost = O, LinkSlot = L(1&2), FrameSlot = F(1&2), main document = M
+  // [I, I, O, L1, F1, F1, L1, L1, O, O, M, M, L2, F2, F2, L2, L2, M, M, M, M, M, M]
+  // [    x   x   x      x        x     x     x   x       x       x                ] //10 context shifts,
+  //19 context shifts when capture+bubble
+  //The same 23 elements sorted in Bounce order
+  // [M, M, M, M, M, M, M, M, O, O, O, I, I, L1, L1, L1, F1, F1, L2, L2, L2, F2, F2]
+  // [                       x        x     x           x       x           x      ] //6 context shifts when capture+bubble
+
+  function makeBouncedPath(composedPath) {
+    const docs = new Map();
+    for (let el of composedPath) {
+      let root = el.getRootNode && el.getRootNode() || window;
+      root === document && (root = window);
+      let list = docs.get(root);
+      !list && docs.set(root, list = []);
+      list.push(el);
+    }
+    const sorted = [];
+    for (let doc of docs) {
+      const [root, elems] = doc;
+      if (sorted.length === 0)
+        sorted.push(doc);
+      else if (elems[0] instanceof HTMLSlotElement)
+        sorted.push(doc);
+      else
+        sorted.unshift(doc);
+    }
+    return sorted;
+  }
+
+  function printBouncedPath(bouncedPath) {
+    return bouncedPath.map(([doc, elems]) => `${(doc === window ? 'window' : doc.host.tagName)}#shadow: ` + elems.map(el => el.nodeName || 'window').join(', '));
+  }
+
+  window.addEventListener('click', e => console.log(printBouncedPath(makeBouncedPath(e.composedPath()))));
+
+  //todo next step.
+  //the issue is now dynamic adding and removing of event listeners during propagation.
+  //as we now will run event listeners at different times, I think that there is no other
+  //way to manage this than to say that all dynamic adding and removing will count, even on the same node.
+  //Having only removeEventListener function on the same node, while having addEventListener not working on the same
+  //node, is more like a bug than a feature. As the sequence now changes, this will be a smaller issue.
+  //Now, there might be some apps that will then implement infinite loops, but that can be done in so many other ways too,
+  //so this cannot stop solving defaultActions.
+  //
+  //When we remove event listener, we need to:
+  // a) Find the corresponding event listener, and mark it removed.
+  // b) Cache the full args for the call, so we can actually remove it post propagation.
+  // c) calculate if the event listener is removed in the future for the composed true sequence. If so, then +1.
+  // d) calculate if the event listener is removed in the future for the bounced sequence. If so, -1.
+  //
+  //When we add an event listener to the node, we need to:
+  //a) place the corresponding event listener in the correct place, immediately.
+  //b)  calculate if the event listener will cause an extra call in the composed sequence, If so, then +1.
+  //c)  calculate if the event listener will cause an extra call in the bounced sequence, If so, then -1.
+  //
+  //When we start the bounced sequence for an event the first time, we are at equilibrium. One event listener per event.
+  //The first time the rel runs, it will check if the event is sync or async.
+  //if the event listener ends at -1, then we can correct it sync. Immediately. Or we can add a once:true event listener on
+  //the 
+  //
+
+  // //algorithm for calculating bounce path.
+  // function hostShadowElements(target) {
+  //   const res = [target];
+  //   const stopNode = target.getRootNode();
+  //   for (target = target.parentNode; target !== stopNode; target = target.parentNode)
+  //     res.push(target);
+  //   res.push(target);
+  //   target === document && res.push(window);
+  //   return res;
+  // }
+  //
+  // function topLevelMakeBouncePath(target) {
+  //   const docs = [];
+  //   for (; target; target = target.host) {
+  //     const elements = hostShadowElements(target);
+  //     docs.unshift(elements);
+  //     target = elements[elements.length - 1];
+  //   }
+  //   for (let i = docs.length - 1; i >= 0; i--) {
+  //     const elements = docs[i];
+  //     for (let j = 0; j < elements.length - 1; j++) {
+  //       let maybeSlotted = elements[j];
+  //       let maybeSlotting = elements[j + 1];
+  //       //todo unfinished here
+  //     }
+  //   }
+  //   return docs;
+  // }
+  //
+  // const outerHost = document.querySelector("outer-host");
+  // const innerHost = outerHost.shadowRoot.children[0].children[0];
+  // const h1 = innerHost.shadowRoot.children[0];
+  //
+  // console.log(topLevelMakeBouncePath(h1));
+
+</script>
+

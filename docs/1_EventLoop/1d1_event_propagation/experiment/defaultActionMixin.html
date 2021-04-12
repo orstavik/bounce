@@ -1,0 +1,82 @@
+<script>
+  function makeDefaultActionListener(element, eventMatches, pathMatches, defaultAction) {
+    return function (e) {
+      if (e[eventMatches[0]] != eventMatches[1])
+        //todo implement multiple eventMatches and different comparison methods (regex, string beginswith, number, etc. or only regex and number??
+        return;
+      const path = e.composedPath();
+      for (let i = 0, index = path.indexOf(element); i < pathMatches.length; i++, index--) {
+        const shouldBe = pathMatches[i];
+        const actual = path[index];
+        if (!actual.matches(shouldBe))
+          return;
+      }
+      defaultAction.method();
+      // e.setDefault(defaultAction.method, defaultAction.exclusive);
+    };
+  }
+
+  function makeListener(clazz, instance) {
+    const defaults = clazz.defaultActions;
+    for (let defaultAction of defaults) {
+      let [eventName, eventMatches] = defaultAction.event.split(".");
+      eventMatches = eventMatches.split("=");
+      const pathMatches = defaultAction.element.split(">");
+      const defaultActionListener = makeDefaultActionListener(instance, eventMatches, pathMatches, defaultAction);
+      instance.addEventListener(eventName, defaultActionListener, {capture: true, unstoppable: true});
+    }
+  }
+
+  function defaultActionMixin(clazz) {
+    return class DefaultActionMixin extends clazz {
+      constructor() {
+        super();
+        makeListener(this.constructor, this);
+      }
+    }
+  }
+
+  class Alpha extends defaultActionMixin(HTMLElement) {
+
+    boo1() {
+      console.log("boo1");
+    }
+
+    boo2() {
+      console.log("boo2");
+    }
+
+    static get defaultActions() {
+      return [
+        {
+          event: "click.button=0",
+          element: "alpha-alpha > div",
+          exclusive: true,
+          method: Alpha.prototype.boo1
+        }, {
+          event: "auxclick.button=1",
+          element: "alpha-alpha > div",
+          exclusive: true,
+          method: Alpha.prototype.boo2
+        }
+      ];
+    }
+  }
+
+  customElements.define("alpha-alpha", Alpha);
+</script>
+
+<alpha-alpha>
+  <div>div</div>
+  <span>span</span>
+</alpha-alpha>
+
+<script>
+  const div = document.querySelector("div");
+  div.click(); //boo1
+  const span = document.querySelector("span");
+  span.click(); //no boo1
+  // const middle
+  // div.click(); //boo2
+
+</script>

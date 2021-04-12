@@ -1,0 +1,58 @@
+<script>
+  function captureEventMixin(clazz) {
+    return class CaptureEventMixin extends clazz {
+      constructor() {
+        super();
+        for (let name of this.constructor.capturedEvents) //todo not sure if this.constructor is 100% working here..
+          this.addEventListener(name, this.onCapturedEvent.bind(this), {capture: true, unstoppable: true});
+      }
+    }
+  }
+
+  class Alpha extends captureEventMixin(HTMLElement) {
+
+    boo1() {
+      console.log("boo1");
+    }
+
+    boo2() {
+      console.log("boo2");
+    }
+
+    static get capturedEvents() {
+      return ["click", "auxclick"];
+    }
+
+    onCapturedEvent(event) {
+      if (event.type === "click" && event.button === 0) {
+        const path = event.composedPath();
+        const index = path.indexOf(this);
+        if (path[index - 1].matches("div"))
+          this.boo1();
+      } else if (event.type === "auxclick" && event.button === 1) {
+        const path = event.composedPath();
+        const index = path.indexOf(this);
+        if (path[index - 1].matches("div"))
+          this.boo2();
+      }
+    }
+
+  }
+
+  customElements.define("alpha-alpha", Alpha);
+</script>
+
+<alpha-alpha>
+  <div>div</div>
+  <span>span</span>
+</alpha-alpha>
+
+<script>
+  const div = document.querySelector("div");
+  div.click(); //boo1
+  const span = document.querySelector("span");
+  span.click(); //no boo1
+  // const middle
+  // div.click(); //boo2
+
+</script>

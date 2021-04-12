@@ -1,0 +1,21 @@
+<h1>hello sunshine</h1>
+<h2>hello blackbox</h2>
+<script type="module">
+  import {addEventTargetRegistry} from "../../getEventListeners_once_last_first.js";
+  import {addEventIsStoppedScoped} from "../../ScopedStopPropagation.js";
+  import {addAddDefaultAction} from "../../defaultActions.js";
+
+  const isStopped = addEventIsStoppedScoped(Event.prototype);
+  addEventListenerOptionScopedUnstoppable(EventTarget.prototype, isStopped);
+  //patches the native events, doesn't do anything for the custom dispatchEvent
+  const getEventListeners = addEventTargetRegistry(EventTarget.prototype);
+  addAddDefaultAction(Event.prototype);
+
+  window.addEventListener("dbl-click", e=> console.log(e.type, e));
+  window.addEventListener("dblclick", e=> console.log(e.type, e));
+  window.addEventListener("click", e=> console.log(e.type, e));
+
+  const h1 = document.querySelector("h1");
+  h1.addEventListener("click", e => e.patchDefaultAction(), true);
+  //h2 doesn't patch the defaultAction post propagation process
+</script>

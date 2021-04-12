@@ -1,0 +1,46 @@
+<script src="toggleTick.js"></script>
+
+<h1 tabindex="1">Hello sunshine!</h1>
+<p tabindex="2">
+  Click on the text and the header to see an event race.
+  If you slow click, the event races are easier to dissect.
+  Begin by right-click (reload if you want).
+</p>
+
+<script>
+  window.addEventListener("contextmenu", e => e.preventDefault());
+
+  window.addEventListener("mousedown", e => console.log(e.type));
+  window.addEventListener("mouseup", e => console.log(e.type));
+  window.addEventListener("click", e => console.log(e.type));
+  window.addEventListener("auxclick", e => console.log(e.type));
+  document.addEventListener("contextmenu", e => console.log(e.type));
+  document.addEventListener("focusin", e => console.log(e.type));
+  document.addEventListener("focus", e => console.log(e.type), true);
+  document.addEventListener("focusout", e => console.log(e.type));
+  document.addEventListener("blur", e => console.log(e.type), true);
+
+  window.addEventListener("mouseup", function (e) {
+    toggleTick(() => console.log("mouseup toggleTick: race roadmap events (ie. click and auxclick)"), e.type);
+  });
+  window.addEventListener("mouseup", function () {
+    toggleTick(() => console.log("mouseup toggleTick: race no events"));
+  });
+  window.addEventListener("mousedown", function (e) {
+    toggleTick(() => console.log("mousedown toggleTick: race no events"));
+  });
+  document.addEventListener("mouseup", function () {
+    toggleTask = toggleTick(() => console.log("toggleTick task from mouseup that race click"), ["click"]);
+  });
+  window.addEventListener("mouseup", function () {
+    toggleTask.reuse(() => console.log("toggleTick task from mouseup that race dblclick"), ["dblclick"]);
+  });
+
+  let toggleTask;
+  document.addEventListener("mousedown", function () {
+    toggleTask = toggleTick(() => console.log("mousedown toggleTick: race [contextmenu, focusin] "), ["contextmenu", "focusin"]);
+  });
+  window.addEventListener("mousedown", function () {
+    toggleTask.reuse(() => console.log("mousedown toggleTick: race [contextmenu, focusout] (reuse)"), ["contextmenu", "focusout"]);
+  });
+</script>
