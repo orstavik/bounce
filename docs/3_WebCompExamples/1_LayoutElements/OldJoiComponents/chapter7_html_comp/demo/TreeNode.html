@@ -1,0 +1,55 @@
+<script type="module" src="TreeNode.js"></script>
+
+<style>
+  tree-node {
+    display: block;
+    padding-left: 10px;
+  }
+  tree-node[open] {
+    color: green;
+  }
+  tree-node[_empty] {
+    color: black;
+  }
+  tree-node[selected] {
+    font-style: italic;
+  }
+  tree-node:not([selected]) {
+    font-style: normal;
+  }
+  tree-node:not([open]):not([_empty]) {
+    color: red;
+  }
+  tree-node:not([open]) > tree-node {
+    display: none;
+  }
+  tree-node > tree-node {
+    --tree-node-prefix: "×";
+  }
+</style>
+
+<tree-node id="root">book
+  <tree-node>
+    chapter 1
+    <tree-node selectable selected>
+      chapter 1.1
+      <tree-node open>chapter 1.1.1</tree-node>
+      <tree-node>chapter 1.1.2</tree-node>
+    </tree-node>
+    <tree-node id="a">chapter 1.2</tree-node>
+  </tree-node>
+
+  <tree-node>
+    chapter 2
+    <tree-node open>chapter 2.1</tree-node>
+    <tree-node>chapter 2.2</tree-node>
+  </tree-node>
+</tree-node>
+
+<script>
+  const clone = document.querySelector("tree-node").cloneNode(true);
+  clone.id = undefined;
+  setTimeout(function () {
+    document.querySelector("tree-node#a").appendChild(clone);
+  }, 3000);
+</script>

@@ -1,0 +1,210 @@
+<script src="../../1b_EventLoop/demo/toggleTick.js"></script>
+<script>
+  const og = HTMLElement.prototype.attachShadow;
+  Object.defineProperty(HTMLElement.prototype, "attachShadow", {
+    value: function (opts) {
+      const shadow = og.call(this, opts);
+      this.__closedShadowRoot = shadow;
+      return shadow;
+    }
+  })
+</script>
+
+<script>
+
+  class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      const shadow = this.attachShadow({mode: "closed"});
+      shadow.innerHTML = `
+        <style>div{border: 5px solid gray;}</style>
+
+        <div tabindex="3">three
+          <slot></slot>
+        </div>
+        <div tabindex="4">four</div>`;
+      addSetMyActiveElement(shadow);
+    }
+  }
+
+  customElements.define("web-comp", WebComp);
+
+  (function () {
+    let roots, focusWithins, path;
+
+    Object.defineProperty(Document.prototype, "myActiveElement", {
+      get: function () {
+        return (roots && roots.get(this)) || this === document ? document.body : null;
+      }
+    });
+
+    function getFocusMap(newActiveElement) {
+      const focusRoots = new Map();
+      const newFocusWithins = [];
+      for (let el = newActiveElement; el; el = el.parentNode || el.host) {
+        if (el instanceof DocumentFragment || el instanceof Document) {
+          focusRoots.set(el, newActiveElement);
+          newActiveElement = el.host;   //update what will be the newActiveElement for the root of the above DOM context
+        } else {
+          newFocusWithins.push(el);
+        }
+      }
+      return {focusRoots, newFocusWithins};
+    }
+
+    //1.remove the old css pseudos, both focus-within and focus
+    function removeMyActiveElement() {
+      if (focusWithins) {
+        focusWithins[0] && focusWithins[0].classList.remove("pseudo-focus");
+        for (let el of focusWithins)
+          el.classList.remove("pseudo-focus-within");
+      }
+      const res = roots;
+      focusWithins = undefined;
+      roots = undefined;
+      return res;
+      //this is a little strange behavior. when focus changes, it is like the user blinks.
+      //He closes his eyes, and then there is no focus nowhere, the blur and focusout events propagate.
+      //Then, the user opens his eyes again and a new focus is set.
+      //Thus, if at a lightDOM the focus doesn't change, it is still changed during this process.
+      //this clashes with the behavior when the exact same element is focused twice in a row, then no events propagate nowhere.
+    }
+
+    function setMyActiveElement(newRoots, newFocusWithins) {
+      newFocusWithins[0] && newFocusWithins[0].classList.add("pseudo-focus");
+      for (let el of newFocusWithins)
+        el.classList.add("pseudo-focus-within");
+      roots = newRoots;
+      focusWithins = newFocusWithins;
+    }
+
+    function bounceFocusEvent(name, targets, relatedTargets, bubbles) {
+      if (!targets)
+        return;
+      for (let [root, target] of targets.entries()) {
+        const event = new FocusEvent(name, {composed: false, bubbles: bubbles});
+        event.relatedTarget = (relatedTargets && relatedTargets.get(root)) || null;
+        target.dispatchEvent(event);
+      }
+    }
+
+    function findFocusable(path) {
+      for (let target of path) {
+        if (target.tabIndex >= 0 || target === document.body)
+          return target;
+      }
+      throw new Error("Can you mousedown on something not connected to the body? You shouldn't mutate the DOM during the capture phase...");
+    }
+
+    function blurFocus(focusoutTask, focusTask, focusinTask) {
+      const focusable = findFocusable(path);
+      if (focusWithins && focusable === focusWithins[0])
+        return;                                           //cancel focusout, focus and focusin tasks??
+      let {focusRoots, newFocusWithins} = getFocusMap(focusable);
+
+      //blur  //runs sync in the current toggleTick macro task
+      let blurRoots = removeMyActiveElement();
+      //if no blurRoots, cancel the focusoutTask?? and skip calling bounceFocusEvent for blur
+      //if no focusRoots, cancel the focus and focusin tasks??
+      bounceFocusEvent("my-blur", blurRoots, focusRoots, false);
+
+      //focusOut macrotask
+      focusoutTask.reuse(() => bounceFocusEvent("my-focusout", blurRoots, focusRoots, true));
+
+      //focus macrotask
+      focusTask.reuse(() => {
+        setMyActiveElement(focusRoots, newFocusWithins);
+        bounceFocusEvent("my-focus", focusRoots, blurRoots, false);
+      });
+
+      //focusin macrotask
+      focusinTask.reuse(() => bounceFocusEvent("my-focusin", focusRoots, blurRoots, true));
+    }
+
+    const noOp = () => "no op";
+
+    function addSetMyActiveElementWindow() {
+      window.addEventListener("mousedown", function (e) {
+        path = e.composedPath();
+        //preserve 4 macroTasks in the event loop, one for each focus event that might be dispatched.
+        //You do not know at this time, because of shadowDOM borders,
+        //if there are some events that will not be dispatched.
+        let blurTask = toggleTick(noOp);
+        let focusoutTask = toggleTick(noOp);
+        let focusTask = toggleTick(noOp);
+        let focusinTask = toggleTick(noOp);
+        blurTask.reuse(() => blurFocus(focusoutTask, focusTask, focusinTask));
+      }, true);
+    }
+
+    window.addSetMyActiveElement = function (root) {
+      root.addEventListener("mousedown", function (e) {
+        path = e.composedPath();
+      }, true);
+    }
+
+    function addSetMyActiveElementKeypress() {
+      window.addEventListener("keypress", function (e) {
+        if (e.key !== "Tab")
+          return;
+        // const nextTab = getNextTab(focusWithins && focusWithins.length ? focusWithins[0] : null, e.shiftKey);
+        // path = getComposedPath(nextTab, true);
+        // //make 4 macroTasks
+        // let blurTask = toggleTick(noOp);
+        // let focusoutTask = toggleTick(noOp);
+        // let focusTask = toggleTick(noOp);
+        // let focusinTask = toggleTick(noOp);
+        // blurTask.reuse(() => blurFocus(focusoutTask, focusTask, focusinTask));
+      }, true);
+    }
+
+    addSetMyActiveElementWindow();
+  })();
+</script>
+
+<style>
+  div {
+    border: 10px solid red;
+  }
+</style>
+
+<div id="one" tabindex="1">one</div>
+<web-comp>
+  <a href="#lala">Hello sunshine</a>
+</web-comp>
+<div id="two" tabindex="2">two</div>
+
+<script>
+  //script for debugging purposes
+  const shadow = document.querySelector("web-comp").__closedShadowRoot;
+  document.addEventListener("mousedown", e => {
+    console.log("-----------")
+    console.log("--click---------")
+    console.log("outside", document.activeElement);
+    console.log("MY outside", document.myActiveElement);
+    console.log("inside", shadow.activeElement);
+    console.log("MY inside", shadow.myActiveElement);
+    toggleTick(() => {
+      console.log("--click---------")
+      console.log("outside toggle", document.activeElement);
+      console.log("MY outside toggle", document.myActiveElement);
+      console.log("inside toggle", shadow.activeElement);
+      console.log("MY inside toggle", shadow.myActiveElement);
+    });
+  });
+  document.addEventListener("focusout", e => {
+    console.log("-----------")
+    console.log("--focusout---------")
+    console.log("outside", document.activeElement);
+    console.log("MY outside", document.myActiveElement);
+    console.log("inside", shadow.activeElement);
+    console.log("MY inside", shadow.myActiveElement);
+    toggleTick(() => {
+      console.log("--focusout---------")
+      console.log("outside toggle", document.activeElement);
+      console.log("MY outside toggle", document.myActiveElement);
+      console.log("inside toggle", shadow.activeElement);
+      console.log("MY inside toggle", shadow.myActiveElement);
+    });
+  });
+</script>

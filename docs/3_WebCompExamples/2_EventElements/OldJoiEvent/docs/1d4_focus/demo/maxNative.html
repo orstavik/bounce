@@ -1,0 +1,127 @@
+<script src="../../1b_EventLoop/demo/toggleTick.js"></script>
+<script>
+  const og = HTMLElement.prototype.attachShadow;
+  Object.defineProperty(HTMLElement.prototype, "attachShadow", {
+    value: function (opts) {
+      const shadow = og.call(this, opts);
+      this.__closedShadowRoot = shadow;
+      return shadow;
+    }
+  })
+</script>
+
+<script>
+
+  class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      const shadow = this.attachShadow({mode: "closed"});
+      shadow.innerHTML = `
+        <style>
+          div{
+            border: 5px solid gray;
+          }
+          div:focus{
+            border-style: dotted;
+          }
+          div:focus-within{
+            background-color: lightgreen;
+          }
+        </style>
+
+        <div tabindex="3">three
+          <slot></slot>
+        </div>
+        <div tabindex="4">four</div>`;
+    }
+  }
+
+  customElements.define("web-comp", WebComp);
+</script>
+
+<style>
+  div {
+    border: 10px solid red;
+    padding: 10px;
+  }
+  web-comp {
+    display: block;
+    border: 10px solid orange;
+    padding: 10px;
+  }
+  div:focus {
+    color: blue;
+    border-style: dashed;
+  }
+  :focus-within {
+    background-color: lightblue;
+  }
+</style>
+
+<div id="one" tabindex="1">one</div>
+<div>
+  <web-comp>
+    <a href="#lala">Hello sunshine</a>
+  </web-comp>
+</div>
+<div id="two" tabindex="2">two</div>
+
+<script>
+  //script for debugging purposes
+  const shadow = document.querySelector("web-comp").__closedShadowRoot;
+  document.addEventListener("mousedown", e => {
+    console.log("-----------")
+    console.log("--mousedown---------")
+    console.log("outside", document.activeElement);
+    console.log("inside", shadow.activeElement);
+    toggleTick(() => {
+      console.log("--mousedown toggle---------")
+      console.log("outside", document.activeElement);
+      console.log("inside", shadow.activeElement);
+    });
+  });
+  shadow.addEventListener("focusin", e => {
+    console.log("-----------");
+    console.log("--focusin---------", e.relatedTarget);
+    console.log("outside", document.activeElement);
+    console.log("inside", shadow.activeElement);
+    toggleTick(() => {
+      console.log("--focusin toggle---------")
+      console.log("outside", document.activeElement);
+      console.log("inside", shadow.activeElement);
+    });
+  });
+  shadow.addEventListener("focusout", e => {
+    console.log("-----------");
+    console.log("--focusout---------", e.relatedTarget);
+    console.log("outside", document.activeElement);
+    console.log("inside", shadow.activeElement);
+    toggleTick(() => {
+      console.log("--focusout toggle---------")
+      console.log("outside", document.activeElement);
+      console.log("inside", shadow.activeElement);
+    });
+  });
+  // document.addEventListener("focus", e => {
+  //   console.log("-----------");
+  //   console.log("--focus---------", e.relatedTarget);
+  //   console.log("outside", document.activeElement);
+  //   console.log("inside", shadow.activeElement);
+  //   toggleTick(() => {
+  //     console.log("--focus toggle---------")
+  //     console.log("outside", document.activeElement);
+  //     console.log("inside", shadow.activeElement);
+  //   });
+  // }, true);
+  // document.addEventListener("blur", e => {
+  //   console.log("-----------");
+  //   console.log("--blur---------", e.relatedTarget);
+  //   console.log("outside", document.activeElement);
+  //   console.log("inside", shadow.activeElement);
+  //   toggleTick(() => {
+  //     console.log("--blur toggle---------")
+  //     console.log("outside", document.activeElement);
+  //     console.log("inside", shadow.activeElement);
+  //   });
+  // }, true);
+</script>

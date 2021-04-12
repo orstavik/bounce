@@ -1,0 +1,99 @@
+<script type="module">
+
+  import {SlotchangeMixin} from "https://unpkg.com/joicomponents@1.2.27/src/slot/SlotChildMixin.js";
+
+  class TreeNode extends SlotchangeMixin(HTMLElement) {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = "<slot></slot>";
+      this.addEventListener("click", this.onClick.bind(this));                         //[1]
+      this.__isTriggered = false;                                                      //[2]
+      this.__isSetup = false;                                                          //[3]
+    }
+
+    static get observedAttributes() {
+      return ["selected"];
+    }
+
+    slotCallback(slot) {
+      this.__isSetup = true;                                                           //[3]
+      this.getRootTreeNode().syncAtBranchChange();                                     //[2]
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      if (name === "selected") {
+        if (this.__isSetup && newValue !== null)
+          this.unSelectAllOthers(this);                                                 //[4]
+      }
+    }
+
+    unSelectAllOthers(skip) {                                                           //[4]
+      let selecteds = this.getRootTreeNode().querySelectorAll("tree-node[selected]");
+      skip = skip || selecteds[selecteds.length - 1];
+      this !== skip && this.removeAttribute("selected");
+      for (let selected of selecteds)
+        selected !== skip && selected.removeAttribute("selected")
+    }
+
+    getRootTreeNode() {                                                                 //[2]
+      let parent = this;
+      while (parent.parentNode && parent.parentNode.tagName && parent.parentNode.tagName === "TREE-NODE")
+        parent = parent.parentNode;
+      return parent;
+    }
+
+    onClick(e) {                                                                        //[1]
+      e.stopPropagation();
+      this.hasAttribute("selected") ?
+        this.removeAttribute("selected") :
+        this.setAttribute("selected", "");
+    }
+
+    syncAtBranchChange() {                                                              //[2]
+      if (this.__isTriggered)
+        return;
+      this.__isTriggered = true;
+      Promise.resolve().then(() => {
+        this.__isTriggered = false;
+        this.unSelectAllOthers();                                                       //[4]
+      });
+    }
+  }
+
+  customElements.define("tree-node", TreeNode);
+</script>
+
+<style>
+  tree-node {
+    display: block;
+    padding-left: 10px
+  }
+  tree-node[selected] {
+    border: 2px solid red;
+  }
+</style>
+
+<tree-node selected>book
+  <tree-node>
+    chapter 1
+    <tree-node>
+      chapter 1.1
+      <tree-node selected>chapter 1.1.1</tree-node>
+      <tree-node>chapter 1.1.2</tree-node>
+    </tree-node>
+    <tree-node>chapter 1.2</tree-node>
+  </tree-node>
+  <tree-node>
+    chapter 2
+    <tree-node>chapter 2.1</tree-node>
+    <tree-node selected>chapter 2.2</tree-node>
+  </tree-node>
+</tree-node>
+
+<script>
+  const clone = document.querySelector("tree-node").cloneNode(true);
+  setTimeout(function () {
+    document.querySelector("tree-node[selected]").appendChild(clone);
+  }, 3000);
+</script>

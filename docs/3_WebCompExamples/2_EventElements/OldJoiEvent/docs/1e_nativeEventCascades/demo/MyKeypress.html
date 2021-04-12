@@ -1,0 +1,26 @@
+<input type="text" value="Press 'a', 'Tab' and hold down 'x' for a second."/>
+
+<script>
+  (function () {
+
+    const KeypressController = {
+      keydown: function (e) {
+        if (e.ctrlKey || e.altKey /* || super, fn, altgr, ++*/)
+          return;
+        if (e.key === "Tab" || e.key === "F1" || e.key === "Esc" || e.key === "Shift" /* || Home, arrowLeft, ctrl, CapsLock, ++*/)
+          return;
+        const myKeypressEvent = new KeyboardEvent("my-keypress", {composed: true, bubbles: true, key: e.key});
+        setTimeout(() => e.target.dispatchEvent(myKeypressEvent), 0);
+      }
+    };
+    window.addEventListener("keydown", KeypressController.keydown, true);
+  })();
+
+  function log(e) {
+    console.log(e.type + ": " + e.key);
+  }
+
+  window.addEventListener("keydown", log);
+  window.addEventListener("keyup", log);
+  window.addEventListener("my-keypress", log);
+</script>

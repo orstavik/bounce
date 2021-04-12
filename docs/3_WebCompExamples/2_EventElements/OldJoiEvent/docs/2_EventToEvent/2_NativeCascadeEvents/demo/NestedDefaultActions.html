@@ -1,0 +1,32 @@
+<details>
+  <summary>
+    Open summary <a href="#link">Link inside summary <input type="checkbox"> </a>
+  </summary>
+  Hello Sunshine!!
+</details>
+
+<script>
+  const details = document.querySelector("details");
+  const summary = document.querySelector("summary");
+  const link = document.querySelector("a");
+  const input = document.querySelector("input");
+
+  function log(e) {
+    console.log(e.type, e.currentTarget.nodeName, e.eventPhase);
+  }
+
+  function preventD(e) {
+    console.log("calling: " + e.type + ".preventDefault()");
+    e.preventDefault();
+  }
+
+  // window.addEventListener("click", preventD, true);
+
+  details.addEventListener("click", log, true);
+  summary.addEventListener("click", log, true);
+  link.addEventListener("click", log, true);
+  input.addEventListener("click", log);
+  link.addEventListener("click", log);
+  summary.addEventListener("click", log);
+  details.addEventListener("click", log);
+</script>

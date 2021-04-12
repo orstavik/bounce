@@ -1,0 +1,29 @@
+<h1>Hello sunshine!</h1>
+<p>Resize the window and see the event being logged in the console.</p>
+
+<script>
+  (function () {
+    const ResizeController = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      lastTime: performance.now(),
+      tick: function () {
+        const widthNow = Math.round(window.innerWidth);
+        const heightNow = Math.round(window.innerHeight);
+        const timeNow = performance.now();
+        if (ResizeController.width === widthNow /*&& ResizeController.height === heightNow*/) {
+          const delay = timeNow - ResizeController.lastTime < 50 ? 45 : 150;
+          setTimeout(ResizeController.tick, delay);
+        }
+        ResizeController.width = widthNow;
+        ResizeController.height = heightNow;
+        ResizeController.lastTime = timeNow;
+        window.dispatchEvent(new UIEvent("my-resize"));
+        requestAnimationFrame(ResizeController.tick);
+      }
+    };
+    ResizeController.tick();
+  })();
+
+  window.addEventListener("my-resize", e => console.log(e.type));
+</script>

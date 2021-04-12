@@ -1,0 +1,66 @@
+<script src="../../../../../../../../JoiEvents/src/link-click-es6.js"></script>
+
+<a id="one" href="https://letmepass.com/">NOT blocked</a>
+<hr>
+
+<a id="two" href="https://justalittle.blocked.com/">only navigation blocked</a>
+<hr>
+
+<a id="three" href="https://fully.blocked.com/">both click event and navigation blocked</a>
+<hr>
+
+<svg>
+  <a id="four" href="https://letmepass.com/">
+    <text fill="#008F68">
+      <tspan y="20">
+        NOT blocked svg link
+      </tspan>
+    </text>
+  </a>
+  <a id="five" href="https://fully.blocked.com/">
+    <text fill="#008F68">
+      <tspan y="40">
+        blocked svg link
+      </tspan>
+    </text>
+  </a>
+</svg>
+<hr>
+
+The right half on the image below is blocked, the left half will pass.<br>
+<a id="six" href="https://ismap.blocked.com/">
+  <img src="http://www.public-domain-photos.com/free-stock-photos-4-small/flowers/lotus-flower-2.jpg"
+       alt="lotus flower" ismap/>
+</a>
+<hr>
+
+I am not a link, but you can of course click me too, if you want.
+<hr>
+
+
+<script>
+  function logEvent(e) {
+    console.log(e.type + ": " + e.target.tagName + "#" + e.target.id);
+  }
+
+  window.addEventListener("click", logEvent);
+  window.addEventListener("link-click", logEvent);
+
+  //micro router
+  window.addEventListener("link-click", function (e) {
+    let href = e.getHref();
+    if (href.endsWith("letmepass.com/")) {
+      console.log("This link I will let pass");
+    } else if (href.endsWith("fully.blocked.com/")) {
+      e.preventDefault();
+    } else if (href.endsWith("justalittle.blocked.com/")) {
+      e.trigger.preventDefault();
+    } else if (href.indexOf("ismap.blocked.com/") > 0) {
+      const coordinates = href.substr(href.lastIndexOf("?") + 1).split(",");
+      if (parseInt(coordinates[0]) > 70)
+        e.trigger.preventDefault();
+    } else {
+      //let it pass
+    }
+  });
+</script>

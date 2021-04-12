@@ -1,0 +1,25 @@
+<script src="../../1d3_defaultAction/demo/addDefaultAction.js"></script>
+
+<div href="#hello">
+  hello
+  <a href="#coronavirus">coronavirus</a>
+</div>
+<a href="#goodbye">
+  goodbye
+  <span href="#school">school</span>
+</a>
+
+<script>
+
+  window.addEventListener("click", function (e) {
+    for (let element of e.composedPath()) {
+      if (element instanceof HTMLElement && element.matches("div[href], span[href]")) {
+        e.addDefaultAction(function (e) {
+          console.log("action is triggered by: ", e);
+          location.href = new URL(this.getAttribute("href"), document.baseURI).href;
+        }.bind(element), {preventable: element/*, raceEvents: ["dblclick"]*/});
+        return;
+      }
+    }
+  }, true);
+</script>

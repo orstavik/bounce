@@ -1,0 +1,11 @@
+<input type="text" value="Hello sunshine!"/>
+
+<script>
+  function log(e){
+    console.log(e.type);
+  }
+
+  window.addEventListener("mousedown", log);
+  window.addEventListener("focusin", log);
+  window.addEventListener("contextmenu", log);
+</script>

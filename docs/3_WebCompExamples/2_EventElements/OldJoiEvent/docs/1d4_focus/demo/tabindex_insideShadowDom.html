@@ -1,0 +1,115 @@
+<script>
+  class WebCompWrapper extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = `
+      <web-comp></web-comp>
+      `;
+    }
+  }
+
+  class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = `
+      <div tabindex="1">1</div>
+      <div tabindex="2">2</div>
+      <div tabindex="3">3</div>
+      `;
+    }
+  }
+
+  customElements.define("web-comp", WebComp);
+  customElements.define("web-comp-wrapper", WebCompWrapper);
+</script>
+
+<div tabindex="1">outer 1</div>
+<div tabindex="2">outer 2</div>
+<div tabindex="0">outer 0</div>
+<a href="#go">go</a>
+<div tabindex="3">outer 3</div>
+<hr>
+<web-comp tabindex="2"></web-comp>
+<hr>
+<web-comp></web-comp>
+<hr>
+<web-comp-wrapper tabindex="2"></web-comp-wrapper>
+<hr>
+<web-comp-wrapper></web-comp-wrapper>
+<hr>
+<web-comp tabindex="-1"></web-comp>
+
+<pre>
+  This shows us that:
+  1. when a hostNode has tab, then it will try to tab/treewalk inside its shadowDOM first, regardless of the values, before it asks for a node on the parent.
+  2. the tabindex numbers are local to the document.
+  3. web comps with shadowRoots have by default tabindex = 0.
+</pre>
+<script>
+
+  function potentiallyTabables(root) {
+    const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+        acceptNode: function (node) {
+          return (node.tabIndex >= 0 || (node.shadowRoot && node.getAttribute("tab-index") !== -1)) ?
+            NodeFilter.FILTER_ACCEPT :
+            NodeFilter.FILTER_SKIP;
+        }
+      },
+      false);
+    const res = [];
+    for (let tabable = treeWalker.nextNode(); tabable; tabable = treeWalker.nextNode())
+      res.push(tabable);
+    res.sort(function (a, b) {
+      if (a.tabIndex === b.tabIndex)
+        return 0;
+      if (a.tabIndex === -1)  //shadowRoot only
+        return 1;
+      if (b.tabIndex === -1)  //shadowRoot only
+        return -1;
+      if (a.tabIndex === 0)
+        return 1;
+      if (b.tabIndex === 0)
+        return -1;
+      return a.tabIndex >= b.tabIndex ? 1 : -1;      //a.tabIndex and b.tabIndex are positive integers
+    });
+    return res;
+  }
+
+  function recursiveTabables(root) {
+    const potentials = potentiallyTabables(root); //correctly sorted
+    const res = [];
+    for (let potential of potentials) {
+      if (potential.tabIndex !== -1)
+        res.push(potential);
+      if (potential.shadowRoot)
+        res.push(recursiveTabables(potential.shadowRoot));
+    }
+    return res.flat(Infinity);
+  }
+
+  function nextTabable(root, start) {
+    const allTabables = recursiveTabables(root);
+    const index = allTabables.indexOf(start);
+    let nextIndex = index + 1;
+    if (nextIndex === allTabables.length)
+      nextIndex = 0;//we can only iterate within the document, as we have no access to the browser chrome from JS.
+    return allTabables[nextIndex];
+  }
+
+
+  console.log(recursiveTabables(document));
+
+  function log(e) {
+    console.log(e.composedPath()[0]);
+    console.log(nextTabable(document, e.composedPath()[0]));
+  }
+
+  const webComps = Array.from(document.querySelectorAll("web-comp")).map(host => host.shadowRoot);
+  const innerWebComps = Array.from(document.querySelectorAll("web-comp-wrappers")).map(host => host.shadowRoot.children[0].shadowRoot);
+  const roots = webComps.concat(innerWebComps).concat([document]);
+  for (let doc of roots)
+    doc.addEventListener("focusin", log, true);
+
+</script>
