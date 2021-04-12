@@ -234,4 +234,5 @@ Another relevant finding is that Chrome, known to be the fastest, is roughly 5x 
 
 ## References
 
-  * dunno
+  * [MDN: setTimeout()](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
+  * [MDN: `message` event](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent)
