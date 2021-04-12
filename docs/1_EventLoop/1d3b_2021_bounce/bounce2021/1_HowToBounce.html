@@ -20,7 +20,7 @@
   //         This means the sum of both capture and bubble event listeners run in insertion order, not necessarily capture before bubble.
   //         It is my opinion that it might be better to always run capture before bubble, also at_target, but
   //         the 'old way' is chosen because I guess that this will cause the least disturbances in existing web apps.
-  import {} from "../../../../lib/EventTarget.js";
+  import {} from "../../../../lib/platform/EventTarget.js";
 
   class OuterHost extends HTMLElement {
     constructor() {
