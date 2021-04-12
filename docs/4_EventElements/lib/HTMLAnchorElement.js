@@ -1,4 +1,6 @@
-import {keyToClick, tabbable} from "./KeydownMixins.js";
+ import {DblclickMixin} from "./MouseEventMixins.js";
+import {KeyToClickMixin, TabbableMixin} from "./KeyboardEventMixins.js";
+import {HTMLShadowDomElement} from "./HTMLShadowDomElement.js";
 
 function updateVisited(anchor) {
   isVisited(anchor) ?
@@ -29,10 +31,16 @@ slot:visited {
 </style>
 `;
 
-export class HTMLAnchorElement extends HTMLElement {
+const HTMLAnchorSuperClass =
+  DblclickMixin(
+    TabbableMixin(
+      KeyToClickMixin(
+        HTMLShadowDomElement
+      )));
+
+export class HTMLAnchorElement extends HTMLAnchorSuperClass {
   constructor() {
     super();
-    this.attachShadow({mode: "open"});
     this.shadowRoot.innerHTML = aTemplate.content.cloneNode(true);
     this.shadowRoot.addEventListener('click', function (e) {
       if (e.defaultPrevented)
@@ -49,9 +57,6 @@ export class HTMLAnchorElement extends HTMLElement {
     const me = this;
     // window.addEventListener('popstate', e => updateVisited(me));
     window.addEventListener('hashchange', e => updateVisited(me));
-    keyToClick(this);
-    tabbable(this);
-    dblClick(this);//todo no, this isn't necessary, as it can be appended to the host node. This can be a regular mixin.
   }
 
   static get observedAttributes() {
