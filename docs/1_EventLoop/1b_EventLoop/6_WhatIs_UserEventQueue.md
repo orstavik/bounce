@@ -28,9 +28,7 @@ When the browser is driven by a user-action, it dispatches:
 
 When a script dispatches either a `UIEvent` or `FormEvent`, the browser will run it *sync*, always. In fact, there is no way to dispatch an event from script that will  does so When the browser dispatches *some* of its `FormEvents` async,   
  
-Events that the browser dispatches *synchronThere are *two* important aspects of events that the browser dispatches ` Events queued   
-
-. (Note that `submit` events triggered from script via `requestSubmit()` are dispatched sync, not async.)
+Events that the browser dispatches *synchronThere are *two* important aspects of events that the browser `dispatches` Events queued. (Note that `submit` events triggered from script via `requestSubmit()` are dispatched sync, not async.)
 
 For  `UIEvent`sthat are **indirectly** triggered by a user action dispatch *async*. 
 
