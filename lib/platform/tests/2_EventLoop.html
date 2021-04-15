@@ -142,6 +142,8 @@
     return root === document ? window : root;
   }
 
+  const result = [];
+
   function log(e) {
     const propagationRoot = getPropagationRoot(this.node);
     const b = this.bubble ? 'b' : 'c';
@@ -151,7 +153,9 @@
     const targetCorrect = e.path[0] === e.target;
     const rootCorrect = e.currentDocument === propagationRoot;
     const eventPropsCorrect = currentTargetCorrect && targetCorrect && rootCorrect
-    console.log([root, b, target, eventPropsCorrect].map(s => (s + '           ').substr(0, 13)).join(' '));
+    const str = [root, b, target, eventPropsCorrect].map(s => (s + '           ').substr(0, 13)).join(' ');
+    result.push(str);
+    console.log(str);
   }
 
   const targets = composedPath(innerMostShadow, window);
@@ -160,4 +164,67 @@
     node.addEventListener('bob', log.bind({node, bubble: false}), true);
   }
   h1.dispatchEvent(new Event('bob', {composed: true, bubbles: true}));
+  const test =
+    `window        c            window        true
+window        c            document      true
+window        c            HT            true
+window        c            BO            true
+window        c            DI            true
+window        c            LI-SL         true
+window        c            SP            true
+window        b            OU-HO         true
+window        c            OU-HO         true
+window        b            SP            true
+window        b            LI-SL         true
+window        b            DI            true
+window        b            BO            true
+window        b            HT            true
+window        b            document      true
+window        b            window        true
+##OU-HO       c            ##OU-HO       true
+##OU-HO       c            UP-IN-LI-SL   true
+##OU-HO       c            IN-LI-SL      true
+##OU-HO       b            IN-HO         true
+##OU-HO       c            IN-HO         true
+##OU-HO       b            IN-LI-SL      true
+##OU-HO       b            UP-IN-LI-SL   true
+##OU-HO       b            ##OU-HO       true
+##IN-HO       c            ##IN-HO       true
+##IN-HO       b            H1            true
+##IN-HO       c            H1            true
+##IN-HO       b            ##IN-HO       true
+##H1          b            ##H1          true
+##H1          c            ##H1          true
+##IN-LI-SL    c            ##IN-LI-SL    true
+##IN-LI-SL    c            IN-FR-SL      true
+##IN-LI-SL    b            SL            true
+##IN-LI-SL    c            SL            true
+##IN-LI-SL    b            IN-FR-SL      true
+##IN-LI-SL    b            ##IN-LI-SL    true
+##IN-FR-SL    c            ##IN-FR-SL    true
+##IN-FR-SL    b            SL            true
+##IN-FR-SL    c            SL            true
+##IN-FR-SL    b            ##IN-FR-SL    true
+##UP-IN-LI-SL c            ##UP-IN-LI-SL true
+##UP-IN-LI-SL c            UP-IN-FR-SL   true
+##UP-IN-LI-SL b            SL            true
+##UP-IN-LI-SL c            SL            true
+##UP-IN-LI-SL b            UP-IN-FR-SL   true
+##UP-IN-LI-SL b            ##UP-IN-LI-SL true
+##UP-IN-FR-SL c            ##UP-IN-FR-SL true
+##UP-IN-FR-SL b            SL            true
+##UP-IN-FR-SL c            SL            true
+##UP-IN-FR-SL b            ##UP-IN-FR-SL true
+##LI-SL       c            ##LI-SL       true
+##LI-SL       c            FR-SL         true
+##LI-SL       b            SL            true
+##LI-SL       c            SL            true
+##LI-SL       b            FR-SL         true
+##LI-SL       b            ##LI-SL       true
+##FR-SL       c            ##FR-SL       true
+##FR-SL       b            SL            true
+##FR-SL       c            SL            true
+##FR-SL       b            ##FR-SL       true`;
+  const s = result.map(s=>s.trim()).join('\n');
+  console.log(s === test);
 </script>
