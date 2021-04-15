@@ -89,18 +89,33 @@
     const h1 = outerHost.shadowRoot.children[0].children[0].children[0].shadowRoot.children[0];
 
 
-    function test(target, root) {
+    function test(target, root, shouldBe) {
       verifyBounceSequenceArguments(target, root);
       const test = bounceSequence(target, root);
       verifyBouncedPath(test);
       console.log("*************************************************")
-      print(test).forEach(l => console.log(l));
-      console.log("*************************************************")
+      const str = print(test);
+      str.forEach(l => console.log(l));
+      console.log(shouldBe === str.join('\n'));
     }
 
-    test(outerHost.shadowRoot, window);
-debugger
-    test(h1.shadowRoot, window);
+    test(outerHost.shadowRoot, window,
+`0: h: -1: OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document,window
+1: h:   0: #document-fragment
+2: s:   0: SLOT,FRAME-SLOT,#document-fragment
+3: s:     2: SLOT,#document-fragment`);
+
+    test(h1.shadowRoot, window,
+`0: h: -1: OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document,window
+1: h:   0: INNER-HOST,INNER-LINK-SLOT,UPPER-INNER-LINK-SLOT,#document-fragment
+2: h:     1: H1,#document-fragment
+3: h:       2: #document-fragment
+4: s:     1: SLOT,INNER-FRAME-SLOT,#document-fragment
+5: s:       4: SLOT,#document-fragment
+6: s:     1: SLOT,UPPER-INNER-FRAME-SLOT,#document-fragment
+7: s:       6: SLOT,#document-fragment
+8: s:   0: SLOT,FRAME-SLOT,#document-fragment
+9: s:     8: SLOT,#document-fragment`);
   })();
 </script>
 
