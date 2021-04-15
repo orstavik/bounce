@@ -81,16 +81,27 @@
   customElements.define("upper-inner-link-slot", UpperInnerLinkSlot);
   customElements.define("upper-inner-frame-slot", UpperInnerFrameSlot);
 
-  const outerHost = document.querySelector("outer-host");
-  const h1 = outerHost.shadowRoot.children[0].children[0].children[0].shadowRoot.children[0];
+  import {bounceSequence} from "../index.js";
+  import {print, verifyBouncedPath, verifyBounceSequenceArguments} from "./BouncedPathTools.js";
 
-  import {bounceSequence, print} from "../BouncedPathNativePatch.js";
+  (function () {
+    const outerHost = document.querySelector("outer-host");
+    const h1 = outerHost.shadowRoot.children[0].children[0].children[0].shadowRoot.children[0];
 
-  const test = bounceSequence(outerHost, window);
-  print(test).forEach(l=> console.log(l));
-  console.log("...")
-  const test2 = bounceSequence(h1, window);
-  print(test2).map(l => console.log(l));
+
+    function test(target, root) {
+      verifyBounceSequenceArguments(target, root);
+      const test = bounceSequence(target, root);
+      verifyBouncedPath(test);
+      console.log("*************************************************")
+      print(test).forEach(l => console.log(l));
+      console.log("*************************************************")
+    }
+
+    test(outerHost.shadowRoot, window);
+debugger
+    test(h1.shadowRoot, window);
+  })();
 </script>
 
 <pre>
