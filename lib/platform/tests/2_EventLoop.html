@@ -20,13 +20,17 @@
   //         This means the sum of both capture and bubble event listeners run in insertion order, not necessarily capture before bubble.
   //         It is my opinion that it might be better to always run capture before bubble, also at_target, but
   //         the 'old way' is chosen because I guess that this will cause the least disturbances in existing web apps.
-  import {composedPath} from "../index.js";
 
   class OuterHost extends HTMLElement {
     constructor() {
       super();
       this.attachShadow({mode: "open"});
-      this.shadowRoot.innerHTML = '<upper-inner-link-slot><inner-link-slot><inner-host></inner-host></inner-link-slot></upper-inner-link-slot>';
+      this.shadowRoot.innerHTML =
+`<upper-inner-link-slot>
+   <inner-link-slot>
+      <inner-host></inner-host>
+   </inner-link-slot>
+</upper-inner-link-slot>`;
     }
   }
 
@@ -122,9 +126,9 @@
   const h1 = outerHost.shadowRoot.children[0].children[0].children[0].shadowRoot.children[0];
   const innerMostShadow = h1.shadowRoot;
 
-  let shortTagName = function (root) {
-    return (root.tagName.split('-').map(n => n.substr(0, 2)).join('-'));
-  };
+  function shortTagName(tagName) {
+    return tagName.length < 11 ? tagName: (tagName.split('-').map(n => n.substr(0, 2)).join('-'));
+  }
 
   function nodeName(node) {
     if (node === window)
@@ -132,8 +136,8 @@
     if (node === document)
       return 'document      ';
     if (node instanceof DocumentFragment)
-      return "##" + shortTagName(node.host);
-    return shortTagName(node) + "  ";
+      return "##" + shortTagName(node.host.tagName);
+    return shortTagName(node.tagName) + "  ";
   }
 
   function getPropagationRoot(node) {
@@ -144,12 +148,12 @@
 
   const result = [];
 
-  function log(e) {
-    const propagationRoot = getPropagationRoot(this.node);
-    const b = this.bubble ? 'b' : 'c';
+  function log(e, capture, node) {
+    const propagationRoot = getPropagationRoot(node);
+    const b = capture ? 'c' : 'b';
     const root = nodeName(propagationRoot);
-    const target = nodeName(this.node);
-    const currentTargetCorrect = e.currentTarget === this.node;
+    const target = nodeName(node);
+    const currentTargetCorrect = e.currentTarget === node;
     const targetCorrect = e.path[0] === e.target;
     const rootCorrect = e.currentDocument === propagationRoot;
     const eventPropsCorrect = currentTargetCorrect && targetCorrect && rootCorrect
@@ -158,10 +162,14 @@
     console.log(str);
   }
 
+  import {composedPath} from "../index.js";
   const targets = composedPath(innerMostShadow, window);
+  // import {composedPath} from "../BouncedPath.js";
+  // const targets = composedPath(h1, window);
+
   for (let node of targets) {
-    node.addEventListener('bob', log.bind({node, bubble: true}), false);
-    node.addEventListener('bob', log.bind({node, bubble: false}), true);
+    node.addEventListener('bob', e => log(e, false, node), false);
+    node.addEventListener('bob', e => log(e, true, node), true);
   }
   h1.dispatchEvent(new Event('bob', {composed: true, bubbles: true}));
   const test =
@@ -225,6 +233,6 @@ window        b            window        true
 ##FR-SL       b            SL            true
 ##FR-SL       c            SL            true
 ##FR-SL       b            ##FR-SL       true`;
-  const s = result.map(s=>s.trim()).join('\n');
+  const s = result.map(s => s.trim()).join('\n');
   console.log(s === test);
 </script>
