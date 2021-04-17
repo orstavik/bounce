@@ -81,8 +81,7 @@
   customElements.define("upper-inner-link-slot", UpperInnerLinkSlot);
   customElements.define("upper-inner-frame-slot", UpperInnerFrameSlot);
 
-  import {bounceSequence2} from "../index.js";
-  import {toString} from "./BouncedPathTools.js";
+  import {bounceSequence, toString} from "../index.js";
 
   (function () {
     const outerHost = document.querySelector("outer-host");
@@ -91,7 +90,7 @@
 
     function test(target, root, shouldBe) {
       console.log("*************************************************")
-      const test = bounceSequence2(target, root);
+      const test = bounceSequence(target, root);
       const str = toString(test);
       str.forEach(l => console.log(l));
       console.log(shouldBe === str.join('\n'));
