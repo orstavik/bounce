@@ -155,8 +155,7 @@
     const target = nodeName(node);
     const currentTargetCorrect = e.currentTarget === node;
     const targetCorrect = e.path[0] === e.target;
-    const rootCorrect = e.currentRoot === propagationRoot;
-    const eventPropsCorrect = currentTargetCorrect && targetCorrect && rootCorrect
+    const eventPropsCorrect = currentTargetCorrect && targetCorrect
     const str = [root, b, target, eventPropsCorrect].map(s => (s + '           ').substr(0, 13)).join(' ');
     result.push(str);
     console.log(str);
