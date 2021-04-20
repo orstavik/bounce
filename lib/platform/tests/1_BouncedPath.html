@@ -81,6 +81,7 @@
   customElements.define("upper-inner-link-slot", UpperInnerLinkSlot);
   customElements.define("upper-inner-frame-slot", UpperInnerFrameSlot);
 
+  import {} from "../HTMLElementNative.js";
   import {bounceSequence, toString} from "../index.js";
 
   (function () {
@@ -97,10 +98,11 @@
     }
 
     test(outerHost.shadowRoot, window,
-`0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document,window
+      `0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document,window
 ..0:#document-fragment
 ..2:SLOT,FRAME-SLOT,#document-fragment
-....1:SLOT,#document-fragment`);
+....1:SLOT,#document-fragment
+..5:SLOT,#document-fragment`);
 
     test(h1.shadowRoot, window,
       `0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document,window
@@ -112,7 +114,8 @@
 ....2:SLOT,UPPER-INNER-FRAME-SLOT,#document-fragment
 ......1:SLOT,#document-fragment
 ..2:SLOT,FRAME-SLOT,#document-fragment
-....1:SLOT,#document-fragment`);
+....1:SLOT,#document-fragment
+..5:SLOT,#document-fragment`);
   })();
 </script>
 
