@@ -44,4 +44,48 @@ export function MutationObserverParentNode(childTarget, cb) {
   return observer;
 }
 
-// todo there is an opportunity here to allow the same mutationObserver trigger many different callbacks, but this we don't care about
+//we can fix the issue of observing when null, by monkeyPatching appendChild and prepend and
+// all the other js methods that allow us to add a node to the dom. Then we must check if the node being added IS
+// one of the loose parentNode observing child targets. Nice! this will be good.
+
+const orphanRestarters = new WeakMap();
+const prependOG = Element.prototype.prepend;
+function prepend(node) {
+  const res = prependOG.call(this, node);
+  orphanRestarters.get(node)?.call();
+  return res;
+}
+Object.defineProperty(Element.prototype, 'prepend', {value: prepend, configurable: true});
+
+export function MutationObserverParentNodeNullSafe(child, cb) {
+  let parent = null;
+
+  function start() {
+    parent = child.parentNode;
+    if (parent) {
+      orphanRestarters.delete(child);
+      observer.observe(parent, {childList: true});
+    } else {
+      observer.disconnect();
+      orphanRestarters.set(child, restart);
+    }
+  }
+
+  function restart() {
+    const oldParent = parent;
+    start();
+    cb(child, oldParent);
+  }
+
+  const observer = new MutationObserver(function (ml) {
+    child.parentNode !== parent && restart();
+  });
+
+  start();
+  return {
+    disconnect: function () {
+      MutationObserver.prototype.disconnect.call(observer);
+      orphanRestarters.delete(child);
+    }
+  };
+}
