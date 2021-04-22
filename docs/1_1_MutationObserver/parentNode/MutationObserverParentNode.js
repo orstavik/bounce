@@ -1,0 +1,47 @@
+// The Naive, simplistic approach is this:
+// 1. get the parentNode
+// 2. make a childList mutation observer on the parent
+// 3. every time the childList of the parent changes, if the childTarget is still a child, then nothing has happened in the eyes of the child.
+// 4. but when the childTarget has changed, then
+//    1. update the parentNode against which future changes will be checked against.
+//    2. update the mutationObserver so that it observes the new parentNode and not the old one.
+//    3. then call cb, with the target and the previousParentNode as arguments.
+
+export function MutationObserverParentNodeNaive(childTarget, cb) {
+  let wasParentNode = childTarget.parentNode;
+  const observer = new MutationObserver(function () {
+    if (childTarget.parentNode === wasParentNode)
+      return;
+    const previousParentNode = wasParentNode;
+    wasParentNode = childTarget.parentNode;
+    observer.observe(childTarget.parentNode, {childList: true});
+    cb(childTarget, previousParentNode);
+  });
+  observer.observe(wasParentNode, {childList: true});
+  return observer;
+}
+
+// the naive approach works, but it has a drawback:
+// What if the parentNode is null? at the beginning or at a later stage?
+// When the parentNode is null, then we have no target for our childList observer.
+// Which is an oxymoron for our solution for observing parentNode.
+
+export function MutationObserverParentNode(childTarget, cb) {
+  if (!childTarget.parentNode)                                                                                     //*
+    throw new Error('MutationObserverParentNode *only* works when the childTarget is attached to a parentNode.');  //*
+  let wasParentNode = childTarget.parentNode;
+  const observer = new MutationObserver(function () {
+    if (childTarget.parentNode === wasParentNode)
+      return;
+    const previousParentNode = wasParentNode;
+    wasParentNode = childTarget.parentNode;
+    !wasParentNode ?                                                                                               //*
+      observer.disconnect() :                                                                                      //*
+      observer.observe(wasParentNode, {childList: true});
+    cb(childTarget, previousParentNode);
+  });
+  observer.observe(wasParentNode, {childList: true});
+  return observer;
+}
+
+// todo there is an opportunity here to allow the same mutationObserver trigger many different callbacks, but this we don't care about

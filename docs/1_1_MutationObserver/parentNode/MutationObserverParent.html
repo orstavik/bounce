@@ -1,0 +1,46 @@
+<div>
+  <span>
+    <h1>hello sunshine</h1>
+    <h2>hello world</h2>
+  </span>
+</div>
+
+<script type="module">
+  import {MutationObserverParentNodeNaive, MutationObserverParentNode} from "./MutationObserverParentNode.js";
+
+  const h1 = document.querySelector("h1");
+  const h2 = document.querySelector("h2");
+
+  function runTest(childTarget, mutationObserverParentNode) {
+    const observer = mutationObserverParentNode(childTarget, function (target, oldParent) {
+      console.log(target, oldParent, target.parentNode);
+    });
+
+    setTimeout(() => {
+      console.log("one")
+      childTarget.parentNode.append(childTarget);
+      Promise.resolve().then(() => console.log("one two"))
+    });
+    setTimeout(() => {
+      console.log("two")
+      childTarget.parentNode.parentNode.prepend(childTarget);
+      Promise.resolve().then(() => console.log("two two"));
+    });
+    setTimeout(() => {
+      console.log("three")
+      childTarget.parentNode.append(childTarget);
+      Promise.resolve().then(() => console.log("three two"))
+    });
+    setTimeout(() => {
+      console.log("four")
+      childTarget.parentNode.children[0].prepend(childTarget);
+      Promise.resolve().then(() => console.log("four two"));
+    });
+    setTimeout(() => {
+      observer.disconnect();
+    });
+  }
+
+  setTimeout(()=>runTest(h1, MutationObserverParentNodeNaive));
+  setTimeout(()=>runTest(h1, MutationObserverParentNode), 50);
+</script>

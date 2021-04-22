@@ -1,0 +1,26 @@
+<script type="module">
+  import {IterableWeakSet} from "./IterableWeakSet.js";
+
+  const one = {one: 1};
+  const two = {two: 2};
+  const three = {three: 3};
+  const test = new IterableWeakSet([one, two]);
+  console.log(test.has(one));
+  console.log(test.has(two));
+  console.log(!test.has(three));
+  let asArray = Array.from(test);
+  console.log('[{"one":1},{"two":2}]' === JSON.stringify(asArray));
+  console.log(test.size === 2);
+  test.add(three);
+  console.log(test.has(two));
+  console.log(test.has(three));
+  asArray = Array.from(test.keys());
+  console.log('[{"one":1},{"two":2},{"three":3}]' === JSON.stringify(asArray));
+  console.log(test.size === 3);
+  test.delete(two);
+  console.log(!test.has(two));
+  asArray = Array.from(test.values());
+  console.log('[{"one":1},{"three":3}]' === JSON.stringify(asArray));
+  console.log(test.size === 2);
+  //todo test with lots of objects and gc during size.
+</script>
