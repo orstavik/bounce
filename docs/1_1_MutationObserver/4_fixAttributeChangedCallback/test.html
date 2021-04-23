@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+<div>hello sunshine</div>
+<script type="module">
+
+  function observeAttributeChanges(cb, attributeNames, element) {
+    const attObserver = new MutationObserver(function (mutationList) {
+      for (let mutation of mutationList) {
+        const target = mutation.target;
+        const name = mutation.attributeName;
+        const oldValue = mutation.oldValue;
+        cb.call(target, name, oldValue, target.getAttribute(name));
+      }
+    });
+    attObserver.observe(element, {attributes: true, attributeFilter: attributeNames});
+  }
+
+  //the native custom element attributeChangeCallback is sync, while MutationObserver is async.
+  //This makes the mixin behave slightly different.
+  function customElementToMixin(ElementType) {
+    if(Object.getPrototypeOf(ElementType) !== HTMLElement)
+      throw new Error('Only works when the ElementType "extends HTMLElement" directly, not indirectly.');
+    const attributeChangedCallback = ElementType.prototype.attributeChangedCallback;
+    if (!attributeChangedCallback)
+      return ElementType;
+    const observedAttributes = ElementType.observedAttributes;
+    const anHtmlElementType = Object.getPrototypeOf(ElementType);
+    const newBase = class FixObservedAttributes extends anHtmlElementType {
+      constructor() {
+        super();
+        observeAttributeChanges(attributeChangedCallback, observedAttributes, this);
+      }
+    }
+    Object.defineProperty(newBase, 'name', {value: ElementType.name + 'AttributeObserver'});
+    Object.setPrototypeOf(ElementType, newBase);
+    return ElementType;
+  }
+
+  function customElementToPlugin(el, ElementType) {
+    if(Object.getPrototypeOf(ElementType) !== HTMLElement)
+      throw new Error('Only works when the ElementType "extends HTMLElement" directly, not indirectly.');
+    const attributeChangedCallback = ElementType.prototype.attributeChangedCallback;
+    for (let name of Object.getOwnPropertyNames(ElementType.prototype)) {
+      if (name === attributeChangedCallback)
+        observeAttributeChanges(ElementType.prototype.attributeChangedCallback, ElementType.observedAttributes, el);
+      else
+        Object.defineProperty(el, name, Object.getOwnPropertyDescriptor(ElementType.prototype, name));
+    }
+    //todo how to do constructor
+    debugger
+    ElementType.call(el);
+  }
+
+
+  class Alpha extends HTMLElement {
+    constructor() {
+      super();
+      this.alice = 'alice';
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      console.log('alpha', name, oldValue, newValue);
+    }
+
+    static get observedAttributes() {
+      return ['alice'];
+    }
+  }
+
+  class Beta extends HTMLElement {
+    constructor() {
+      super();
+      this.bob = 'bob';
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      console.log('beta', name, oldValue, newValue);
+    }
+
+    static get observedAttributes() {
+      return ['bob', 'b'];
+    }
+  }
+
+  customElementToMixin(Beta);
+  console.log(Beta);
+  debugger
+
+  const div = document.querySelector("div");
+  customElementToPlugin(div, Alpha);
+
+  Object.setPrototypeOf(Alpha, Beta);
+  customElements.define('a-a', Alpha);
+  const a = new Alpha();
+  a.setAttribute('alice', 'one');
+  a.setAttribute('bob', 'two');
+  a.setAttribute('b', 'three');
+  console.log(a.alice, a.bob, a.ccc);
+
+  debugger
+
+  // import {injectMixin, HrefVisitedLink} from "./HrefVisitedLink2.js";
+  //
+  // const div = document.querySelector("div");
+  // debugger
+  // injectMixin(div, HrefVisitedLink);
+  // // div.setAttribute('href', 'https://vg.no');
+</script>
+</body>
+</html>
