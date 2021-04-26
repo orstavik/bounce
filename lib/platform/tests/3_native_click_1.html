@@ -229,7 +229,11 @@ window        b            window        true
 ##FRAME-SLOT  c            ##FRAME-SLOT  true
 ##FRAME-SLOT  b            SLOT          true
 ##FRAME-SLOT  c            SLOT          true
-##FRAME-SLOT  b            ##FRAME-SLOT  true`;
+##FRAME-SLOT  b            ##FRAME-SLOT  true
+##HTML        c            ##HTML        true
+##HTML        b            SLOT          true
+##HTML        c            SLOT          true
+##HTML        b            ##HTML        true`;
   const s = result.map(s => s.trim()).join('\n');
   console.log(s === test);
 </script>
