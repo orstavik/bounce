@@ -1,0 +1,157 @@
+<body>
+<script type="module">
+  import {} from "../index.js";
+  export function composedPath(target, endDocumentOrWindowOrComposedTrueFalse) {
+    const res = [];
+    while (target) {
+      res.push(target);
+      target = target === endDocumentOrWindowOrComposedTrueFalse ? null :
+        target === document ? window :
+          target.assignedSlot || target.parentNode || (endDocumentOrWindowOrComposedTrueFalse ? target.host : null);
+    }
+    return res;
+  }
+
+
+  class OuterHost extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML =
+        `
+<upper-inner-link-slot>
+  <inner-link-slot>
+    <inner-host></inner-host>
+  </inner-link-slot>
+</upper-inner-link-slot>`;
+    }
+  }
+
+  class InnerHost extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "open"});
+      shadowRoot.innerHTML = '<h1>hello sunshine</h1>';
+    }
+  }
+
+  class LinkSlot extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "open"});
+      shadowRoot.innerHTML = '<frame-slot><slot></slot></frame-slot>';
+    }
+  }
+
+  class FrameSlot extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "open"});
+      shadowRoot.innerHTML = '<slot></slot>';
+    }
+  }
+
+  class InnerLinkSlot extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "open"});
+      shadowRoot.innerHTML = '<inner-frame-slot><slot></slot></inner-frame-slot>';
+    }
+  }
+
+  class InnerFrameSlot extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "open"});
+      shadowRoot.innerHTML = '<slot></slot>';
+    }
+  }
+
+  class UpperInnerLinkSlot extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "open"});
+      shadowRoot.innerHTML = '<upper-inner-frame-slot><slot></slot></upper-inner-frame-slot>';
+    }
+  }
+
+  class UpperInnerFrameSlot extends HTMLElement {
+    constructor() {
+      super();
+      const shadowRoot = this.attachShadow({mode: "open"});
+      shadowRoot.innerHTML = '<slot></slot>';
+    }
+  }
+
+  customElements.define("outer-host", OuterHost);
+  customElements.define("inner-host", InnerHost);
+  customElements.define("link-slot", LinkSlot);
+  customElements.define("frame-slot", FrameSlot);
+  customElements.define("inner-link-slot", InnerLinkSlot);
+  customElements.define("inner-frame-slot", InnerFrameSlot);
+  customElements.define("upper-inner-link-slot", UpperInnerLinkSlot);
+  customElements.define("upper-inner-frame-slot", UpperInnerFrameSlot);
+
+  const div = document.createElement("div");
+  const span = document.createElement("span");
+  const h2 = document.createElement("h2");
+  const linkSlot = document.createElement("link-slot");
+  const outerHost = document.createElement("outer-host");
+  const h1 = outerHost.shadowRoot.children[0].children[0].children[0].shadowRoot.children[0];
+
+  document.body.prepend(div)
+  div.appendChild(linkSlot);
+  linkSlot.appendChild(span);
+  span.appendChild(outerHost);
+  linkSlot.appendChild(h2);
+
+  const targets = composedPath(h1.shadowRoot ? h1.shadowRoot : h1, window);
+
+  function shortTagName(tagName) {
+    return tagName.length < 11 ? tagName : (tagName.split('-').map(n => n.substr(0, 2)).join('-'));
+  }
+
+  function nodeName(node) {
+    if (node === window)
+      return 'window        ';
+    if (node === document)
+      return 'document      ';
+    if (node instanceof DocumentFragment)
+      return "##" + shortTagName(node.host.tagName);
+    return shortTagName(node.tagName) + "  ";
+  }
+
+  function getPropagationRoot(node) {
+    if (node === window) return window;
+    const root = node.getRootNode();
+    return root === document ? window : root;
+  }
+
+  let b_ = 0;
+  let c_ = 0;
+
+  function log(e, capture, node) {
+    capture ? c_++ : b_++;
+    const propagationRoot = getPropagationRoot(node);
+    const b = capture ? 'c' : 'b';
+    const root = nodeName(propagationRoot);
+    const target = nodeName(node);
+    const currentTargetCorrect = e.currentTarget === node;
+    const targetCorrect = e.path[0] === e.target;
+    const eventPropsCorrect = currentTargetCorrect && targetCorrect
+    return [root, b, target, eventPropsCorrect].map(s => (s + '           ').substr(0, 13)).join(' ').trim() + '\n';
+  }
+
+  const start = performance.now();
+  for (let i = 0; i < 1000; i++) {
+    const eventName = "my-event" + i;
+    for (let node of targets) {
+      node.addEventListener(eventName, e => log(e, false, node), false);
+      node.addEventListener(eventName, e => log(e, true, node), true);
+    }
+    h1.dispatchEvent(new Event(eventName, {composed: true, bubbles: true}));
+  }
+  console.log(b_, c_);
+  console.log(performance.now() - start);
+</script>
+</body>
