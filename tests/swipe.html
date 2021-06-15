@@ -1,0 +1,22 @@
+<drag-swipe>hello sunshine</drag-swipe>
+
+<script type="module">
+
+  import {} from '../lib/platform/index.js';
+  import {DragMaybe, DragMaybeReaction, DraggingReaction} from '../lib/gestures/Draggable.js';
+  import {FirstConnectedCallbackMixin} from "../lib/platform/FirstConnectedCallbackMixin.js";
+
+  class DragSwipe extends HTMLElement{
+    firstConnectedCallback() {
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<slot></slot>';
+    }
+  }
+
+  const Draggable = customElements.mix('drag-swipe', [DragSwipe, DragMaybe, DragMaybeReaction, DraggingReaction, FirstConnectedCallbackMixin]);
+
+  window.addEventListener('drag-start', e=> console.log(e.type));
+  window.addEventListener('drag', e=> console.log(e.type));
+  window.addEventListener('drag-cancel', e=> console.log(e.type));
+  window.addEventListener('drag-end', e=> console.log(e.type));
+</script>
