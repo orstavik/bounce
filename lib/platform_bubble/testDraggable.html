@@ -1,0 +1,63 @@
+<div>
+  <a-a>
+    <check-box>
+      hello sunshine
+    </check-box>
+  </a-a>
+</div>
+<drag-div>hello drag-div</drag-div>
+
+<script type="module">
+
+  import {} from "./EventTarget.js";
+  import {mix} from "./MixinMixer.js";
+  import {DraggingReaction, DragMaybeReaction, DragMaybe} from "./Draggable.js";
+  import {FirstConnectedCallbackMixin} from "./FirstConnectedCallbackMixin.js";
+  class AA extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = "<slot></slot>";
+      this.shadowRoot.addEventListener('click', e => console.log('click on a-a'));
+    }
+  }
+
+  class CheckBox extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = "<slot></slot>:<span></span>";
+      this._innerCheck = this.shadowRoot.children[1];
+      this.shadowRoot.addEventListener('click', e => this._innerCheck.innerText = this._innerCheck.innerText ? '' : 'X');
+    }
+  }
+
+  customElements.define('a-a', AA);
+  customElements.define('check-box', CheckBox);
+
+  const checkBox = document.querySelector("check-box");
+  // checkBox.shadowRoot.children[0].click();
+  checkBox.click();
+
+  const preventer = e=> e.preventDefault();
+
+  setTimeout(function (){
+    checkBox.click();
+  }, 300);
+  setTimeout(function (){
+    document.addEventListener('click', preventer);
+    checkBox.click();
+  }, 600);
+  setTimeout(function (){
+    document.removeEventListener('click', preventer);
+    checkBox.click();
+  }, 900);
+
+  const DragDiv = mix("DragDiv", [DraggingReaction, DragMaybeReaction, DragMaybe, FirstConnectedCallbackMixin]);
+  customElements.define("drag-div", DragDiv);
+
+  document.addEventListener('drag-start', e=> console.log(e.type));
+  document.addEventListener('drag', e=> console.log(e.type));
+  document.addEventListener('drag-end', e=> console.log(e.type));
+  document.addEventListener('drag-cancel', e=> console.log(e.type));
+</script>
