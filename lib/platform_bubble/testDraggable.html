@@ -15,7 +15,16 @@
   import {} from "./GlobalEventHandlers.js";
 
   import {DraggingReaction, DragMaybeReaction, DragMaybe} from "./Draggable.js";
+  import {SwipeMaybe, swipeMaybeReaction} from "./Swipe_based_on_drag.js";
   import {FirstConnectedCallbackMixin} from "./FirstConnectedCallbackMixin.js";
+  const DragDiv = mix("DragDiv", [swipeMaybeReaction, SwipeMaybe, DraggingReaction, DragMaybeReaction, DragMaybe, FirstConnectedCallbackMixin]);
+  customElements.define("drag-div", DragDiv);
+
+  // const DragDiv = fetchMixedClass("https://2js.no/DraggingReaction/DragMaybeReaction/DragMaybe/FirstConnectedCallbackMixin");
+  // customElements.define("drag-div", DragDiv);
+
+  // import {DragDiv} from "https://2js.no/DraggingReaction/DragMaybeReaction/DragMaybe/FirstConnectedCallbackMixin.js";
+  // customElements.define("drag-div", DragDiv);
 
   class AA extends HTMLElement {
     constructor() {
@@ -57,11 +66,9 @@
     checkBox.click();
   }, 900);
 
-  const DragDiv = mix("DragDiv", [DraggingReaction, DragMaybeReaction, DragMaybe, FirstConnectedCallbackMixin]);
-  customElements.define("drag-div", DragDiv);
-
   document.addEventListener('drag-start', e=> console.log(e.type));
   document.addEventListener('drag', e=> console.log(e.type, e.x, e.y));
   document.addEventListener('drag-end', e=> console.log(e.type));
   document.addEventListener('drag-cancel', e=> console.log(e.type));
+  document.addEventListener('swipe', e=> console.log(e.type));
 </script>
