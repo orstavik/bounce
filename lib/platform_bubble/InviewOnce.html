@@ -1,0 +1,27 @@
+<style>
+  in-view, in-view-once {
+    display: block;
+  }
+  *[\:in-view-once] {
+    background: red;
+  }
+  *[\:in-view] {
+    border: 2px solid blue;
+  }
+</style>
+
+<in-view>hello</in-view>
+<in-view-once>sunshine</in-view-once>
+<div style="height: 110vh"></div>
+<in-view>hello</in-view>
+<in-view-once>moonshine</in-view-once>
+
+
+<script type="module">
+  import {FirstConnectedCallbackMixin} from "./FirstConnectedCallbackMixin.js";
+  import {InView, InViewOnce} from "./InView.js"
+  import {mix} from "./MixinMixer.js";
+
+  customElements.define('in-view-once', mix("InViewOnceElement", [InViewOnce, FirstConnectedCallbackMixin]));
+  customElements.define('in-view', mix("InViewElement", [InView, FirstConnectedCallbackMixin]));
+</script>
