@@ -57,7 +57,7 @@
   customElements.define("drag-div", DragDiv);
 
   document.addEventListener('drag-start', e=> console.log(e.type));
-  document.addEventListener('drag', e=> console.log(e.type));
+  document.addEventListener('drag', e=> console.log(e.type, e.x, e.y));
   document.addEventListener('drag-end', e=> console.log(e.type));
   document.addEventListener('drag-cancel', e=> console.log(e.type));
 </script>
