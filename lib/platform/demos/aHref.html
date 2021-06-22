@@ -1,0 +1,25 @@
+<a id="one" href="#YesWeCan">Can we ever get enough of HTML examples?</a>
+
+<a id="two" href="https://outside.com">
+  <div style="border: 2px solid black">think</div>
+</a>
+<hr>
+
+<a-a id="onetwo" href="#YesWeCan">Can we ever get enough of HTML examples?</a-a>
+
+<a-a id="twotwo"  href="https://outside.com">
+  <div style="border: 2px solid black">think</div>
+</a-a>
+
+<script type="module">
+  import {} from "../lib/platform/index.js";
+  import {KeypressToClick} from "../lib/events/KeypressToClick.js";
+  import {HrefVisitedLink} from "../lib/events/HrefVisitedLink.js";
+  import {AlwaysTabbable} from "../lib/events/Tabbable.js";
+  import {DraggableByDefault} from "../lib/events/Draggable.js";
+  import {HTMLAnchorElement} from "../lib/elements/HTMLAnchorElement.js";
+  import {FirstConnectedCallbackMixin} from "../lib/platform/FirstConnectedCallbackMixin.js";
+  import {Focusable} from "../lib/events/Focusable.js";
+
+  customElements.mix('a-a', [HTMLAnchorElement, HrefVisitedLink, KeypressToClick, AlwaysTabbable, Focusable, DraggableByDefault, FirstConnectedCallbackMixin]);
+</script>
