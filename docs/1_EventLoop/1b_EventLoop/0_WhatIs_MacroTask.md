@@ -85,8 +85,8 @@ Yes. This means that for example Safari 13.3 might queue `load` events in a sepa
 
  * https://qdivision.io/javascript/blog/
  * https://qdivision.io/javascript-settimeout-an-in-depth-look-part-2/blog/
- * jake archibalds blog post (old)
- * the Phillips youtube and jake archibalds youtube 
+ * [Jake Archibalds blog post](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)
+ * [Youtube: What the heck is the event loop anyway? | Philip Roberts | JSConf EU](https://www.youtube.com/results?search_query=philip+roberts+js)
  * discussions about the nextTick in node and the setImmediate in node
  * discussion about the setImmediate in IE and why the browsers didn't implement it. 
  
