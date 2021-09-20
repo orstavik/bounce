@@ -1,0 +1,7 @@
+<script src="./WebComp.js"></script>
+<web-comp a="a" b="b">
+  hello
+  <script>log('2/3 child', analyzeContext(document.querySelector('web-comp')))</script>
+  sunshine
+</web-comp>
+<script>log('sibling', analyzeContext(document.querySelector('web-comp')))</script>

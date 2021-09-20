@@ -1,0 +1,20 @@
+<script>
+  HTMLElement.prototype.connectedCallback = function connectedCallback(){
+    console.log('patched');
+  };
+
+  class NotSuperComp extends HTMLElement {
+  }
+
+  class WebComp extends NotSuperComp {
+
+    connectedCallback() {
+      super.connectedCallback();
+      console.log(super.connectedCallback)
+      console.log("WebComp")
+    }
+  }
+
+  customElements.define('web-comp', WebComp);
+</script>
+<web-comp></web-comp>

@@ -1,0 +1,219 @@
+<script>
+  //this script patches the super.xyzCallback() and static get observedAttributes() so that they are lifecycle methods.
+
+  // const nonCommentSafeMatcher = /^[^{]+\{\s*super.connectedCallback\(/;
+  const connected = /^[^{]+\{((\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/)|(\/\/(?:[^\r\n]|\r(?!\n))*)|\s)*super.connectedCallback\(/;
+  const disconnected = /^[^{]+\{((\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/)|(\/\/(?:[^\r\n]|\r(?!\n))*)|\s)*super.disconnectedCallback\(/;
+  const attribute = /^[^(]+\(([^)]*)\)[^{]*\{((\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/)|(\/\/(?:[^\r\n]|\r(?!\n))*)|\s)*super.attributeChangedCallback\(([^)]*)\)/;
+
+  function makeTest(callbackName){
+    //todo Regex here is not super. The biggest reason is that whitespace and comments can be put anywhere.
+    // "function connectedCallback() /* oops{*/{  " and "super . connectedCallback ( /*)*/)  "
+    //todo To fix this is best done with regex first removing all comments? Or all whitespaces and comments?
+    const re = new RegExp(
+      `^[^(]+\\(([^)]*)\\)[^{]*\\{((\\/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*\\/)|(\\/\\/(?:[^\\r\\n]|\\r(?!\\n))*)|\\s)*super.${callbackName}\\(([^)]*)\\)`
+    );
+    return function codeStartWithSuperCall(proto){
+      const code = proto[callbackName].toString();
+      debugger
+      const res = re.exec(code);
+      return !res ? null : [res[1], res[5]];
+    }
+  }
+
+  let connectedTest = function connectedTest(proto) {
+    return connected.exec(proto.connectedCallback.toString());
+  }
+  connectedTest = makeTest('connectedCallback');
+
+  function checkConnected(proto) {
+    if (Object.getOwnPropertyDescriptor(proto, "connectedCallback") && !connectedTest(proto))
+      throw new SyntaxError(`Missing super.connectedCallback() at the start of ${proto.constructor.name}.connectedCallback()`);
+  }
+
+  function checkDisconnected(proto) {
+    if (Object.getOwnPropertyDescriptor(proto, "disconnectedCallback") && !disconnected.exec(proto.disconnectedCallback.toString()))
+      throw new SyntaxError(`Missing super.disconnectedCallback() at the start of ${proto.constructor.name}.disconnectedCallback()`);
+  }
+
+  function checkAttributeChanged(proto) {
+    if (!Object.getOwnPropertyDescriptor(proto, "attributeChangedCallback"))
+      return;
+    const string = proto.attributeChangedCallback.toString();
+    const regExpExecArray = attribute.exec(string);
+    if (!regExpExecArray)
+      throw new SyntaxError(`Missing super.attributeChangedCallback(...) at the start of ${proto.constructor.name}.attributeChangedCallback(...)`);
+    const params = regExpExecArray[1];
+    const superArguments = regExpExecArray[5];
+    //todo remove whitespaces and comments from params and superArguments
+    if (params === superArguments || superArguments === '...arguments')
+      return;
+    throw new SyntaxError(`Cannot recognize the arguments in super.attributeChangedCallback(...) at the start of ${proto.constructor.name}.attributeChangedCallback(...)\n ${params} !== ${superArguments}. It might be correct, try to simplify or use "super.attributeChangedCallback(...arguments)" instead.`);
+  }
+
+  //returns undefined if there are no extra super observed attributes or if the list of observedAttributes is empty
+  function getSuperTypesObservedAttributes(proto) {
+    let observed = [];
+    for (let clazz = proto; clazz !== HTMLElement; clazz = Object.getPrototypeOf(clazz))
+      clazz.observedAttributes instanceof Array && (observed = [...observed, ...clazz.observedAttributes]);
+    observed = observed.filter((str, i, ar) => ar.indexOf(str) === i);
+    return !observed.length || observed.length === proto.observedAttributes.length ?
+      undefined :
+      observed;
+  }
+
+  function prototypes(proto, stopProto){
+    const res = [proto];
+    for(proto = Object.getPrototypeOf(proto); proto !== stopProto; proto = Object.getPrototypeOf(proto))
+      res.push(proto);
+  }
+
+  const defineWithChecks = function define(tag, clazz, ...args) {
+    for (let proto = clazz.prototype; proto !== HTMLElement.prototype; proto = Object.getPrototypeOf(proto))
+      checkConnected(proto), checkDisconnected(proto), checkAttributeChanged(proto);
+    const observed = getSuperTypesObservedAttributes(clazz);
+    if (!observed)
+      return defineOG.call(this, tag, clazz, ...args);
+
+    const oaDef = Object.getOwnPropertyDescriptor(clazz, 'observedAttributes');
+    const og = oaDef.get;
+    oaDef.get = function () {
+      return observed;
+    }
+    Object.defineProperty(clazz, 'observedAttributes', oaDef);
+    const res = defineOG.call(this, tag, clazz, ...args);
+    oaDef.get = og;
+    Object.defineProperty(clazz, 'observedAttributes', oaDef);
+    return res;
+  }
+
+  //todo
+  //constructor() already has this check
+  //we don't want to add super.connectedCallback if it is not necessary? Or do we? Constructor does.
+  //
+  //we have connected/disconnected/attributeChanged
+  const defineWithChecks2 = function define(tag, clazz, ...args) {
+    const protoChain = prototypes(clazz, HTMLElement.prototype);
+    const connectedProtos = protoChain.filter(p => p.connectedCallback);
+    //check the last prototype
+    for (let i = 0; i < connectedProtos.length; i++) {
+      let connectedProto = connectedProtos[i];
+
+    }
+    //todo, here we need to run through the chain and check the callbacks two by two
+    for (let proto = clazz.prototype; proto !== HTMLElement.prototype; proto = Object.getPrototypeOf(proto))
+      checkConnected(proto), checkDisconnected(proto), checkAttributeChanged(proto);
+    const observed = getSuperTypesObservedAttributes(clazz);
+    if (!observed)
+      return defineOG.call(this, tag, clazz, ...args);
+
+    const oaDef = Object.getOwnPropertyDescriptor(clazz, 'observedAttributes');
+    const og = oaDef.get;
+    oaDef.get = function () {
+      return observed;
+    }
+    Object.defineProperty(clazz, 'observedAttributes', oaDef);
+    const res = defineOG.call(this, tag, clazz, ...args);
+    oaDef.get = og;
+    Object.defineProperty(clazz, 'observedAttributes', oaDef);
+    return res;
+  }
+
+  const defineOG = customElements.define;
+
+  customElements.define = defineWithChecks;
+  // customElements.define = function firstDefinition(...args) {
+  //   //first fix the HTMLElement.prototype so that it has its callbacks so super.connectedCallback() etc. don't fail
+  //   if (!HTMLElement.prototype.connectedCallback)
+  //     HTMLElement.prototype.connectedCallback =
+  //       function disconnectedCallback() {
+  //       };
+  //   if (!HTMLElement.prototype.disconnectedCallback)
+  //     HTMLElement.prototype.connectedCallback =
+  //       function disconnectedCallback() {
+  //       };
+  //   if (!HTMLElement.prototype.attributeChangedCallback)
+  //     HTMLElement.prototype.attributeChangedCallback =
+  //       function attributeChangedCallback() {
+  //       };
+  //   //second, update with defineWithChecks.
+  //   customElements.define = defineWithChecks;
+  //   customElements.define(...args);
+  // }
+</script>
+
+<script>
+
+  class BadSuperComp extends HTMLElement {
+    connectedCallback(/*oops*/) {
+      const three = 1 + 1;
+      //BAD! not calling super.connectedCallback();, thus breaking the chain!
+    }
+  }
+
+  class BadWebComp extends BadSuperComp {
+    connectedCallback() {
+      /**/
+      const meaningOfLife = 40 + 2;
+      //BAD! not calling super.connectedCallback();, thus breaking the chain!
+    }
+  }
+
+  class BadWebCompTryingToBeGood extends BadSuperComp {
+    connectedCallback() {
+      super.connectedCallback();
+      const meaningOfLife = 40 + 2;
+      //BAD! not calling super.connectedCallback();, thus breaking the chain!
+    }
+  }
+
+  class SuperGood extends HTMLElement {
+    connectedCallback() {
+      super.connectedCallback();
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      super.attributeChangedCallback(name, oldValue, newValue);
+      if(name === 'super')
+        console.log("super attribute");
+    }
+
+    static get observedAttributes(){
+      return ['super'];
+    }
+  }
+
+  class GoodWebComp extends SuperGood {
+    connectedCallback() {
+      super.connectedCallback();
+      const meaningOfLife = 40 + 2;
+      //BAD! not calling super.connectedCallback();, thus breaking the chain!
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      super.attributeChangedCallback(name, oldValue, newValue);
+      if(name === 'good')
+        console.log("good attribute");
+    }
+
+    static get observedAttributes(){
+      return ['good'];
+    }
+  }
+
+  try {
+    debugger
+    customElements.define('bad-web-comp', BadWebComp);
+  } catch (err) {
+    console.error(err);
+  }
+  try {
+    customElements.define('bad-web-comp-trying-to-be-good', BadWebCompTryingToBeGood);
+  } catch (err) {
+    console.error(err);
+  }
+  customElements.define('good-web-comp', GoodWebComp);
+  console.log('good-web-comp');
+</script>
+
+<good-web-comp super good ></good-web-comp>

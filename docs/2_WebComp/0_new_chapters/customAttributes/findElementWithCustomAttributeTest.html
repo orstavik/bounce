@@ -1,0 +1,114 @@
+<script>
+  window.CustomAttribute = class CustomAttribute {
+    construct() {
+
+    }
+
+    attributeChangedCallback(name, oldValue, newValue) {
+
+    }
+  }
+
+  //todo since there is no tco in JS, and this doesn't end with a recursive tail call,
+  //todo then a likely speedup will be to turn this function into an iterative, non-recursive variant
+  function findCustomAttributes(elems, res = {}) {
+    for (let el of elems) {
+      for (let a of el.attributes)
+        a[0] === ':' && a[1] !== ':' && (res[a] || (res[a] = [])).push(el);
+      findCustomAttributes(el.children, res);
+    }
+    return res;
+  }
+
+  const caChangeMap = new WeakMap();
+  const caCache = {};
+  const caDefs = {};
+
+  function callCAattributeChangedCallback(definition, el, att, newValue) {
+    let values = caChangeMap.get(el);
+    !values && caChangeMap.set(el, values = {});
+    let oldValue = values[att] || null;
+    values[att] = newValue;
+    definition.call(el, att, oldValue, newValue);
+  }
+
+  function initCustomAttribute(definition, att, el) {
+    //todo the only limitation here is the #private properties on the element. We don't get them with this strategy.
+    definition.construct.call(el);
+    //call the first callback. todo this is fine I think
+    callCAattributeChangedCallback(definition, el, att, el.getAttribute(att));
+  }
+
+
+  function startOrCacheCustomAttributes(els) {
+    const caMap = findCustomAttributes(els);
+    for (let [att, els] in Object.entries(caMap)) {
+      const def = caDefs[att];
+      if (def)
+        els.forEach(el => initCustomAttribute(def, att, el));
+      else
+        caCache[att] ? els.forEach(el => caCache.push(el)) : caCache[att] = els;
+    }
+  }
+
+  //todo direct all of these functions to equivalent versions of updated setAttribute()
+  const setAttributeOG = () => 1;
+
+  function setAttribute(name, value) {
+    const def = caDefs[name];
+    const allowed = name[0] !== ":" || def === attributeLock;
+    attributeLock = undefined;
+    if (!allowed) {
+      let type = 'Custom', clazzType = 'CustomAttribute';
+      if (name[1] === ':') type = 'Element', clazzType = 'HTMLElement';
+      if (def)
+        throw new Error(`${type} attribute ${name} is registered, and can only be changed using the specific "setCustomAttribute(element, name, value)" function that is returned from a "customAttributes.define(${name}, ${clazzType})" call.`);
+      throw new Error(`${name} signifies a ${type.toLowerCase()} attribute. Did you forget "const customSetAttribute = customAttributes.define('${name}, ${clazzType});"?`);
+    }
+
+    const res = value === null ? removeAttributeOG.call(this, name) : setAttributeOG.call(this, name, value);
+    callCAattributeChangedCallback(def, this, name, value);
+    return res;
+  }
+
+
+  const innerHTMLog = () => 1;//todo
+
+  function patchInnerHTML(html) {
+    const res = innerHTMLog.call(this);
+    startOrCacheCustomAttributes(this.children);
+    return res;
+  }
+
+  let attributeLock = undefined;
+
+  class CustomAttributes {
+    define(name, definition) {
+      if (caDefs[name])
+        throw new Error(`The ${(name[1] === ":" ? "element attribute" : "custom attribute")} "${name}" has already been defined.`);
+
+      let isCustomAttribute = true;
+      if (definition instanceof HTMLElement)
+        isCustomAttribute = false;
+      else if (!(definition instanceof CustomAttribute))
+        throw new SyntaxError("Expected either a sub class of HTMLElement or CustomAttribute as defintion");
+
+      if (isCustomAttribute) {
+        if (name[0] !== ":")
+          throw new SyntaxError(`Custom attributes begins with ':'. Did you mean ':${name}'?`);
+        if (name[1] === ":")
+          throw new SyntaxError(`Custom attributes begins with single ':' while element attributes begins with double '::'. Did you mean '::${name.substr(2)}'?`);
+      }
+      //is element attribute
+      if (name[0] !== ":")
+        throw new SyntaxError(`Element attributes begins with '::'. Did you mean '::${name}'?`);
+      if (name[1] !== ":")
+        throw new SyntaxError(`Element attributes begins with double '::' while custom attributes begins with single ':'. Did you mean '::${name.substr(1)}'?`);
+
+      return function setCustomAttribute(el, name, value) {
+        attributeLock = definition;
+        el.setAttribute(name, value);
+      }
+    }
+  }
+</script>

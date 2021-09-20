@@ -1,0 +1,17 @@
+<script>
+  class SuperComp extends HTMLElement {
+    connectedCallback() {
+      console.log('SuperComp');
+    }
+  }
+
+  class WebComp extends SuperComp {
+    connectedCallback() {
+      super.connectedCallback();
+      console.log("WebComp")
+    }
+  }
+
+  customElements.define('web-comp', WebComp);
+</script>
+<web-comp></web-comp>

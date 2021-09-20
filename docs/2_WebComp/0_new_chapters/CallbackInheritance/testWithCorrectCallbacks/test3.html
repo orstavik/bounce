@@ -1,0 +1,454 @@
+<script src="Bounce_HTMLElement.js"></script>
+<style>
+  div.row > * {
+    box-sizing: border-box;
+    display: inline-block;
+    height: 20px;
+    width: 20px;
+    overflow: hidden;
+  }
+  div[name] {
+    width: 200px;
+    text-align: right;
+  }
+  div[el] {
+    border: 1px solid grey;
+    color: transparent;
+  }
+  div[el="1"] {
+    border-top: 4px solid black;
+  }
+  div[el="2"] {
+    border-top: 4px solid grey;
+  }
+
+  div[cb^="constructor"] {
+    background-color: green;
+  }
+  div[cb~="micro"] {
+    background-blend-mode: luminosity;
+    background-image:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='1'><rect fill='white' x='0' y='0' width='30%' height='100%'/></svg>");
+    background-repeat: repeat;
+  }
+  div[cb^="setParent"] {
+    background-color: lightblue;
+  }
+  div[cb^="connected"] {
+    background-color: blue;
+  }
+
+  div[cb^="setMultipleAttributes"], div[cb^="setAttribute"] {
+    background-color: yellow;
+  }
+  div[cb^="attributeChanged"]{
+    background-color: orange;
+  }
+  div[cb^="setMultipleChildNodes"], div[cb^="setChildNode"] {
+    background-color: pink;
+  }
+  div[cb^="slotchange"] {
+    background-color: hotpink;
+  }
+
+  div[cb^="setAttribute"] , div[cb^="setChildNode"] {
+    border-bottom: 4px solid red;
+  }
+
+  div[cb^="script"] {
+    background-color: grey;
+  }
+
+  div {
+    width: fit-content;
+    display: inline-block;
+  }
+  div[cb^="constructor"] {
+    background-color: green;
+  }
+  div[cb^="connected"] {
+    background-color: blue;
+  }
+  div[cb^="setParent"] {
+    background-color: lightblue;
+  }
+  div[cb^="setMultipleAttributes"], div[cb^="setAttribute"] {
+    background-color: yellow;
+  }
+  div[cb^="attributeChanged"]{
+    background-color: orange;
+  }
+  div[cb^="setAttribute"] , div[cb^="setChildNode"] {
+    border-bottom: 4px solid red;
+  }
+  div[cb^="setMultipleChildNodes"], div[cb^="setChildNode"] {
+    background-color: pink;
+  }
+  div[cb^="slotchange"] {
+    background-color: hotpink;
+  }
+  div[cb^="script"] {
+    background-color: grey;
+  }
+  [cb^="defined"] {
+    border: 1px solid grey;
+  }
+</style>
+<div cb="constructor">constructor</div>
+<hr>
+<div cb="connected">connected</div>
+<div cb="setParent">setParent</div>
+<hr>
+<div cb="setMultipleAttributes">setMultipleAttributes</div>
+<div cb="setAttribute">setAttribute</div>
+<div cb="attributeChanged">attributeChanged</div>
+<hr>
+<div cb="setChildNode">setChildNode</div>
+<div cb="setMultipleChildNodes">setMultipleChildNodes</div>
+<div cb="slotchange">slotchange</div>
+<hr>
+<div cb="script">script</div>
+<div cb="defined">after customElements.define</div>
+<hr>
+<div cb="constructor micro">constructor micro</div>
+<div cb="attributeChanged micro">attributeChanged micro</div>
+<div cb="connected micro">connected micro</div>
+
+<h1>Tests</h1>
+
+<test-html id="predictive empty" show-labels>
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <web-comp></web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="predictive">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <web-comp a="a" b="b"><p>hello</p> sunshine</web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="predictive NonSlottable">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <web-comp a="a" b="b"><h1 slot="oops">hello sunshine</h1></web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="predictive childIllustration">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <web-comp a="a" b="b"><script>log('script 1', document.querySelector('web-comp'))</script>
+      hello sunshine
+    </web-comp>
+    <script>log('script 2', document.querySelector('web-comp'))</script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade empty">
+  <noscript>
+    <web-comp></web-comp>
+    <script src="./WebComp3.js"></script>
+    <script>
+      customElements.define('web-comp', WebComp);
+      log('definition', document.querySelector('web-comp'));
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade">
+  <noscript>
+    <web-comp a="a" b="b">hello <b>beautiful</b> sunshine</web-comp>
+    <script src="./WebComp3.js"></script>
+    <script>
+      customElements.define('web-comp', WebComp);
+      log('definition', document.querySelector('web-comp'));
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade Within">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <web-comp a="a" b="b"><script>
+        customElements.define('web-comp', WebComp);
+        log('definition', document.querySelector('web-comp'));
+      </script>
+      hello sunshine
+    </web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML empty disconnected">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = '<web-comp></web-comp>';
+      log("script 1", div.children[0]);
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="insertAdjacentHTML">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>
+      const div = document.createElement('div');
+      div.insertAdjacentHTML('afterbegin', '<web-comp></web-comp>');
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML attributesChildren disconnected">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = '<web-comp a="a" b="b">hello sunshine <hr></web-comp>';
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML nested disconnected">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML =
+        `<web-comp a="a" b="b">
+	       hello
+	       <web-comp a="a" b="b"><hr>sunshine</web-comp>
+	     </web-comp>`;
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML nested">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <div></div>
+    <script>
+      document.querySelector('div').innerHTML =
+        `<web-comp a="a" b="b">
+	       hello
+	       <web-comp a="a" b="b"><hr>sunshine</web-comp>
+	     </web-comp>`;
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="NEW empty">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>new WebComp()</script>
+  </noscript>
+</test-html>
+
+<test-html id="createElement empty">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>document.createElement('web-comp');</script>
+  </noscript>
+</test-html>
+
+<test-html id="NEW eventListener">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>window.addEventListener('bob-bob', e => new WebComp())</script>
+    <script>window.dispatchEvent(new Event('bob-bob'))</script>
+  </noscript>
+</test-html>
+
+<test-html id="NEW chaos">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <h1>hello sunshine</h1>
+    <script>
+      const webComp = new WebComp();
+      document.body.append(webComp);
+      webComp.setAttribute('a', 'a');
+      webComp.setAttribute('b', 'b');
+      webComp.append(document.createElement('div'));
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="cloneNode">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML =
+        `<web-comp a="a" b="b">
+	       hello sunshine<hr>
+	     </web-comp>`;
+      log("script 1", div.children[0]);
+      div.cloneNode(true);
+      log("script 2", div.children[0]);
+    </script>
+  </noscript>
+</test-html>
+
+<!--
+cloneNode either will have parent, or children or attributes, or be an empty element.
+if it looks exactly like a new, then a) the element cloned must be empty and b)
+the cloneNode MUST be called on the element itself. This means that to detect cloneNode,
+we either must check for attributes, children or parentNode, or simply override HTMLElement.cloneNode (or the superclass of the element)
+to set an empty cloneNode for the element.
+-->
+<test-html id="cloneNode empty">
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = `<web-comp></web-comp>`;
+      log("script 1", div.children[0]);
+      div.children[0].cloneNode(true);
+      log("script 2", div.children[0]);
+    </script>
+  </noscript>
+</test-html>
+
+<script type="module">
+  import {TestHtml} from "./TestComponent3.js";
+
+  customElements.define('test-html', TestHtml);
+</script>
+
+<h1>Our goal</h1>
+
+<div class="row">
+  <div name="" class="goal">predictive</div>
+  <div el="0" cb="defined">customElements.define</div>
+  <div el="0" cb="constructor">constructor</div>
+  <div el="0" cb="constructor micro">constructor micro</div>
+  <div el="0" cb="setMultipleAttributes">attributes ready</div>
+  <div el="0" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="0" cb="attributeChanged micro">attribute micro</div>
+  <div el="0" cb="setParentNode">setParentNode</div>
+  <div el="0" cb="connected">connectedCallback</div>
+  <div el="0" cb="connected micro">connected micro</div>
+
+  <div el="1" cb="constructor">constructor</div>
+  <div el="1" cb="constructor micro">constructor micro</div>
+  <div el="1" cb="setMultipleAttributes">attributes ready</div>
+  <div el="1" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="1" cb="attributeChanged micro">attribute micro</div>
+  <div el="1" cb="setParentNode">setParentNode</div>
+  <div el="1" cb="connected">connectedCallback</div>
+  <div el="1" cb="connected micro">connected micro</div>
+  <div el="1" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="1" cb="slotchange">slotchange</div>
+
+  <div el="0" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="0" cb="slotchange">slotchange</div>
+
+  <div el="0" cb="script">sync</div>
+</div>
+<div class="row">
+  <div name="" class="goal">upgrade</div>
+
+  <div el="0" cb="defined">customElements.define</div>
+  <div el="0" cb="constructor">constructor</div>
+  <div el="0" cb="setMultipleAttributes">attributes ready</div>
+  <div el="0" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="0" cb="setParentNode">setParentNode</div>
+  <div el="0" cb="connected">connectedCallback</div>
+
+  <div el="1" cb="constructor">constructor</div>
+  <div el="1" cb="setMultipleAttributes">attributes ready</div>
+  <div el="1" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="1" cb="setParentNode">setParentNode</div>
+  <div el="1" cb="connected">connectedCallback</div>
+  <div el="1" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="1" cb="slotchange">slotchange</div>
+  <div el="0" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="0" cb="slotchange">slotchange</div>
+  <div el="0" cb="script">sync</div>
+
+  <div el="0" cb="constructor micro">constructor micro</div>
+  <div el="0" cb="attributeChanged micro">attribute micro</div>
+  <div el="0" cb="connected micro">connected micro</div>
+  <div el="1" cb="constructor micro">constructor micro</div>
+  <div el="1" cb="attributeChanged micro">attribute micro</div>
+  <div el="1" cb="connected micro">connected micro</div>
+</div>
+
+<div class="row">
+  <div name="" class="goal">script connect</div>
+  <div el="0" cb="defined">customElements.define</div>
+
+  <div el="0" cb="constructor">constructor</div>
+  <div el="0" cb="setMultipleAttributes">attributes ready</div>
+  <div el="0" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="0" cb="setParentNode">setParentNode</div>
+  <div el="0" cb="connected">connectedCallback</div>
+
+  <div el="1" cb="constructor">constructor</div>
+  <div el="1" cb="setMultipleAttributes">attributes ready</div>
+  <div el="1" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="1" cb="setParentNode">setParentNode</div>
+  <div el="1" cb="connected">connectedCallback</div>
+  <div el="1" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="1" cb="slotchange">slotchange</div>
+
+  <div el="0" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="0" cb="slotchange">slotchange</div>
+
+  <div el="0" cb="script">sync</div>
+
+  <div el="0" cb="constructor micro">constructor micro</div>
+  <div el="0" cb="attributeChanged micro">attribute micro</div>
+  <div el="0" cb="connected micro">connected micro</div>
+  <div el="1" cb="constructor micro">constructor micro</div>
+  <div el="1" cb="attributeChanged micro">attribute micro</div>
+  <div el="1" cb="connected micro">connected micro</div>
+</div>
+
+<div class="row">
+  <div name="" class="goal">script disconn</div>
+  <div el="0" cb="defined">customElements.define</div>
+  <div el="0" cb="constructor">constructor</div>
+  <div el="0" cb="setMultipleAttributes">attributes ready</div>
+  <div el="0" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="1" cb="constructor">constructor</div>
+  <div el="1" cb="setMultipleAttributes">attributes ready</div>
+  <div el="1" cb="attributeChanged">attributeChangedCallback</div>
+  <div el="1" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="1" cb="slotchange">slotchange</div>
+  <div el="0" cb="setMultipleChildNodes">setMultipleChildNodes</div>
+  <div el="0" cb="slotchange">slotchange</div>
+
+  <div el="0" cb="script">sync</div>
+
+  <div el="0" cb="constructor micro">constructor micro</div>
+  <div el="0" cb="attributeChanged micro">attribute micro</div>
+  <div el="1" cb="constructor micro">constructor micro</div>
+  <div el="1" cb="attributeChanged micro">attribute micro</div>
+
+  <div el="0" cb="setParentNode">setParentNode</div>
+  <div el="0" cb="connected">connectedCallback</div>
+  <div el="1" cb="setParentNode">setParentNode</div>
+  <div el="1" cb="connected">connectedCallback</div>
+
+  <div el="0" cb="connected micro">connected micro</div>
+  <div : el="1" cb="connected micro">connected micro</div>
+</div>

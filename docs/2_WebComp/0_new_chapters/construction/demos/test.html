@@ -1,0 +1,178 @@
+<test-html id="predictive empty">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <web-comp></web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="predictive">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <web-comp a="a" b="b">hello sunshine</web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="predictive NonSlottable">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <web-comp a="a" b="b"><h1 slot="oops">hello sunshine</h1></web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="predictive childIllustration">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <web-comp a="a" b="b">
+      hello
+      <script>log('script 1', document.querySelector('web-comp'))</script>
+      sunshine
+    </web-comp>
+    <script>log('script 2', document.querySelector('web-comp'))</script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade empty">
+  <noscript>
+    <web-comp></web-comp>
+    <script src="./WebComp.js"></script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade">
+  <noscript>
+    <web-comp a="a" b="b">hello <b>beautiful</b> sunshine</web-comp>
+    <script src="./WebComp.js"></script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade Within">
+  <noscript>
+    <web-comp a="a" b="b">
+      hello
+      <script src="./WebComp.js"></script>
+      sunshine
+    </web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML emptyDisconnect">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = '<web-comp></web-comp>';
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="insertAdjacentHTML">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.insertAdjacentHTML('afterbegin', '<web-comp></web-comp>');
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML attributesChildren">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = '<web-comp a="a" b="b">hello sunshine</web-comp>';
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML nested">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML =
+        `<web-comp a="a" b="b">
+	       hello
+	       <web-comp a="a" b="b">sunshine</web-comp>
+	     </web-comp>`;
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="new empty">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>new WebComp()</script>
+  </noscript>
+</test-html>
+
+<test-html id="createElement empty">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>document.createElement('web-comp');</script>
+  </noscript>
+</test-html>
+
+<test-html id="new eventListener">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>window.addEventListener('bob-bob', e => new WebComp())</script>
+    <script>window.dispatchEvent(new Event('bob-bob'))</script>
+  </noscript>
+</test-html>
+
+<test-html id="new chaos">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <h1>hello sunshine</h1>
+    <script>
+      const webComp = new WebComp();
+      document.body.append(webComp);
+      webComp.setAttribute('a', 'a');
+      webComp.setAttribute('b', 'b');
+      webComp.append(document.createElement('div'));
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="cloneNode">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML =
+        `<web-comp a="a" b="b">
+	       hello
+	     </web-comp>`;
+      log("script 1", div.children[0]);
+      div.cloneNode(true);
+      log("script 2", div.children[0]);
+    </script>
+  </noscript>
+</test-html>
+
+<!--
+cloneNode either will have parent, or children or attributes, or be an empty element.
+if it looks exactly like a new, then a) the element cloned must be empty and b)
+the cloneNode MUST be called on the element itself. This means that to detect cloneNode,
+we either must check for attributes, children or parentNode, or simply override HTMLElement.cloneNode (or the superclass of the element)
+to set an empty cloneNode for the element.
+-->
+<test-html id="cloneNodeEmpty">
+  <noscript>
+    <script src="./WebComp.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = `<web-comp></web-comp>`;
+      log("script 1", div.children[0]);
+      div.children[0].cloneNode(true);
+      log("script 2", div.children[0]);
+    </script>
+  </noscript>
+</test-html>
+
+<script type="module">
+  import {TestHtml} from "./TestComponent.js";
+
+  customElements.define('test-html', TestHtml);
+</script>

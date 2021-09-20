@@ -1,0 +1,49 @@
+<script>
+
+  class SuperComp extends HTMLElement {
+    connectedCallback() {
+      console.log("super original");
+    }
+  }
+
+  class BaseComp extends SuperComp {
+    connectedCallback() {
+      // const duper = Object.getPrototypeOf(Object.getPrototypeOf(this));
+      // duper.connectedCallback();
+      super.connectedCallback();
+      console.log("base original");
+    }
+  }
+
+  const baseOG = Object.getOwnPropertyDescriptor(BaseComp.prototype, 'connectedCallback');
+  const superOG = Object.getOwnPropertyDescriptor(SuperComp.prototype, 'connectedCallback');
+
+  Object.defineProperty(BaseComp.prototype, 'connectedCallback', Object.assign({}, baseOG, {
+    value: function connectedCallback() {
+      const duper = Object.getPrototypeOf(Object.getPrototypeOf(this));
+      duper.connectedCallback();
+      console.log("base pre define");
+    }
+  }));
+  Object.defineProperty(SuperComp.prototype, 'connectedCallback', Object.assign({}, superOG, {
+    value: function connectedCallback() {
+      console.log("super pre define");
+    }
+  }));
+  customElements.define('base-comp', BaseComp);
+  Object.defineProperty(BaseComp.prototype, 'connectedCallback', Object.assign({}, baseOG, {
+    value: function connectedCallback() {
+      const duper = Object.getPrototypeOf(Object.getPrototypeOf(this));
+      duper.connectedCallback();
+      console.log("base post define");
+    }
+  }));
+  Object.defineProperty(SuperComp.prototype, 'connectedCallback', Object.assign({}, superOG, {
+    value: function connectedCallback() {
+      console.log("super post define");
+    }
+  }));
+  console.log(SuperComp.prototype.connectedCallback);
+  console.log(BaseComp.prototype.connectedCallback);
+</script>
+<base-comp></base-comp>

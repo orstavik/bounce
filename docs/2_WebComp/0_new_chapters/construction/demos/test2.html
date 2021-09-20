@@ -1,0 +1,196 @@
+<test-html id="predictive empty" show-labels>
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <web-comp></web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="predictive">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <web-comp a="a" b="b">hello sunshine</web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade empty">
+  <noscript>
+    <web-comp></web-comp>
+    <script src="./WebComp2.js"></script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade">
+  <noscript>
+    <web-comp a="a" b="b">hello <b>beautiful</b> sunshine</web-comp>
+    <script src="./WebComp2.js"></script>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade Within">
+  <noscript>
+    <web-comp a="a" b="b">
+      hello
+      <script src="./WebComp2.js"></script>
+      sunshine
+    </web-comp>
+  </noscript>
+</test-html>
+
+<test-html id="upgrade async">
+  <noscript>
+    <div></div>
+    <script>window.test = document.createElement('web-comp');</script>
+    <script src="./WebComp2.js"></script>
+    <script>setTimeout(() => document.body.prepend(window.test))</script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML empty disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = '<web-comp></web-comp>';
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="insertAdjacentHTML empty disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.insertAdjacentHTML('afterbegin', '<web-comp></web-comp>');
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML attributesChildren disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = '<web-comp a="a" b="b">hello sunshine</web-comp>';
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML attributesChildren disconnected nested inside">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML = `
+<web-comp a="a" b="b">
+  hello
+  <web-comp a="a" b="b">sunshine</web-comp>
+</web-comp>`;
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML empty">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <div></div>
+    <script>document.querySelector('div').innerHTML = '<web-comp></web-comp>';</script>
+  </noscript>
+</test-html>
+
+<test-html id="innerHTML async">
+  <noscript>
+    <div></div>
+    <script src="./WebComp2.js"></script>
+    <script>setTimeout(function(){document.querySelector('div').innerHTML = '<web-comp></web-comp>'}, 10);</script>
+  </noscript>
+</test-html>
+
+<test-html id="cloneNode above disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>
+      const div = document.createElement('div');
+      div.innerHTML =
+        `<web-comp a="a" b="b">
+	       hello
+	     </web-comp>`;
+      div.cloneNode(true);
+    </script>
+  </noscript>
+</test-html>
+
+<!--
+cloneNode either will have parent, or children or attributes, or be an empty element.
+if it looks exactly like a new, then a) the element cloned must be empty and b)
+the cloneNode MUST be called on the element itself. This means that to detect cloneNode,
+we either must check for attributes, children or parentNode, or simply override HTMLElement.cloneNode (or the superclass of the element)
+to set an empty cloneNode for the element.
+-->
+<test-html id="cloneNode empty disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>
+      const empty = document.createElement('web-comp');
+      empty.cloneNode(true);
+    </script>
+  </noscript>
+</test-html>
+
+<test-html id="cloneNode empty">
+  <noscript>
+    <web-comp></web-comp>
+    <script src="./WebComp2.js"></script>
+    <script>document.querySelector('web-comp').cloneNode(true);</script>
+  </noscript>
+</test-html>
+
+<test-html id="cloneNode above empty async">
+  <noscript>
+    <div>
+      <web-comp></web-comp>
+    </div>
+    <script src="./WebComp2.js"></script>
+    <script>setTimeout(function(){document.querySelector('div').cloneNode(true);})</script>
+  </noscript>
+</test-html>
+
+<test-html id="NEW empty disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>new WebComp()</script>
+  </noscript>
+</test-html>
+
+<test-html id="createElement empty disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>document.createElement('web-comp');</script>
+  </noscript>
+</test-html>
+
+<test-html id="NEW createElement disconnected async">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>setTimeout(function(){document.createElement('web-comp')},10)</script>
+  </noscript>
+</test-html>
+
+<test-html id="NEW eventListener disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>window.addEventListener('bob-bob', e => new WebComp())</script>
+    <script>window.dispatchEvent(new Event('bob-bob'))</script>
+  </noscript>
+</test-html>
+
+
+<script type="module">
+  import {TestHtml} from "./TestComponent2.js";
+
+  customElements.define('test-html', TestHtml);
+</script>
+
+<!--
+<template> doesn't work, but if it did, we would need to do this:
+const testHtml = Array.from(template.content.childNodes).map(n => n.outerHTML || n.textContent).join('');
+-->

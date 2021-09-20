@@ -1,0 +1,64 @@
+<script>
+  class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<b>bobo</b>';
+    }
+
+    connectedCallback() {
+      console.log("connected");
+    }
+
+    attributeChangedCallback(...args) {
+      console.log("attribute", ...args)
+    }
+
+    static get observedAttributes() {
+      return ['id'];
+    }
+  }
+
+  //todo this wraps!
+  // const connectedCallbackOG = Object.getOwnPropertyDescriptor(WebComp.prototype, 'connectedCallback');
+  // Object.defineProperty(WebComp.prototype, 'connectedCallback', Object.assign({}, connectedCallbackOG, {
+  //   value:
+  //     function connectedCallback() {
+  //       console.log("hello hello");
+  //       connectedCallbackOG.value.call(this);
+  //       console.log("bye bye");
+  //     }
+  // }));
+
+  customElements.define('web-comp', WebComp);
+</script>
+
+<web-comp id="a"></web-comp>
+
+<script>
+  //todo how and what can we mutate on the web comp after definition
+  //the patch must go on the prototype I think, because the connectedCallback is called from the level of class, and not object.. why? don't know
+
+  const connectedCallbackOG = Object.getOwnPropertyDescriptor(WebComp.prototype, 'connectedCallback');
+  Object.defineProperty(WebComp.prototype, 'connectedCallback', Object.assign({}, connectedCallbackOG, {
+    value:
+      function connectedCallback() {
+        console.log("hello hello");
+        connectedCallbackOG.value.call(this);
+        console.log("bye bye");
+      }
+  }));
+  const wc = document.querySelector('web-comp');
+  wc.connectedCallback(); //this works.
+  document.body.append(wc); //this doesn't work
+
+  const observedOG = Object.getOwnPropertyDescriptor(WebComp, 'observedAttributes');
+  Object.defineProperty(WebComp, 'observedAttributes', Object.assign({}, observedOG, {
+    get: function () {
+      return ['a'];
+    }
+  }));
+  wc.setAttribute('a', 'hello'); //doesn't work
+  wc.removeAttribute('id');      //works
+</script>
+<web-comp id="b" a="1"></web-comp>
