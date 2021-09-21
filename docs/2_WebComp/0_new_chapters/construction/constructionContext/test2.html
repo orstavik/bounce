@@ -119,6 +119,16 @@
   </noscript>
 </test-html>
 
+<test-html id="cloneNode above empty async">
+  <noscript>
+    <div>
+      <web-comp></web-comp>
+    </div>
+    <script src="./WebComp2.js"></script>
+    <script>setTimeout(function(){document.querySelector('div').cloneNode(true);})</script>
+  </noscript>
+</test-html>
+
 <test-html id="cloneNode empty disconnected">
   <noscript>
     <script src="./WebComp2.js"></script>
@@ -137,23 +147,6 @@
   </noscript>
 </test-html>
 
-<test-html id="cloneNode above empty async">
-  <noscript>
-    <div>
-      <web-comp></web-comp>
-    </div>
-    <script src="./WebComp2.js"></script>
-    <script>setTimeout(function(){document.querySelector('div').cloneNode(true);})</script>
-  </noscript>
-</test-html>
-
-<test-html id="NEW empty disconnected">
-  <noscript>
-    <script src="./WebComp2.js"></script>
-    <script>new WebComp()</script>
-  </noscript>
-</test-html>
-
 <test-html id="createElement empty disconnected">
   <noscript>
     <script src="./WebComp2.js"></script>
@@ -165,6 +158,13 @@
   <noscript>
     <script src="./WebComp2.js"></script>
     <script>setTimeout(function(){document.createElement('web-comp')},10)</script>
+  </noscript>
+</test-html>
+
+<test-html id="NEW empty disconnected">
+  <noscript>
+    <script src="./WebComp2.js"></script>
+    <script>new WebComp()</script>
   </noscript>
 </test-html>
 
@@ -180,5 +180,12 @@
 <script type="module">
   import {TestHtml} from "./TestComponent2.js";
 
+  if(true){
+    for (let test of Array.from(document.querySelectorAll('test-html'))) {
+      test.children[0].insertAdjacentHTML('afterbegin',
+        '<script src="./window_constructionContext.js"></'+'script>' +
+        '<script src="./window_legalConstruction.js"></'+'script>');
+    }
+  }
   customElements.define('test-html', TestHtml);
 </script>

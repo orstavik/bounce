@@ -26,7 +26,7 @@
   monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set');
   monkeyPatch(Node.prototype, "cloneNode", 'value');
   monkeyPatch(Document.prototype, "createElement", 'value');
-  monkeyPatch(customElements, "upgrade", 'value');
+  monkeyPatch(CustomElementRegistry.prototype, "define", 'value');
 
   constructionContext.unshift('predictive');
   window.addEventListener('DOMContentLoaded', function () {

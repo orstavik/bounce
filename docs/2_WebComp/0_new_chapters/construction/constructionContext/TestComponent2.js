@@ -94,8 +94,7 @@ export class TestHtml extends HTMLElement {
       return;
     res = res[1].pop();
     delete res.el;
-    this.shadowRoot.children[2].innerHTML =
-      `
+    this.shadowRoot.children[2].innerHTML =`
 <style>${style}</style>
 ${this.hasAttribute('show-labels') ? printLabel(res) : ''}
 ${toRowHtml(this.id, res)}
@@ -111,5 +110,9 @@ ${toRowHtml(this.id, res)}
 
     this.shadowRoot.children[1].src =
       `data:text/html;charset=utf-8,${encodeURI(`<base href='${document.location.href}'/>${slotted[0].innerHTML}`)}#${this.#id}`;
+    this.shadowRoot.children[2].innerHTML = `
+<style>${style}</style>
+${toRowHtml(this.id, {"hasParentNode":false,"hasAttributes":false,"hasChildNodes":false,"isConnected":false,"isLoading":false,"isCurrentScript":false,"isEventListener":false,"currentElementIsLastElement":false,"currentScriptIsLastElement":false,"syncUpgrade":false,"predictive":false,"NEW":false})}
+`;
   }
 }
