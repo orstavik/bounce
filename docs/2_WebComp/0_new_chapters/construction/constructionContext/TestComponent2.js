@@ -46,8 +46,8 @@ const style = `
   .upgrade, div[key='upgrade'][value='true']{
     background-color: lightgreen;
   }
-  div[key='upgradeWithin'][value='true']{
-    background-color: mediumpurple;
+  div[key='syncUpgrade'][value='true']{
+    background-color: red;
   }
   
   .row.label > div[key] {
