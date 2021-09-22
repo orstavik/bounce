@@ -10,6 +10,15 @@ function getElementId(el) {
 
 const sequence = [];
 
+function analyzeContext(name, el) {
+  const id = getElementId(el);
+  const hasParentNode = !!el.parentNode;
+  const attributesLength = el.attributes.length;
+  const attributes = Array.from(el.attributes).map(a => `${a.nodeName}:${a.nodeValue}`).join(';');
+  const childNodesLength = el.childNodes.length;
+  return {name, id, hasParentNode, attributesLength, childNodesLength, attributes};
+}
+
 function getPreviousData(id) {
   for (let i = sequence.length - 2; i >= 0; i--) {
     if (sequence[i].id === id)
@@ -22,42 +31,34 @@ function getPreviousData(id) {
   };
 }
 
-function analyzeContext(name, el) {
-  const id = getElementId(el);
-  const hasParentNode = !!el.parentNode;
-  const attributesLength = el.attributes.length;
-  const attributes = Array.from(el.attributes).map(a => `${a.nodeName}:${a.nodeValue}`).join(';');
-  const childNodesLength = el.childNodes.length;
-  return {name, id, hasParentNode, attributesLength, childNodesLength, attributes};
-}
-
-
 window.log = function (name, el) {
   const nowData = analyzeContext(name, el);
-
   sequence.push(nowData);
 
   const prevData = getPreviousData(nowData.id);
+  const res = [];
   //1. add setAttribute multi/single
   const addedAtts = nowData.attributesLength - prevData.attributesLength;
   if (addedAtts > 1)
-    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setMultipleAttributes'});
+    res.push({id: nowData.id, name: 'setMultipleAttributes'});
   else if (addedAtts === 1)
-    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setAttribute'});
+    res.push({id: nowData.id, name: 'setAttribute'});
 
   //2. add setParentNode
   if (nowData.hasParentNode !== prevData.hasParentNode)
-    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setParentNode'});
+    res.push({id: nowData.id, name: 'setParentNode'});
 
   //3. appendChild / appendChildren
   const addedChildNodes = nowData.childNodesLength - prevData.childNodesLength;
   if (addedChildNodes > 1)
-    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setMultipleChildNodes'});
+    res.push({id: nowData.id, name: 'setMultipleChildNodes'});
   else if (addedChildNodes === 1)
-    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setChildNode'});
+    res.push({id: nowData.id, name: 'setChildNode'});
+  sequence.splice(sequence.length - 2, 0, ...res);
 }
 
 setTimeout(function () {
+
   // const res = sequence.map(({name, id}) => `${name}::${id}`);
   // parent.postMessage(JSON.stringify([location.hash.substr(1), res]), '*');
   parent.postMessage(JSON.stringify([location.hash.substr(1), sequence]), '*');
