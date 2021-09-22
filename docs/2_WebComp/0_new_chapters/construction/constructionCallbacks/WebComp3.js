@@ -10,32 +10,17 @@ function getElementId(el) {
 
 const sequence = [];
 
-function analyzeContext(name, el) {
+window.log = function (name, el) {
   const id = getElementId(el);
   const hasParentNode = !!el.parentNode;
   const attributesLength = el.attributes.length;
   const attributes = Array.from(el.attributes).map(a => `${a.nodeName}:${a.nodeValue}`).join(';');
   const childNodesLength = el.childNodes.length;
-  return {name, id, hasParentNode, attributesLength, childNodesLength, attributes};
-}
-
-function getPreviousData(id) {
-  for (let i = sequence.length - 2; i >= 0; i--) {
-    if (sequence[i].id === id)
-      return sequence[i];
-  }
-  return {
-    attributesLength: 0,
-    childNodesLength: 0,
-    hasParentNode: false
-  };
-}
-
-window.log = function (name, el) {
-  const nowData = analyzeContext(name, el);
+  const nowData = {name, id, hasParentNode, attributesLength, childNodesLength, attributes};
   sequence.push(nowData);
+}
 
-  const prevData = getPreviousData(nowData.id);
+function findMissingActions(nowData, prevData) {
   const res = [];
   //1. add setAttribute multi/single
   const addedAtts = nowData.attributesLength - prevData.attributesLength;
@@ -54,11 +39,28 @@ window.log = function (name, el) {
     res.push({id: nowData.id, name: 'setMultipleChildNodes'});
   else if (addedChildNodes === 1)
     res.push({id: nowData.id, name: 'setChildNode'});
-  sequence.splice(sequence.length - 2, 0, ...res);
+  return res;
+}
+
+function analyze(sequence) {
+  for (let i = 0; i < sequence.length; i++) {
+    let nowData = sequence[i];
+    let prevData = {attributesLength: 0, childNodesLength: 0, hasParentNode: false};
+    for (let j = i - 1; j >= 0; j--) {
+      const maybePrev = sequence[j];
+      if (maybePrev.id === nowData.id) {
+        prevData = maybePrev;
+        break;
+      }
+    }
+    const res = findMissingActions(nowData, prevData);
+    sequence.splice(i, 0, ...res);
+    i += res.length;
+  }
 }
 
 setTimeout(function () {
-
+  analyze(sequence);
   // const res = sequence.map(({name, id}) => `${name}::${id}`);
   // parent.postMessage(JSON.stringify([location.hash.substr(1), res]), '*');
   parent.postMessage(JSON.stringify([location.hash.substr(1), sequence]), '*');
