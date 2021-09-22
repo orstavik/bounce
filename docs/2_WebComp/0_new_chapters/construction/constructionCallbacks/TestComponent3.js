@@ -120,6 +120,7 @@ export class TestHtml extends HTMLElement {
     if (!(res instanceof Array && res[0] === this.#id + ''))
       return;
     res = res[1];
+    res = res.map(({name, id}) => `${name}::${id}`);
 //${this.hasAttribute('show-labels') ? printLabel(res) : ''}
     this.shadowRoot.children[2].innerHTML = `
 <style>${style}</style>

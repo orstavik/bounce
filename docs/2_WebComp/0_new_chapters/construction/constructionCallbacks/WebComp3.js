@@ -12,7 +12,7 @@ const sequence = [];
 
 function getPreviousData(id) {
   for (let i = sequence.length - 1; i >= 0; i--) {
-    if(sequence[i].id === id)
+    if (sequence[i].id === id)
       return sequence[i];
   }
   return {
@@ -39,25 +39,29 @@ window.log = function (name, el) {
 
   //1. add setAttribute multi/single
   const addedAtts = nowData.attributesLength - prevData.attributesLength;
-  if (addedAtts)
-    sequence.push(Object.assign({}, nowData, {name: addedAtts > 1 ? 'setMultipleAttributes' : 'setAttribute'}));
+  if (addedAtts > 1)
+    sequence.push({id: nowData.id, name: 'setMultipleAttributes'});
+  else if (addedAtts === 1)
+    sequence.push({id: nowData.id, name: 'setAttribute'});
 
   //2. add setParentNode
   if (nowData.hasParentNode !== prevData.hasParentNode)
-    sequence.push(Object.assign({}, nowData, {name: 'setParentNode'}));
+    sequence.push({id: nowData.id, name: 'setParentNode'});
 
   //3. appendChild / appendChildren
   const addedChildNodes = nowData.childNodesLength - prevData.childNodesLength;
-  if (addedChildNodes)
-    sequence.push(Object.assign({}, nowData, {name: addedChildNodes > 1 ? 'setMultipleChildNodes' : 'setChildNode'}));
+  if (addedChildNodes > 1)
+    sequence.push({id: nowData.id, name: 'setMultipleChildNodes'});
+  else if (addedChildNodes === 1)
+    sequence.push({id: nowData.id, name: 'setChildNode'});
 
   sequence.push(nowData);
 }
 
 setTimeout(function () {
-  const res = sequence.map(({name, id}) => `${name}::${id}`);
-  parent.postMessage(JSON.stringify([location.hash.substr(1), res]), '*');
-  // parent.postMessage(JSON.stringify({[location.hash.substr(1)]: sequence}), '*');
+  // const res = sequence.map(({name, id}) => `${name}::${id}`);
+  // parent.postMessage(JSON.stringify([location.hash.substr(1), res]), '*');
+  parent.postMessage(JSON.stringify([location.hash.substr(1), sequence]), '*');
 }, 100);
 
 class WebComp extends HTMLElement {
@@ -69,10 +73,9 @@ class WebComp extends HTMLElement {
     super();
     this.attachShadow({mode: "open"});
     this.shadowRoot.innerHTML = '<slot></slot>';
-    this.shadowRoot.addEventListener('slotchange',
-      () => this.slotchangeCallback()
-    );
-    // const p = this.parentNode;          //todo this is possible in upgrade and in innerHTML, and probably cloneNode too. It is bad.
+    this.shadowRoot.addEventListener('slotchange', () => this.slotchangeCallback());
+    //todo this is possible in upgrade and in innerHTML, and probably cloneNode too. It is bad.
+    // const p = this.parentNode;
     // this.parentNode?.parentNode?.appendChild(this);
     // if(p !== this.parentNode){
     //   log("bullshit", this);

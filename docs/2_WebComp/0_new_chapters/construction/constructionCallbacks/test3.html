@@ -305,13 +305,6 @@
   </noscript>
 </test-html>
 
-<!--
-cloneNode either will have parent, or children or attributes, or be an empty element.
-if it looks exactly like a new, then a) the element cloned must be empty and b)
-the cloneNode MUST be called on the element itself. This means that to detect cloneNode,
-we either must check for attributes, children or parentNode, or simply override HTMLElement.cloneNode (or the superclass of the element)
-to set an empty cloneNode for the element.
--->
 <test-html id="cloneNode empty">
   <noscript>
     <script src="./WebComp3.js"></script>
@@ -449,5 +442,5 @@ to set an empty cloneNode for the element.
   <div el="1" cb="connected">connectedCallback</div>
 
   <div el="0" cb="connected micro">connected micro</div>
-  <div : el="1" cb="connected micro">connected micro</div>
+  <div el="1" cb="connected micro">connected micro</div>
 </div>
