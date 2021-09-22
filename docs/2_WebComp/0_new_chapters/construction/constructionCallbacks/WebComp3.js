@@ -11,7 +11,7 @@ function getElementId(el) {
 const sequence = [];
 
 function getPreviousData(id) {
-  for (let i = sequence.length - 1; i >= 0; i--) {
+  for (let i = sequence.length - 2; i >= 0; i--) {
     if (sequence[i].id === id)
       return sequence[i];
   }
@@ -22,7 +22,8 @@ function getPreviousData(id) {
   };
 }
 
-function analyzeContext(name, el, id) {
+function analyzeContext(name, el) {
+  const id = getElementId(el);
   const hasParentNode = !!el.parentNode;
   const attributesLength = el.attributes.length;
   const attributes = Array.from(el.attributes).map(a => `${a.nodeName}:${a.nodeValue}`).join(';');
@@ -32,30 +33,28 @@ function analyzeContext(name, el, id) {
 
 
 window.log = function (name, el) {
-  const id = getElementId(el);
-  const prevData = getPreviousData(id);
-  const nowData = analyzeContext(name, el, id);
+  const nowData = analyzeContext(name, el);
 
+  sequence.push(nowData);
 
+  const prevData = getPreviousData(nowData.id);
   //1. add setAttribute multi/single
   const addedAtts = nowData.attributesLength - prevData.attributesLength;
   if (addedAtts > 1)
-    sequence.push({id: nowData.id, name: 'setMultipleAttributes'});
+    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setMultipleAttributes'});
   else if (addedAtts === 1)
-    sequence.push({id: nowData.id, name: 'setAttribute'});
+    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setAttribute'});
 
   //2. add setParentNode
   if (nowData.hasParentNode !== prevData.hasParentNode)
-    sequence.push({id: nowData.id, name: 'setParentNode'});
+    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setParentNode'});
 
   //3. appendChild / appendChildren
   const addedChildNodes = nowData.childNodesLength - prevData.childNodesLength;
   if (addedChildNodes > 1)
-    sequence.push({id: nowData.id, name: 'setMultipleChildNodes'});
+    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setMultipleChildNodes'});
   else if (addedChildNodes === 1)
-    sequence.push({id: nowData.id, name: 'setChildNode'});
-
-  sequence.push(nowData);
+    sequence.splice(sequence.length-2, 0, {id: nowData.id, name: 'setChildNode'});
 }
 
 setTimeout(function () {
