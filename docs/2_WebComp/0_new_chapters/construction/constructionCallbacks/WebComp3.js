@@ -1,17 +1,8 @@
-const els = [];
-
-function getElementId(el) {
-  const index = els.indexOf(el);
-  if (index >= 0)
-    return index;
-  els.push(el);
-  return els.length - 1;
-}
-
 const sequence = [];
+let count = 0;
 
 window.log = function (name, el) {
-  const id = getElementId(el);
+  const id = '__id' in el ? el.__id : (el.__id = count++);
   const hasParentNode = !!el.parentNode;
   const attributesLength = el.attributes.length;
   const attributes = Array.from(el.attributes).map(a => `${a.nodeName}:${a.nodeValue}`).join(';');
