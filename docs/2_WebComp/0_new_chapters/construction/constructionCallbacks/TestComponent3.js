@@ -100,6 +100,46 @@ function toRowHtml(name, ar) {
 </div>`;
 }
 
+function findMissingActions(nowData, prevData) {
+  const res = [];
+  //1. add setAttribute multi/single
+  const addedAtts = nowData.attributesLength - prevData.attributesLength;
+  if (addedAtts > 1)
+    res.push({id: nowData.id, name: 'setMultipleAttributes'});
+  else if (addedAtts === 1)
+    res.push({id: nowData.id, name: 'setAttribute'});
+
+  //2. add setParentNode
+  if (nowData.hasParentNode !== prevData.hasParentNode)
+    res.push({id: nowData.id, name: 'setParentNode'});
+
+  //3. appendChild / appendChildren
+  const addedChildNodes = nowData.childNodesLength - prevData.childNodesLength;
+  if (addedChildNodes > 1)
+    res.push({id: nowData.id, name: 'setMultipleChildNodes'});
+  else if (addedChildNodes === 1)
+    res.push({id: nowData.id, name: 'setChildNode'});
+  return res;
+}
+
+function analyze(sequence) {
+  let res = [];
+  for (let i = 0; i < sequence.length; i++) {
+    let nowData = sequence[i];
+    let prevData = {attributesLength: 0, childNodesLength: 0, hasParentNode: false};
+    for (let j = i - 1; j >= 0; j--) {
+      const maybePrev = sequence[j];
+      if (maybePrev.id === nowData.id) {
+        prevData = maybePrev;
+        break;
+      }
+    }
+    const actions = findMissingActions(nowData, prevData);
+    res = [...res, ...actions, nowData];
+  }
+  return res;
+}
+
 
 let counter = 0;
 
@@ -120,6 +160,7 @@ export class TestHtml extends HTMLElement {
     if (!(res instanceof Array && res[0] === this.#id + ''))
       return;
     res = res[1];
+    res = analyze(res);
     res = res.map(({name, id}) => `${name}::${id}`);
 //${this.hasAttribute('show-labels') ? printLabel(res) : ''}
     this.shadowRoot.children[2].innerHTML = `
