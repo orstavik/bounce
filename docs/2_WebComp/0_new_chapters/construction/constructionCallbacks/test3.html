@@ -123,6 +123,14 @@
   </noscript>
 </test-html>
 
+<test-html id="predictive nested" show-labels>
+  <noscript>
+    <script src="./WebComp3.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <web-comp><web-comp></web-comp></web-comp>
+  </noscript>
+</test-html>
+
 <test-html id="predictive">
   <noscript>
     <script src="./WebComp3.js"></script>
