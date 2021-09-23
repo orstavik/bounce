@@ -28,13 +28,6 @@ const style = `
     text-align: right;
   }
 
-  [el="1"] {
-    background-image: var(--el1);
-  }
-  [el="2"] {
-    background-image: var(--el2);
-  }
-
   .micro {
     border-top: var(--micro);
     border-right: var(--micro);
@@ -43,6 +36,12 @@ const style = `
     border-radius: var(--set);
   }
 
+  .el1 {
+    background-image: var(--el1);
+  }
+  .el2 {
+    background-image: var(--el2);
+  }
   .constructor {
     background-color: var(--constructor);
   }
@@ -92,19 +91,7 @@ const style = `
   }
   .upgrade {
     background-color: lightgreen;
-  }
-
-`;
-
-function toRowHtml(name, ar) {
-  return `
-<div class="row">
-    <div name class="${name}">${name}</div>
-    ${ar.map(ab => ab.split('::')).map(([cb, el]) => `
-      <div el="${el}" class="${cb}" title="${cb}"></div>
-    `).join('\n')}
-</div>`;
-}
+  }`;
 
 function findMissingActions(nowData, prevData) {
   const res = [];
@@ -140,33 +127,31 @@ function analyze(sequence) {
   return res;
 }
 
-
-let counter = 0;
-
 export class TestHtml extends HTMLElement {
+  static #counter = 0;
   #id;
 
   constructor() {
     super();
-    this.#id = counter++;
+    this.#id = TestHtml.#counter++;
     this.attachShadow({mode: "open"});
     this.shadowRoot.addEventListener('slotchange', e => this.slotchange(e));
-    this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><div></div>`;
+    this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><style>${style}</style><div></div>`;
     window.addEventListener('message', e => this.message(e));
   }
 
   message(e) {
     let res = JSON.parse(e.data);
-    if (!(res instanceof Array && res[0] === this.#id + ''))
-      return;
-    res = res[1];
-    res = analyze(res);
-    res = res.map(({name, id}) => `${name}::${id}`);
-//${this.hasAttribute('show-labels') ? printLabel(res) : ''}
-    this.shadowRoot.children[2].innerHTML = `
-<style>${style}</style>
-${toRowHtml(this.id, res)}
-`;
+    if (res instanceof Array && res[0] === this.#id + '') 
+      this.render(analyze(res[1]));
+  }
+
+  render(ar) {
+    this.shadowRoot.querySelector('div').innerHTML = `
+<div class="row">
+    <div name class="${this.id}">${this.id}</div>
+    ${ar.map(({name, id}) => `<div class="el${id} ${name}" title="${name}"></div>`).join('\n')}
+</div>`;
   }
 
   slotchange(e) {
