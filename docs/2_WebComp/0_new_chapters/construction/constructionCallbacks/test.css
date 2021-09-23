@@ -1,0 +1,77 @@
+div.row > * {
+  box-sizing: border-box;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  overflow: hidden;
+}
+div[name] {
+  width: 200px;
+  text-align: right;
+}
+
+.micro {
+  border-top: 8px solid white;
+  border-right: 8px solid white;
+}
+.set {
+  border-radius: 50%;
+}
+
+.el1 {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><rect fill='white' x='1.5' y='0' width='50%' height='100%'/></svg>");
+}
+.el2 {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><circle fill='white' cx='3' cy='3' r='2'/></svg>");
+}
+
+.constructor {
+  background-color: green;
+}
+.parent {
+  background-color: blue;
+}
+.connected {
+  background-color: blue;
+}
+.attribute {
+  background-color: orange;
+}
+.slotchange {
+  background-color: hotpink;
+}
+.child {
+  background-color: hotpink;
+}
+.l1 {
+  border-bottom: 4px solid red;
+}
+
+.script {
+  background-color: grey;
+}
+.definition {
+  background-color: black;
+}
+
+.disconnected {
+  border-right: 3px solid red;
+}
+.empty {
+  border-left: 3px solid orange;
+}
+.innerHTML, .insertAdjacentHTML {
+  background-color: lightgrey;
+}
+.predictive {
+  background-color: pink;
+}
+.createElement, .NEW {
+  background-color: lightblue;
+}
+.cloneNode {
+  background-color: yellow;
+}
+.upgrade {
+  background-color: lightgreen;
+}
