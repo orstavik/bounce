@@ -10,7 +10,9 @@
   <noscript>
     <script src="./WebComp3.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp><web-comp></web-comp></web-comp>
+    <web-comp>
+      <web-comp></web-comp>
+    </web-comp>
   </noscript>
 </test-html>
 
@@ -34,7 +36,8 @@
   <noscript>
     <script src="./WebComp3.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp a="a" b="b"><script>log('script x', document.querySelector('web-comp'))</script>
+    <web-comp a="a" b="b">
+      <script>log('script x', document.querySelector('web-comp'))</script>
       hello sunshine
     </web-comp>
     <script>log('script y', document.querySelector('web-comp'))</script>
@@ -66,7 +69,8 @@
 <test-html id="upgrade Within">
   <noscript>
     <script src="./WebComp3.js"></script>
-    <web-comp a="a" b="b"><script>
+    <web-comp a="a" b="b">
+      <script>
         customElements.define('web-comp', WebComp);
         log('definition', document.querySelector('web-comp'));
       </script>
@@ -210,8 +214,19 @@
   </noscript>
 </test-html>
 
+<div>
+  <button onclick="changeMode(event)">normal</button>
+  <button onclick="changeMode(event)">ready</button>
+  <button onclick="changeMode(event)">childChanged</button>
+</div>
+<!--todo make buttons to decide which style of callbacks we want. -->
 <script type="module">
   import {TestHtml} from "./TestHtml.js";
 
   customElements.define('test-html', TestHtml);
+
+  window.changeMode = function(e){
+    for (let t of document.querySelectorAll('test-html'))
+      t.changeMode(e.target.innerText);
+  }
 </script>
