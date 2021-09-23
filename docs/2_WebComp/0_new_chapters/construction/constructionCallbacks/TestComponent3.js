@@ -3,7 +3,7 @@ const style = `
   * {
     --constructor: green;
     --connected: blue;
-    --set-parent: lightblue;
+    --parent: blue;
     --attribute: orange;
     --slotchange: hotpink;
     --child: hotpink;
@@ -11,10 +11,11 @@ const style = `
     --defined: black;
     --el1: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><rect fill='white' x='1.5' y='0' width='50%' height='100%'/></svg>");
     --el2: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><circle fill='white' cx='3' cy='3' r='2'/></svg>");
-    --micro: 4px solid white;
+    --micro: 8px solid white;
     --set: 50%;
+    --error: 4px solid red;
   }
-  
+
   div.row > * {
     box-sizing: border-box;
     display: inline-block;
@@ -26,19 +27,17 @@ const style = `
     width: 200px;
     text-align: right;
   }
-  div[el] {
-    /*border: 1px solid grey;*/
-    color: transparent;
-  }
-  div[el="1"] {
+
+  [el="1"] {
     background-image: var(--el1);
   }
-  div[el="2"] {
+  [el="2"] {
     background-image: var(--el2);
   }
 
   .micro {
-    border: var(--micro);
+    border-top: var(--micro);
+    border-right: var(--micro);
   }
   .set {
     border-radius: var(--set);
@@ -48,7 +47,7 @@ const style = `
     background-color: var(--constructor);
   }
   .parent {
-    background-color: var(--set-parent);
+    background-color: var(--parent);
   }
   .connected {
     background-color: var(--connected);
@@ -62,12 +61,12 @@ const style = `
   .child {
     background-color: var(--child);
   }
-  .l1{
-    border-bottom: 4px solid red;
+  .l1 {
+    border-bottom: var(--error);
   }
 
   .script {
-    background-color:  var(--script);
+    background-color: var(--script);
   }
   .definition {
     background-color: var(--defined);
@@ -95,18 +94,14 @@ const style = `
     background-color: lightgreen;
   }
 
-  .row.label > div[key] {
-    color: black;
-    writing-mode: tb;
-    height: fit-content;
-  }`;
+`;
 
 function toRowHtml(name, ar) {
   return `
 <div class="row">
     <div name class="${name}">${name}</div>
     ${ar.map(ab => ab.split('::')).map(([cb, el]) => `
-      <div el="${el}" class="${cb}">${cb}</div>
+      <div el="${el}" class="${cb}" title="${cb}"></div>
     `).join('\n')}
 </div>`;
 }
@@ -116,14 +111,14 @@ function findMissingActions(nowData, prevData) {
   //1. add setAttribute multi/single
   const addedAtts = nowData.attributesLength - prevData.attributesLength;
   if (addedAtts)
-    res.push({id: nowData.id, name: 'set attribute l'+addedAtts});
+    res.push({id: nowData.id, name: 'set attribute l' + addedAtts});
   //2. add setParentNode
   if (nowData.hasParentNode !== prevData.hasParentNode)
     res.push({id: nowData.id, name: 'set parent'});
   //3. appendChild / appendChildren
   const addedChildNodes = nowData.childNodesLength - prevData.childNodesLength;
   if (addedChildNodes)
-    res.push({id: nowData.id, name: 'set child l'+addedChildNodes});
+    res.push({id: nowData.id, name: 'set child l' + addedChildNodes});
   return res;
 }
 
