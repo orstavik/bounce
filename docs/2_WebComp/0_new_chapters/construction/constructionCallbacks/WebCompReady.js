@@ -22,7 +22,7 @@ class WebComp extends HTMLElement {
   }
 
   readyCallback() {
-    console.log('ready', this);
-    Promise.resolve().then(() => console.log('ready micro', this));
+    console.log('ready callback', this);
+    Promise.resolve().then(() => console.log('ready callback micro', this));
   }
 }

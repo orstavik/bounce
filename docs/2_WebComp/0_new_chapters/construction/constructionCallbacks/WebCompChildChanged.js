@@ -20,7 +20,7 @@ class WebComp extends HTMLElement {
   }
 
   childChangedCallback() {
-    console.log('child', this);
-    Promise.resolve().then(() => console.log('child micro', this));
+    console.log('child callback', this);
+    Promise.resolve().then(() => console.log('child callback micro', this));
   }
 }

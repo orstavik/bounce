@@ -39,6 +39,7 @@ div[name] {
 }
 .slotchange {
   background-color: hotpink;
+  border-radius: 0 50% 50% 50%;
 }
 .child {
   background-color: hotpink;
@@ -53,8 +54,9 @@ div[name] {
 .script {
   background-color: grey;
 }
-.definition {
-  background-color: black;
+.callback {
+  border-left: 2px solid lightgrey;
+  border-bottom: 2px solid lightgrey;
 }
 
 .disconnected {
