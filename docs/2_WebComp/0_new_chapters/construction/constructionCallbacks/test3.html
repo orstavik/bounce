@@ -1,25 +1,14 @@
 <div>
   <button onclick="changeMode(event)">normal</button>
   <button onclick="changeMode(event)">ready</button>
-  <!--  <button onclick="changeMode(event)">childChanged</button>-->
+  <button onclick="changeMode(event)">childChanged</button>
 </div>
 <hr>
-
 <test-html id="predictive empty" show-labels>
   <noscript>
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <web-comp></web-comp>
-  </noscript>
-</test-html>
-
-<test-html id="predictive nested" show-labels>
-  <noscript>
-    <script src="./WebCompNormal.js"></script>
-    <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp>
-      <web-comp></web-comp>
-    </web-comp>
   </noscript>
 </test-html>
 
@@ -35,7 +24,7 @@
   <noscript>
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp a="a" b="b"><h1 slot="oops">hello sunshine</h1></web-comp>
+    <web-comp a="a" b="b"><h1 slot="oopsi">hello</h1><h2 slot="deisy">sunshine</h2></web-comp>
   </noscript>
 </test-html>
 
@@ -43,11 +32,21 @@
   <noscript>
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp a="a" b="b">
-      <script>console.log('script x', document.querySelector('web-comp'))</script>
-      hello sunshine
+    <web-comp a="a" b="b"><script>console.log('script x', document.querySelector('web-comp'))</script>
+      hello darkness
     </web-comp>
     <script>console.log('script y', document.querySelector('web-comp'))</script>
+  </noscript>
+</test-html>
+
+<test-html id="predictive nested" show-labels>
+  <noscript>
+    <script src="./WebCompNormal.js"></script>
+    <script>customElements.define('web-comp', WebComp);</script>
+    <web-comp> hello sunshine
+      <web-comp>      <h1>sunshine</h1></web-comp>
+      darkness
+    </web-comp>
   </noscript>
 </test-html>
 
@@ -57,7 +56,7 @@
     <script src="./WebCompNormal.js"></script>
     <script>
       customElements.define('web-comp', WebComp);
-      console.log('definition', document.querySelector('web-comp'));
+      console.log('script', document.querySelector('web-comp'));
     </script>
   </noscript>
 </test-html>
@@ -68,7 +67,7 @@
     <script src="./WebCompNormal.js"></script>
     <script>
       customElements.define('web-comp', WebComp);
-      console.log('definition', document.querySelector('web-comp'));
+      console.log('script', document.querySelector('web-comp'));
     </script>
   </noscript>
 </test-html>
@@ -79,7 +78,7 @@
     <web-comp a="a" b="b">
       <script>
         customElements.define('web-comp', WebComp);
-        console.log('definition', document.querySelector('web-comp'));
+        console.log('script', document.querySelector('web-comp'));
       </script>
       hello sunshine
     </web-comp>
@@ -93,7 +92,7 @@
     <script>
       const div = document.createElement('div');
       div.innerHTML = '<web-comp></web-comp>';
-      console.log("script x", div.children[0]);
+      console.log("script", div.children[0]);
     </script>
   </noscript>
 </test-html>

@@ -82,9 +82,11 @@ export class TestHtml extends HTMLElement {
 
   runTest() {
     this.#sequence = [];
-    let txt = this.#txt;
+    let txt = this.#txt.trim();
     if(this.#mode === 'ready')
        txt = txt.replace('<script src="./WebCompNormal.js"></script>', '<script src="./ready.js"></script><script src="./WebCompReady.js"></script>')
+    if(this.#mode === 'childChanged')
+       txt = txt.replace('<script src="./WebCompNormal.js"></script>', '<script src="./child.js"></script><script src="./WebCompChildChanged.js"></script>')
     txt = '<script src="./log.js"></script>' + txt;
     this.setAttribute('title', txt);
     this.#iframe.src =

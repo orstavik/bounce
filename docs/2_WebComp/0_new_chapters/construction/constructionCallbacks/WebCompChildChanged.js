@@ -5,9 +5,6 @@ class WebComp extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({mode: "open"});
-    this.shadowRoot.innerHTML = '<slot></slot>';
-    this.shadowRoot.addEventListener('slotchange', e => this.slotchangeCallback(e));
     console.log('constructor', this);
     Promise.resolve().then(() => console.log('constructor micro', this));
   }
@@ -22,10 +19,8 @@ class WebComp extends HTMLElement {
     Promise.resolve().then(() => console.log('connected micro', this));
   }
 
-  slotchangeCallback(e) {
-    if(e.composedPath()[0].getRootNode() !== this.shadowRoot)
-      console.error('error', this);
-    else
-      console.log('slotchange', this);
+  childChangedCallback() {
+    console.log('child', this);
+    Promise.resolve().then(() => console.log('child micro', this));
   }
 }
