@@ -151,10 +151,10 @@
   <noscript>
     <script src="./WebComp3.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp a="a" b="b"><script>log('script 1', document.querySelector('web-comp'))</script>
+    <web-comp a="a" b="b"><script>log('script x', document.querySelector('web-comp'))</script>
       hello sunshine
     </web-comp>
-    <script>log('script 2', document.querySelector('web-comp'))</script>
+    <script>log('script y', document.querySelector('web-comp'))</script>
   </noscript>
 </test-html>
 
@@ -199,7 +199,7 @@
     <script>
       const div = document.createElement('div');
       div.innerHTML = '<web-comp></web-comp>';
-      log("script 1", div.children[0]);
+      log("script x", div.children[0]);
     </script>
   </noscript>
 </test-html>
@@ -306,9 +306,9 @@
         `<web-comp a="a" b="b">
 	       hello sunshine<hr>
 	     </web-comp>`;
-      log("script 1", div.children[0]);
+      log("script x", div.children[0]);
       div.cloneNode(true);
-      log("script 2", div.children[0]);
+      log("script y", div.children[0]);
     </script>
   </noscript>
 </test-html>
@@ -320,9 +320,9 @@
     <script>
       const div = document.createElement('div');
       div.innerHTML = `<web-comp></web-comp>`;
-      log("script 1", div.children[0]);
+      log("script x", div.children[0]);
       div.children[0].cloneNode(true);
-      log("script 2", div.children[0]);
+      log("script y", div.children[0]);
     </script>
   </noscript>
 </test-html>

@@ -1,5 +1,20 @@
 //language=CSS
 const style = `
+  * {
+    --constructor: green;
+    --connected: blue;
+    --set-parent: lightblue;
+    --attribute: orange;
+    --slotchange: hotpink;
+    --child: hotpink;
+    --script: grey;
+    --defined: black;
+    --el1: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><rect fill='white' x='1.5' y='0' width='50%' height='100%'/></svg>");
+    --el2: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='6' height='6'><circle fill='white' cx='3' cy='3' r='2'/></svg>");
+    --micro: 4px solid white;
+    --set: 50%;
+  }
+  
   div.row > * {
     box-sizing: border-box;
     display: inline-block;
@@ -12,54 +27,50 @@ const style = `
     text-align: right;
   }
   div[el] {
-    border: 1px solid grey;
+    /*border: 1px solid grey;*/
     color: transparent;
   }
   div[el="1"] {
-    border-top: 4px solid black;
+    background-image: var(--el1);
   }
   div[el="2"] {
-    border-top: 4px solid grey;
+    background-image: var(--el2);
   }
 
-  div[cb^="constructor"] {
-    background-color: green;
+  .micro {
+    border: var(--micro);
   }
-  div[cb~="micro"] {
-    background-blend-mode: luminosity;
-    background-image:
-        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='1'><rect fill='white' x='0' y='0' width='30%' height='100%'/></svg>");
-    background-repeat: repeat;
-  }
-  div[cb^="setParent"] {
-    background-color: lightblue;
-  }
-  div[cb^="connected"] {
-    background-color: blue;
-  }
-  
-  div[cb^="setMultipleAttributes"], div[cb^="setAttribute"] {
-    background-color: yellow;
-  }
-  div[cb^="attributeChanged"]{
-    background-color: orange;
-  }
-  div[cb^="setMultipleChildNodes"], div[cb^="setChildNode"] {
-    background-color: pink;
-  }
-  div[cb^="slotchange"] {
-    background-color: hotpink;
+  .set {
+    border-radius: var(--set);
   }
 
-  div[cb^="setAttribute"] , div[cb^="setChildNode"] {
+  .constructor {
+    background-color: var(--constructor);
+  }
+  .parent {
+    background-color: var(--set-parent);
+  }
+  .connected {
+    background-color: var(--connected);
+  }
+  .attribute {
+    background-color: var(--attribute);
+  }
+  .slotchange {
+    background-color: var(--slotchange);
+  }
+  .child {
+    background-color: var(--child);
+  }
+  .l1{
     border-bottom: 4px solid red;
   }
 
-  div[cb^="script"] {
-    background-color: grey;
+  .script {
+    background-color:  var(--script);
   }
-  div[cb^="defined"] {
-    background-color: white;
+  .definition {
+    background-color: var(--defined);
   }
 
   .disconnected {
@@ -95,7 +106,7 @@ function toRowHtml(name, ar) {
 <div class="row">
     <div name class="${name}">${name}</div>
     ${ar.map(ab => ab.split('::')).map(([cb, el]) => `
-      <div el="${el}" cb="${cb}">${cb}</div>
+      <div el="${el}" class="${cb}">${cb}</div>
     `).join('\n')}
 </div>`;
 }
@@ -104,21 +115,15 @@ function findMissingActions(nowData, prevData) {
   const res = [];
   //1. add setAttribute multi/single
   const addedAtts = nowData.attributesLength - prevData.attributesLength;
-  if (addedAtts > 1)
-    res.push({id: nowData.id, name: 'setMultipleAttributes'});
-  else if (addedAtts === 1)
-    res.push({id: nowData.id, name: 'setAttribute'});
-
+  if (addedAtts)
+    res.push({id: nowData.id, name: 'set attribute l'+addedAtts});
   //2. add setParentNode
   if (nowData.hasParentNode !== prevData.hasParentNode)
-    res.push({id: nowData.id, name: 'setParentNode'});
-
+    res.push({id: nowData.id, name: 'set parent'});
   //3. appendChild / appendChildren
   const addedChildNodes = nowData.childNodesLength - prevData.childNodesLength;
-  if (addedChildNodes > 1)
-    res.push({id: nowData.id, name: 'setMultipleChildNodes'});
-  else if (addedChildNodes === 1)
-    res.push({id: nowData.id, name: 'setChildNode'});
+  if (addedChildNodes)
+    res.push({id: nowData.id, name: 'set child l'+addedChildNodes});
   return res;
 }
 

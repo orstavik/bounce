@@ -34,8 +34,8 @@ class WebComp extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    log('attributeChanged', this);
-    Promise.resolve().then(() => log('attributeChanged micro', this));
+    log('attribute', this);
+    Promise.resolve().then(() => log('attribute micro', this));
   }
 
   connectedCallback() {
