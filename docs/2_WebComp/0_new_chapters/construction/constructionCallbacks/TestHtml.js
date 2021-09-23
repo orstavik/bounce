@@ -32,6 +32,9 @@ export class TestHtml extends HTMLElement {
   #slot;
   #iframe;
   #div;
+  #mode = 'normal';
+  #txt;
+  #sequence = [];
 
   constructor() {
     super();
@@ -47,11 +50,19 @@ export class TestHtml extends HTMLElement {
 
   onMessage(e) {
     let res = JSON.parse(e.data);
-    if (res instanceof Array && res[0] === this.#id + '')
-      this.render(analyze(res[1]));
+    if (res instanceof Array && res[0] === this.#id + ''){
+      this.#sequence.push(res[1]);
+      this.render();
+    }
   }
 
-  render(ar) {
+  changeMode(mode){
+    this.#mode = mode;
+    this.runTest();
+  }
+
+  render() {
+    const ar = analyze(this.#sequence);
     this.#div.innerHTML = `
 <div class="row">
     <div name class="${this.id}">${this.id}</div>
@@ -65,10 +76,18 @@ export class TestHtml extends HTMLElement {
         return this.#div.innerHTML = "", this.#iframe.src = "";
     if (slotted.length > 1 || slotted[0].tagName !== 'NOSCRIPT')
       throw new Error('TestHtml can only contain a single <noscript></noscript> element.');
+    this.#txt = slotted[0].innerHTML;
+    this.changeMode('normal');
+  }
 
-    const htmlText = slotted[0].innerHTML;
-    this.setAttribute('title', htmlText);
+  runTest() {
+    this.#sequence = [];
+    let txt = this.#txt;
+    if(this.#mode === 'ready')
+       txt = txt.replace('<script src="./WebCompNormal.js"></script>', '<script src="./ready.js"></script><script src="./WebCompReady.js"></script>')
+    txt = '<script src="./log.js"></script>' + txt;
+    this.setAttribute('title', txt);
     this.#iframe.src =
-      `data:text/html;charset=utf-8,${encodeURI(`<base href='${document.location.href}'/>${htmlText}`)}#${this.#id}`;
+      `data:text/html;charset=utf-8,${encodeURI(`<base href='${document.location.href}'/>${txt}`)}#${this.#id}`;
   }
 }

@@ -46,6 +46,9 @@ div[name] {
 .l1 {
   border-bottom: 4px solid red;
 }
+.ready{
+  background-color: yellowgreen;
+}
 
 .script {
   background-color: grey;

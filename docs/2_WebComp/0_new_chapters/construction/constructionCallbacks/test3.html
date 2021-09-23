@@ -1,6 +1,13 @@
+<div>
+  <button onclick="changeMode(event)">normal</button>
+  <button onclick="changeMode(event)">ready</button>
+  <!--  <button onclick="changeMode(event)">childChanged</button>-->
+</div>
+<hr>
+
 <test-html id="predictive empty" show-labels>
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <web-comp></web-comp>
   </noscript>
@@ -8,7 +15,7 @@
 
 <test-html id="predictive nested" show-labels>
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <web-comp>
       <web-comp></web-comp>
@@ -18,7 +25,7 @@
 
 <test-html id="predictive">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <web-comp a="a" b="b"><p>hello</p> sunshine</web-comp>
   </noscript>
@@ -26,7 +33,7 @@
 
 <test-html id="predictive NonSlottable">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <web-comp a="a" b="b"><h1 slot="oops">hello sunshine</h1></web-comp>
   </noscript>
@@ -34,23 +41,23 @@
 
 <test-html id="predictive childIllustration">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <web-comp a="a" b="b">
-      <script>log('script x', document.querySelector('web-comp'))</script>
+      <script>console.log('script x', document.querySelector('web-comp'))</script>
       hello sunshine
     </web-comp>
-    <script>log('script y', document.querySelector('web-comp'))</script>
+    <script>console.log('script y', document.querySelector('web-comp'))</script>
   </noscript>
 </test-html>
 
 <test-html id="upgrade empty">
   <noscript>
     <web-comp></web-comp>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>
       customElements.define('web-comp', WebComp);
-      log('definition', document.querySelector('web-comp'));
+      console.log('definition', document.querySelector('web-comp'));
     </script>
   </noscript>
 </test-html>
@@ -58,21 +65,21 @@
 <test-html id="upgrade">
   <noscript>
     <web-comp a="a" b="b">hello <b>beautiful</b> sunshine</web-comp>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>
       customElements.define('web-comp', WebComp);
-      log('definition', document.querySelector('web-comp'));
+      console.log('definition', document.querySelector('web-comp'));
     </script>
   </noscript>
 </test-html>
 
 <test-html id="upgrade Within">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <web-comp a="a" b="b">
       <script>
         customElements.define('web-comp', WebComp);
-        log('definition', document.querySelector('web-comp'));
+        console.log('definition', document.querySelector('web-comp'));
       </script>
       hello sunshine
     </web-comp>
@@ -81,19 +88,19 @@
 
 <test-html id="innerHTML empty disconnected">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>
       const div = document.createElement('div');
       div.innerHTML = '<web-comp></web-comp>';
-      log("script x", div.children[0]);
+      console.log("script x", div.children[0]);
     </script>
   </noscript>
 </test-html>
 
 <test-html id="insertAdjacentHTML">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>
       const div = document.createElement('div');
@@ -104,7 +111,7 @@
 
 <test-html id="innerHTML attributesChildren disconnected">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>
       const div = document.createElement('div');
@@ -115,7 +122,7 @@
 
 <test-html id="innerHTML nested disconnected">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>
       const div = document.createElement('div');
@@ -130,7 +137,7 @@
 
 <test-html id="innerHTML nested">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <div></div>
     <script>
@@ -145,7 +152,7 @@
 
 <test-html id="NEW empty">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>new WebComp()</script>
   </noscript>
@@ -153,7 +160,7 @@
 
 <test-html id="createElement empty">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>document.createElement('web-comp');</script>
   </noscript>
@@ -161,7 +168,7 @@
 
 <test-html id="NEW eventListener">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>window.addEventListener('bob-bob', e => new WebComp())</script>
     <script>window.dispatchEvent(new Event('bob-bob'))</script>
@@ -170,7 +177,7 @@
 
 <test-html id="NEW chaos">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <h1>hello sunshine</h1>
     <script>
@@ -185,7 +192,7 @@
 
 <test-html id="cloneNode">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>
       const div = document.createElement('div');
@@ -193,33 +200,27 @@
         `<web-comp a="a" b="b">
 	       hello sunshine<hr>
 	     </web-comp>`;
-      log("script x", div.children[0]);
+      console.log("script x", div.children[0]);
       div.cloneNode(true);
-      log("script y", div.children[0]);
+      console.log("script y", div.children[0]);
     </script>
   </noscript>
 </test-html>
 
 <test-html id="cloneNode empty">
   <noscript>
-    <script src="./WebComp3.js"></script>
+    <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>
       const div = document.createElement('div');
       div.innerHTML = `<web-comp></web-comp>`;
-      log("script x", div.children[0]);
+      console.log("script x", div.children[0]);
       div.children[0].cloneNode(true);
-      log("script y", div.children[0]);
+      console.log("script y", div.children[0]);
     </script>
   </noscript>
 </test-html>
 
-<div>
-  <button onclick="changeMode(event)">normal</button>
-  <button onclick="changeMode(event)">ready</button>
-  <button onclick="changeMode(event)">childChanged</button>
-</div>
-<!--todo make buttons to decide which style of callbacks we want. -->
 <script type="module">
   import {TestHtml} from "./TestHtml.js";
 
