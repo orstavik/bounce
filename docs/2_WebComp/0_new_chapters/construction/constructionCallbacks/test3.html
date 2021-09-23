@@ -1,9 +1,28 @@
-<div>
+<div style="position: fixed; top:0; right:0; width: 100px;">
+  <h3>Hide:</h3>
+  <input type="checkbox" id="micro" checked><label for="micro">micro</label><br>
+  <input type="checkbox" id="el1" checked><label for="el1">el1</label><br>
+  <input type="checkbox" id="el2" checked><label for="el2">el2</label><br>
+  <input type="checkbox" id="set" checked> <label for="set">set</label><br>
+
   <button onclick="changeMode(event)">normal</button>
+  <br>
   <button onclick="changeMode(event)">ready</button>
+  <br>
   <button onclick="changeMode(event)">childChanged</button>
+  <script>
+    function setSwitches() {
+      for (let check of document.querySelectorAll('input[type="checkbox"]')) {
+        for (let test of document.querySelectorAll('test-html')) {
+          check.checked ? test.setAttribute(check.id, '') : test.removeAttribute(check.id);
+        }
+      }
+    }
+    setTimeout(setSwitches);
+    document.body.addEventListener('change', setSwitches);
+  </script>
 </div>
-<hr>
+
 <test-html id="predictive empty" show-labels>
   <noscript>
     <script src="./WebCompNormal.js"></script>
@@ -24,7 +43,8 @@
   <noscript>
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp a="a" b="b"><h1 slot="oopsi">hello</h1><h2 slot="deisy">sunshine</h2></web-comp>
+    <web-comp a="a" b="b"><h1 slot="oopsi">hello</h1>
+      <h2 slot="deisy">sunshine</h2></web-comp>
   </noscript>
 </test-html>
 
@@ -32,7 +52,8 @@
   <noscript>
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <web-comp a="a" b="b"><script>console.log('script x', document.querySelector('web-comp'))</script>
+    <web-comp a="a" b="b">
+      <script>console.log('script x', document.querySelector('web-comp'))</script>
       hello darkness
     </web-comp>
     <script>console.log('script y', document.querySelector('web-comp'))</script>
@@ -44,7 +65,7 @@
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <web-comp> hello sunshine
-      <web-comp>      <h1>sunshine</h1></web-comp>
+      <web-comp><h1>sunshine</h1></web-comp>
       darkness
     </web-comp>
   </noscript>
@@ -225,7 +246,7 @@
 
   customElements.define('test-html', TestHtml);
 
-  window.changeMode = function(e){
+  window.changeMode = function (e) {
     for (let t of document.querySelectorAll('test-html'))
       t.changeMode(e.target.innerText);
   }
