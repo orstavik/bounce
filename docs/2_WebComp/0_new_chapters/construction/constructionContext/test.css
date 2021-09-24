@@ -1,3 +1,6 @@
+:host(:not([show-labels])) /*div:first-of-type*/ .label {
+  display: none;
+}
 div.row > * {
   box-sizing: border-box;
   height: 20px;

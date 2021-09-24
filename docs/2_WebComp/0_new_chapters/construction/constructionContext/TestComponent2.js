@@ -1,23 +1,3 @@
-function printLabel(element) {
-  return `
-<div class="row label">
-    <div name></div>
-    ${Object.entries(element).map(([k, v]) => `
-      <div key="${k}">${k}</div>
-    `).join('\n')}
-</div>`;
-}
-
-function toRowHtml(name, element) {
-  return `
-<div class="row">
-    <div name class="${name}">${name}</div>
-    ${Object.entries(element).map(([k, v]) => `
-      <div key="${k}" value="${v}"> </div>
-    `).join('\n')}
-</div>`;
-}
-
 export class TestHtml extends HTMLElement {
   #id;
   #div;
@@ -30,13 +10,13 @@ export class TestHtml extends HTMLElement {
     this.shadowRoot.addEventListener('slotchange', e => this.slotchange(e));
     this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><div></div><link rel="stylesheet" href="test.css">`;
     this.#id = this.id.replaceAll(' ', '');
-    this.#div = this.shadowRoot.children[2];
     this.#slot = this.shadowRoot.children[0];
     this.#iframe = this.shadowRoot.children[1];
-    window.addEventListener('message', e => this.message(e));
+    this.#div = this.shadowRoot.children[2];
+    window.addEventListener('message', e => this.onMessage(e));
   }
 
-  message(e) {
+  onMessage(e) {
     let res = JSON.parse(e.data);
     if (!(res instanceof Array && res[0] === this.#id + ''))
       return;
@@ -46,9 +26,15 @@ export class TestHtml extends HTMLElement {
   }
 
   render(res) {
-    this.#div.innerHTML =
-      `${this.hasAttribute('show-labels') ? printLabel(res) : ''}
-${toRowHtml(this.id, res)}`;
+    this.#div.innerHTML = `
+<div class="row label">
+    <div name></div>
+    ${Object.entries(res).map(([k, v]) => `<div key="${k}">${k}</div>`).join('\n')}
+</div>
+<div class="row">
+    <div name class="${(this.id)}">${(this.id)}</div>
+    ${Object.entries(res).map(([k, v]) => `<div key="${k}" value="${v}"> </div>`).join('\n')}
+</div>`;
   }
 
   slotchange(e) {
