@@ -1,56 +1,33 @@
-:host(:not([show-labels])) /*div:first-of-type*/ .label {
-  display: none;
-}
 div.row > * {
   box-sizing: border-box;
+  display: inline-block;
   height: 20px;
   width: 20px;
-}
-div[name] {
-  display: inline-block;
-  width: 400px;
-  text-align: right;
-}
-div[key] {
-  display: inline-block;
   border: 1px solid grey;
 }
-[value='false'] {
-  background: white;
-}
-[value='true'] {
-  background: green;
-}
-[value='true'] {
-  background: green;
-}
-.disconnected{
-  border-right: 3px solid red;
-}
-.empty{
-  border-left: 3px solid orange;
-}
-.innerHTML, .insertAdjacentHTML, div[key='innerHTML'][value='true']{
-  background-color: lightgrey;
-}
-.predictive, div[key='predictive'][value='true']{
-  background-color: pink;
-}
-.createElement, .NEW, div[key='NEW'][value='true']{
-  background-color: lightblue;
-}
-.cloneNode, div[key='cloneNode'][value='true']{
-  background-color: yellow;
-}
-.upgrade, div[key='upgrade'][value='true']{
-  background-color: lightgreen;
-}
-div[key='syncUpgrade'][value='true']{
-  background-color: red;
-}
 
-.row.label > div[key] {
-  color: black;
-  writing-mode: tb;
-  height: fit-content;
-}
+div[name] { width: 400px; text-align: right; }
+.innerHTML[name] { background-color: lightgrey; }
+.predictive[name] { background-color: pink; }
+.upgrade[name] { background-color: lightgreen;}
+.NEW[name] { background-color: lightblue; }
+.cloneNode[name] { background-color: yellow; }
+.upgrade[name] { background-color: lightgreen; }
+
+
+div[value='false'] { display: none; }
+.isConnected[value='true'] {background-color: blue;}
+.hasParentNode[value='true'] {background-color: lightblue;}
+.hasAttributes[value='true'] {background-color: orange;}
+.hasChildNodes[value='true'] {background-color: hotpink;}
+
+.isLoading[value='true'] {background-color: yellow;}
+.isCurrentScript[value='true'] {background-color: grey;}
+.isEventListener[value='true'] {background-color: darkgrey;}
+
+.currentElementIsLastElement[value='true'] {background-color: purple;}
+.currentScriptIsLastElement[value='true'] {background-color: mediumpurple;}
+.syncUpgrade[value='true'] {background-color: red;}
+.predictive[value='true'] {background-color: green;}
+.NEW[value='true'] {background-color: brown;}
+.error {background-color: red;}

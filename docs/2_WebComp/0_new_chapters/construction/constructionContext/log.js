@@ -26,4 +26,4 @@ console.log = function (el) {
   parent.postMessage(JSON.stringify([location.hash.substr(1), data]), '*');
 }
 
-window.addEventListener('error', e=>parent.postMessage(JSON.stringify([location.hash.substr(1), {error: false}]), '*'));
+window.addEventListener('error', () => parent.postMessage(JSON.stringify([location.hash.substr(1), {error: true}]), '*'));

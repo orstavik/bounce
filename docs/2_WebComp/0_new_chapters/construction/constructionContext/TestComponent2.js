@@ -23,17 +23,14 @@ export class TestHtml extends HTMLElement {
   }
 
   render(res) {
-    this.#div.insertAdjacentHTML('beforeend', `<div class="row">
-    <div name class="${this.id}">${this.id}</div>
-    ${Object.entries(res).map(([k, v]) => `<div key="${k}" value="${v}" title="${k}"> </div>`).join('\n')}
-</div>`);
+    const row = Object.entries(res).map(([k, v]) => `<div class="${k}" value="${v}" title="${k}"> </div>`).join('\n');
+    this.#div.children[0].insertAdjacentHTML('beforeend', row);
   }
 
   slotchange(e) {
+    this.#div.innerHTML = this.#iframe.src = "";
     const slotted = this.#slot.assignedElements();
-    this.#iframe = this.shadowRoot.children[1];
-    if (!slotted.length)
-      return this.#div.innerHTML = "", this.#iframe.src = "";
+    if (!slotted.length) return;
     if (slotted.length > 1 || slotted[0].tagName !== 'NOSCRIPT')
       throw new Error('TestHtml can only contain a single <noscript></noscript> element.');
 
@@ -43,6 +40,7 @@ export class TestHtml extends HTMLElement {
 <script src="window_constructionContext.js"></script>
 <script src="window_legalConstruction.js"></script>
 ${slotted[0].innerHTML}`;
+    this.#div.insertAdjacentHTML('afterbegin', `<div class="row"><div name class="${this.id}">${this.id}</div></div>`);
     this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(`${txt}`)}#${this.#id}`;
   }
 }
