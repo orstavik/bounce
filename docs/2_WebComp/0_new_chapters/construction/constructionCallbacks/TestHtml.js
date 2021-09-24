@@ -27,7 +27,6 @@ function analyze(sequence) {
 }
 
 export class TestHtml extends HTMLElement {
-  static #counter = 0;
   #id;
   #slot;
   #iframe;
@@ -38,7 +37,7 @@ export class TestHtml extends HTMLElement {
 
   constructor() {
     super();
-    this.#id = TestHtml.#counter++;
+    this.#id = this.id.replace(' ', '');
     this.attachShadow({mode: "open"});
     this.shadowRoot.addEventListener('slotchange', e => this.slotchange(e));
     this.shadowRoot.innerHTML = `<link rel="stylesheet" href="test.css"/><slot></slot><iframe hidden></iframe><div></div>`;
