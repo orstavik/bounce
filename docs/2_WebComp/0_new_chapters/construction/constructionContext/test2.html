@@ -1,3 +1,18 @@
+<div>
+  <button id="legal">legal</button>
+  <button id="context">context</button>
+
+  <script>
+    for (let button of document.querySelectorAll('button')) {
+      button.addEventListener('click', e => {
+        const att = e.target.id;
+        for (let test of document.querySelectorAll('test-html'))
+          test.hasAttribute(att) ? test.removeAttribute(att) : test.setAttribute(att, '');
+      });
+    }
+  </script>
+</div>
+
 <test-html id="predictive empty" show-labels>
   <noscript>
     <script src="./WebComp.js"></script>
@@ -101,7 +116,9 @@
   <noscript>
     <div></div>
     <script src="./WebComp.js"></script>
-    <script>setTimeout(function(){document.querySelector('div').innerHTML = '<web-comp></web-comp>'}, 10);</script>
+    <script>setTimeout(function () {
+      document.querySelector('div').innerHTML = '<web-comp></web-comp>'
+    }, 10);</script>
   </noscript>
 </test-html>
 
@@ -125,7 +142,9 @@
       <web-comp></web-comp>
     </div>
     <script src="./WebComp.js"></script>
-    <script>setTimeout(function(){document.querySelector('div').cloneNode(true);})</script>
+    <script>setTimeout(function () {
+      document.querySelector('div').cloneNode(true);
+    })</script>
   </noscript>
 </test-html>
 
@@ -157,7 +176,9 @@
 <test-html id="NEW createElement disconnected async">
   <noscript>
     <script src="./WebComp.js"></script>
-    <script>setTimeout(function(){document.createElement('web-comp')},10)</script>
+    <script>setTimeout(function () {
+      document.createElement('web-comp')
+    }, 10)</script>
   </noscript>
 </test-html>
 
@@ -176,17 +197,4 @@
   </noscript>
 </test-html>
 
-
-<script type="module">
-  import {TestHtml} from "./TestComponent2.js";
-
-  if(true){
-    for (let test of Array.from(document.querySelectorAll('test-html'))) {
-      test.children[0].insertAdjacentHTML('afterbegin',
-        '<script src="./window_constructionContext.js"></'+'script>' +
-        '<script src="./window_legalConstruction.js"></'+'script>'
-      );
-    }
-  }
-  customElements.define('test-html', TestHtml);
-</script>
+<script src='TestComponent2.js'></script>
