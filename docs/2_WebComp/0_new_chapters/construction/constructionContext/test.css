@@ -35,4 +35,4 @@ div[value='false'] { display: none; }
 .syncUpgrade[value='true'] {background-color: red;}
 .predictive[value='true'] {background-color: green;}
 .NEW[value='true'] {background-color: brown;}
-.error {background-color: red;}
+.error:not([value]) {background-color: red;}

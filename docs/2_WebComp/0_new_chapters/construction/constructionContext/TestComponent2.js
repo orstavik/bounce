@@ -3,6 +3,7 @@ export class TestHtml extends HTMLElement {
   #div;
   #slot;
   #iframe;
+  #count = 0;
 
   constructor() {
     super();
@@ -23,8 +24,9 @@ export class TestHtml extends HTMLElement {
   }
 
   render(res) {
+    const truth = Object.entries(res).filter(([k, v]) => v && k).map(([k,v])=>k);
     const row = Object.entries(res).map(([k, v]) => `<div class="${k}" value="${v}" title="${k}"> </div>`).join('\n');
-    this.#div.children[1].insertAdjacentHTML('beforeend', `<div row>${row}</div>`);
+    this.#div.children[1].insertAdjacentHTML('beforeend', `<div class="row${this.#count++} ${truth.join(' ')}">${row}</div>`);
   }
 
   slotchange(e) {
