@@ -25,3 +25,5 @@ console.log = function (el) {
   data.NEW = !data.hasParentNode && !data.hasAttributes && !data.hasChildNodes;
   parent.postMessage(JSON.stringify([location.hash.substr(1), data]), '*');
 }
+
+window.addEventListener('error', e=>parent.postMessage(JSON.stringify([location.hash.substr(1), {error: false}]), '*'));
