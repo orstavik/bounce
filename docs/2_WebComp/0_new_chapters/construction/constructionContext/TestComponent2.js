@@ -8,7 +8,7 @@ export class TestHtml extends HTMLElement {
     super();
     this.attachShadow({mode: "open"});
     this.shadowRoot.addEventListener('slotchange', e => this.slotchange(e));
-    this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><div></div><link rel="stylesheet" href="test.css">`;
+    this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><div table></div><link rel="stylesheet" href="test.css">`;
     this.#id = this.id.replaceAll(' ', '');
     this.#slot = this.shadowRoot.children[0];
     this.#iframe = this.shadowRoot.children[1];
@@ -24,7 +24,7 @@ export class TestHtml extends HTMLElement {
 
   render(res) {
     const row = Object.entries(res).map(([k, v]) => `<div class="${k}" value="${v}" title="${k}"> </div>`).join('\n');
-    this.#div.children[0].insertAdjacentHTML('beforeend', row);
+    this.#div.children[1].insertAdjacentHTML('beforeend', `<div row>${row}</div>`);
   }
 
   slotchange(e) {
@@ -40,7 +40,7 @@ export class TestHtml extends HTMLElement {
 <script src="window_constructionContext.js"></script>
 <script src="window_legalConstruction.js"></script>
 ${slotted[0].innerHTML}`;
-    this.#div.insertAdjacentHTML('afterbegin', `<div class="row"><div name class="${this.id}">${this.id}</div></div>`);
+    this.#div.insertAdjacentHTML('afterbegin', `<div name class="${this.id}">${this.id}</div><div data></div>`);
     this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(`${txt}`)}#${this.#id}`;
   }
 }
