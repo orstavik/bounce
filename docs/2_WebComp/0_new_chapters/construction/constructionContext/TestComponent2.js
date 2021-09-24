@@ -1,61 +1,3 @@
-let counter = 0;
-
-//language=CSS
-const style = `
-  div.row > * {
-    box-sizing: border-box;
-    height: 20px;
-    width: 20px;
-  }
-  div[name] {
-    display: inline-block;
-    width: 400px;
-    text-align: right;
-  }
-  div[key] {
-    display: inline-block;
-    border: 1px solid grey;
-  }
-  [value='false'] {
-    background: white;
-  }
-  [value='true'] {
-    background: green;
-  }
-  [value='true'] {
-    background: green;
-  }
-  .disconnected{
-    border-right: 3px solid red;
-  }
-  .empty{
-    border-left: 3px solid orange;
-  }
-  .innerHTML, .insertAdjacentHTML, div[key='innerHTML'][value='true']{
-    background-color: lightgrey;
-  }
-  .predictive, div[key='predictive'][value='true']{
-    background-color: pink;
-  }
-  .createElement, .NEW, div[key='NEW'][value='true']{
-    background-color: lightblue;
-  }
-  .cloneNode, div[key='cloneNode'][value='true']{
-    background-color: yellow;
-  }
-  .upgrade, div[key='upgrade'][value='true']{
-    background-color: lightgreen;
-  }
-  div[key='syncUpgrade'][value='true']{
-    background-color: red;
-  }
-  
-  .row.label > div[key] {
-    color: black;
-    writing-mode: tb;
-    height: fit-content;
-  }`;
-
 function printLabel(element) {
   return `
 <div class="row label">
@@ -81,10 +23,10 @@ export class TestHtml extends HTMLElement {
 
   constructor() {
     super();
-    this.#id = counter++;
+    this.#id = this.id.replaceAll(' ', '');
     this.attachShadow({mode: "open"});
     this.shadowRoot.addEventListener('slotchange', e => this.slotchange(e));
-    this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><div></div>`;
+    this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><div></div><link rel="stylesheet" href="test.css">`;
     window.addEventListener('message', e => this.message(e));
   }
 
@@ -95,7 +37,6 @@ export class TestHtml extends HTMLElement {
     res = res[1].pop();
     delete res.el;
     this.shadowRoot.children[2].innerHTML =`
-<style>${style}</style>
 ${this.hasAttribute('show-labels') ? printLabel(res) : ''}
 ${toRowHtml(this.id, res)}
 `;
@@ -111,7 +52,6 @@ ${toRowHtml(this.id, res)}
     this.shadowRoot.children[1].src =
       `data:text/html;charset=utf-8,${encodeURI(`<base href='${document.location.href}'/>${slotted[0].innerHTML}`)}#${this.#id}`;
     this.shadowRoot.children[2].innerHTML = `
-<style>${style}</style>
 ${toRowHtml(this.id, {"hasParentNode":false,"hasAttributes":false,"hasChildNodes":false,"isConnected":false,"isLoading":false,"isCurrentScript":false,"isEventListener":false,"currentElementIsLastElement":false,"currentScriptIsLastElement":false,"syncUpgrade":false,"predictive":false,"NEW":false})}
 `;
   }

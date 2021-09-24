@@ -1,0 +1,53 @@
+div.row > * {
+  box-sizing: border-box;
+  height: 20px;
+  width: 20px;
+}
+div[name] {
+  display: inline-block;
+  width: 400px;
+  text-align: right;
+}
+div[key] {
+  display: inline-block;
+  border: 1px solid grey;
+}
+[value='false'] {
+  background: white;
+}
+[value='true'] {
+  background: green;
+}
+[value='true'] {
+  background: green;
+}
+.disconnected{
+  border-right: 3px solid red;
+}
+.empty{
+  border-left: 3px solid orange;
+}
+.innerHTML, .insertAdjacentHTML, div[key='innerHTML'][value='true']{
+  background-color: lightgrey;
+}
+.predictive, div[key='predictive'][value='true']{
+  background-color: pink;
+}
+.createElement, .NEW, div[key='NEW'][value='true']{
+  background-color: lightblue;
+}
+.cloneNode, div[key='cloneNode'][value='true']{
+  background-color: yellow;
+}
+.upgrade, div[key='upgrade'][value='true']{
+  background-color: lightgreen;
+}
+div[key='syncUpgrade'][value='true']{
+  background-color: red;
+}
+
+.row.label > div[key] {
+  color: black;
+  writing-mode: tb;
+  height: fit-content;
+}
