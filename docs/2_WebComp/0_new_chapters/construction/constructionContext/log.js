@@ -5,9 +5,7 @@ function lastParsedElementInDocument() {
   return l;
 }
 
-const sequence = [];
-
-window.log = function (el) {
+console.log = function (el) {
   const lastElementInDocument = lastParsedElementInDocument();
   const currentScript = document.currentScript;
   const syncUpgrade = !!(currentScript && currentScript.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_CONTAINS);
@@ -25,20 +23,5 @@ window.log = function (el) {
   };
   data.predictive = data.isLoading && !data.isCurrentScript;
   data.NEW = !data.hasParentNode && !data.hasAttributes && !data.hasChildNodes;
-  sequence.push(data);
+  parent.postMessage(JSON.stringify([location.hash.substr(1), data]), '*');
 }
-
-function print2() {
-  parent.postMessage(JSON.stringify([location.hash.substr(1), sequence]), '*');
-}
-
-setTimeout(print2, 100);
-
-class WebComp extends HTMLElement {
-  constructor() {
-    super();
-    log(this);
-  }
-}
-
-customElements.define('web-comp', WebComp);

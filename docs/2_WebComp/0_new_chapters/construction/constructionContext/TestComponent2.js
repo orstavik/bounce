@@ -18,23 +18,22 @@ export class TestHtml extends HTMLElement {
 
   onMessage(e) {
     let res = JSON.parse(e.data);
-    if (!(res instanceof Array && res[0] === this.#id + ''))
-      return;
-    res = res[1].pop();
-    delete res.el;
-    this.render(res);
+    if (res instanceof Array && res[0] === this.#id + '')
+      this.render(res[1]);
   }
 
   render(res) {
-    this.#div.innerHTML = `
+    //todo add the number, flip the script, so that the name is one box, and the content is another
+    delete res.el;
+    this.#div.insertAdjacentHTML('beforeend', `
 <div class="row label">
     <div name></div>
     ${Object.entries(res).map(([k, v]) => `<div key="${k}">${k}</div>`).join('\n')}
 </div>
 <div class="row">
-    <div name class="${(this.id)}">${(this.id)}</div>
+    <div name class="${this.id}">${this.id}</div>
     ${Object.entries(res).map(([k, v]) => `<div key="${k}" value="${v}"> </div>`).join('\n')}
-</div>`;
+</div>`);
   }
 
   slotchange(e) {
@@ -45,7 +44,14 @@ export class TestHtml extends HTMLElement {
     if (slotted.length > 1 || slotted[0].tagName !== 'NOSCRIPT')
       throw new Error('TestHtml can only contain a single <noscript></noscript> element.');
 
-    this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(`<base href='${document.location.href}'/>${slotted[0].innerHTML}`)}#${this.#id}`;
-    this.render({"hasParentNode":false,"hasAttributes":false,"hasChildNodes":false,"isConnected":false,"isLoading":false,"isCurrentScript":false,"isEventListener":false,"currentElementIsLastElement":false,"currentScriptIsLastElement":false,"syncUpgrade":false,"predictive":false,"NEW":false});
+    const txt = `
+<base href='${document.location.href}'/>
+<script src='log.js'></script>
+<script src="window_constructionContext.js"></script>
+<script src="window_legalConstruction.js"></script>
+${slotted[0].innerHTML}`;
+    this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(`${txt}`)}#${this.#id}`;
+    //todo print the error
+    // this.render({"hasParentNode":false,"hasAttributes":false,"hasChildNodes":false,"isConnected":false,"isLoading":false,"isCurrentScript":false,"isEventListener":false,"currentElementIsLastElement":false,"currentScriptIsLastElement":false,"syncUpgrade":false,"predictive":false,"NEW":false});
   }
 }
