@@ -60,7 +60,7 @@
   </noscript>
 </test-html>
 
-<test-html id="predictive nested" show-labels>
+<test-html id="predictive nested sibling" show-labels>
   <noscript>
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
@@ -68,6 +68,14 @@
       <web-comp><h1>sunshine</h1></web-comp>
       darkness
     </web-comp>
+    <!--
+    the first childChangedCallback is made when all the childNodes in template are parsed.
+    Most often this is during construction, but it doesn't have to be. Predictive parsing and upgrade within, this happens later.
+    The rule is: all template children are ready before first dispatch.
+    -->
+    <!--here we should test that the childChangedCallbacks are triggered at the right time-->
+    <!--when childChangedCallback is called, then all the nodes should be ready. Do we want to do this at dcl or interspersed/asap during parsing?-->
+    <web-comp><h1>hello</h1> sunshine</web-comp>
   </noscript>
 </test-html>
 
@@ -174,7 +182,7 @@
   <noscript>
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
-    <script>new WebComp()</script>
+    <script>setTimeout(()=>new WebComp())</script>
   </noscript>
 </test-html>
 
@@ -191,7 +199,7 @@
     <script src="./WebCompNormal.js"></script>
     <script>customElements.define('web-comp', WebComp);</script>
     <script>window.addEventListener('bob-bob', e => new WebComp())</script>
-    <script>window.dispatchEvent(new Event('bob-bob'))</script>
+    <script>setTimeout(()=>window.dispatchEvent(new Event('bob-bob')))</script>
   </noscript>
 </test-html>
 
