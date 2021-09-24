@@ -20,13 +20,19 @@ function toRowHtml(name, element) {
 
 export class TestHtml extends HTMLElement {
   #id;
+  #div;
+  #slot;
+  #iframe;
 
   constructor() {
     super();
-    this.#id = this.id.replaceAll(' ', '');
     this.attachShadow({mode: "open"});
     this.shadowRoot.addEventListener('slotchange', e => this.slotchange(e));
     this.shadowRoot.innerHTML = `<slot></slot><iframe hidden></iframe><div></div><link rel="stylesheet" href="test.css">`;
+    this.#id = this.id.replaceAll(' ', '');
+    this.#div = this.shadowRoot.children[2];
+    this.#slot = this.shadowRoot.children[0];
+    this.#iframe = this.shadowRoot.children[1];
     window.addEventListener('message', e => this.message(e));
   }
 
@@ -36,23 +42,24 @@ export class TestHtml extends HTMLElement {
       return;
     res = res[1].pop();
     delete res.el;
-    this.shadowRoot.children[2].innerHTML =`
-${this.hasAttribute('show-labels') ? printLabel(res) : ''}
-${toRowHtml(this.id, res)}
-`;
+    this.render(res);
+  }
+
+  render(res) {
+    this.#div.innerHTML =
+      `${this.hasAttribute('show-labels') ? printLabel(res) : ''}
+${toRowHtml(this.id, res)}`;
   }
 
   slotchange(e) {
-    const slotted = this.shadowRoot.children[0].assignedElements();
+    const slotted = this.#slot.assignedElements();
+    this.#iframe = this.shadowRoot.children[1];
     if (!slotted.length)
-      return this.shadowRoot.children[2].innerHTML = "", this.shadowRoot.children[1].src = "";
+      return this.#div.innerHTML = "", this.#iframe.src = "";
     if (slotted.length > 1 || slotted[0].tagName !== 'NOSCRIPT')
       throw new Error('TestHtml can only contain a single <noscript></noscript> element.');
 
-    this.shadowRoot.children[1].src =
-      `data:text/html;charset=utf-8,${encodeURI(`<base href='${document.location.href}'/>${slotted[0].innerHTML}`)}#${this.#id}`;
-    this.shadowRoot.children[2].innerHTML = `
-${toRowHtml(this.id, {"hasParentNode":false,"hasAttributes":false,"hasChildNodes":false,"isConnected":false,"isLoading":false,"isCurrentScript":false,"isEventListener":false,"currentElementIsLastElement":false,"currentScriptIsLastElement":false,"syncUpgrade":false,"predictive":false,"NEW":false})}
-`;
+    this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(`<base href='${document.location.href}'/>${slotted[0].innerHTML}`)}#${this.#id}`;
+    this.render({"hasParentNode":false,"hasAttributes":false,"hasChildNodes":false,"isConnected":false,"isLoading":false,"isCurrentScript":false,"isEventListener":false,"currentElementIsLastElement":false,"currentScriptIsLastElement":false,"syncUpgrade":false,"predictive":false,"NEW":false});
   }
 }
