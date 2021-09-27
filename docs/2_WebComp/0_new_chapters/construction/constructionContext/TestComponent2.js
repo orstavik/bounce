@@ -13,7 +13,7 @@ class TestHtml extends HTMLElement {
 <slot></slot>
 <iframe hidden></iframe>
 <div table>
-  <div name class="${this.id}">${this.id}</div>
+  <div name class="${this.id}">${this.id}<div id="code"></div></div>
   <div data></div>
 </div>
 <link rel="stylesheet" href="test.css">`;
@@ -33,10 +33,8 @@ class TestHtml extends HTMLElement {
   render(res) {
     const truth = Object.entries(res).filter(([k, v]) => v && k).map(([k, v]) => k);
     const row = Object.entries(res).map(([k, v]) => `<div class="${k}" value="${v}" title="${k}"> </div>`).join('\n');
-    this.#div.insertAdjacentHTML('beforeend', `<div class="row${this.#count++} ${truth.join(' ')}">${row}</div>`);
+    this.#div.insertAdjacentHTML('beforeend', `<div class="row row${this.#count++} ${truth.join(' ')}">${row}</div>`);
   }
-
-  //todo set up so that I can choose which properties to compare
 
   slotchange(e) {
     const slotted = this.#slot.assignedElements();
@@ -51,7 +49,9 @@ class TestHtml extends HTMLElement {
     const slotted = this.#slot.assignedElements();
     const context = this.hasAttribute('context') ?'<script src="window_constructionContext.js"></script>':'';
     const legal =this.hasAttribute('legal') ? '<script src="window_legalConstruction.js"></script>':'';
-    const txt = `<base href='${document.location.href}'/><script src='log.js'></script>${context}${legal}${slotted[0].innerHTML}`;
+    const testTxt = slotted[0].innerHTML.trim();
+    const txt = `<base href='${document.location.href}'/><script src='log.js'></script>${context}${legal}${testTxt}`;
+    this.shadowRoot.getElementById('code').innerText = testTxt;
     this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(txt)}#${this.#id}`;
   }
 

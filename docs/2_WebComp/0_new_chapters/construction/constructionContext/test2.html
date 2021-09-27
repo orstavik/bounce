@@ -1,15 +1,46 @@
-<div>
-  <button id="legal">legal</button>
-  <button id="context">context</button>
+<div style="position: absolute; top: 0; right: 0; border: 4px double grey">
+  <button id="legal">legal</button><br>
+  <button id="context">context</button><br>
+  <style>
+    input{ background: #666666;}
+    #isConnected {background-color: blue;}
+    #hasParentNode {background-color: lightblue;}
+    #hasAttributes {background-color: orange;}
+    #hasChildNodes {background-color: hotpink;}
+    #isLoading {background-color: yellow;}
+    #isCurrentScript {background-color: grey;}
+    #isEventListener {background-color: darkgrey;}
+    #currentElementIsLastElement {background-color: purple;}
+    #currentScriptIsLastElement {background-color: mediumpurple;}
+    #syncUpgrade {background-color: red;}
+    #predictive {background-color: green;}
+    #NEW {background-color: brown;}
+    #error {background-color: red;}
+  </style>
+  <input id='hasParentNode' type="checkbox"><label for="hasParentNode">hasParentNode</label><br>
+  <input id='hasAttributes' type="checkbox"><label for="hasAttributes">hasAttributes</label><br>
+  <input id='hasChildNodes' type="checkbox"><label for="hasChildNodes">hasChildNodes</label><br>
+  <input id='isConnected' type="checkbox"><label for="isConnected">isConnected</label><br>
+  <input id='isLoading' type="checkbox"><label for="isLoading">isLoading</label><br>
+  <input id='isCurrentScript' type="checkbox"><label for="isCurrentScript">isCurrentScript</label><br>
+  <input id='isEventListener' type="checkbox"><label for="isEventListener">isEventListener</label><br>
+  <input id='currentElementIsLastElement' type="checkbox"><label for="currentElementIsLastElement">currentElementIsLastElement</label><br>
+  <input id='currentScriptIsLastElement' type="checkbox"><label for="currentScriptIsLastElement">currentScriptIsLastElement</label><br>
+  <input id='syncUpgrade' type="checkbox"><label for="syncUpgrade">syncUpgrade</label><br>
+  <input id='predictive' type="checkbox"><label for="predictive">predictive</label><br>
+  <input id='NEW' type="checkbox"><label for="NEW">NEW</label><br>
 
   <script>
-    for (let button of document.querySelectorAll('button')) {
-      button.addEventListener('click', e => {
-        const att = e.target.id;
+    document.addEventListener('click', ({target:{id, tagName}}) => {
+      if (tagName === "BUTTON") {
         for (let test of document.querySelectorAll('test-html'))
-          test.hasAttribute(att) ? test.removeAttribute(att) : test.setAttribute(att, '');
-      });
-    }
+          test.hasAttribute(id) ? test.removeAttribute(id) : test.setAttribute(id, '');
+      }
+    });
+    document.addEventListener('change', ({target: {id}})=>{
+      for (let test of document.querySelectorAll('test-html'))
+        test.hasAttribute(id) ? test.removeAttribute(id) : test.setAttribute(id, '');
+    });
   </script>
 </div>
 

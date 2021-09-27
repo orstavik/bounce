@@ -2,7 +2,20 @@ div[table] {
   display: grid;
   grid-template-columns: 400px auto;
 }
-div[name] { text-align: right; }
+div[name] { text-align: right; position: relative; }
+div#code {
+  display: none;
+  position: absolute;
+  z-index: 100;
+  background: white;
+  border: 2px solid grey;
+  text-align: left;
+  font-family: monospace;
+  padding: 10px;
+}
+div[name]:hover #code {
+  display: block;
+}
 
 div[value] {
   box-sizing: border-box;
@@ -36,3 +49,18 @@ div[value='false'] { display: none; }
 .predictive[value='true'] {background-color: green;}
 .NEW[value='true'] {background-color: brown;}
 .error:not([value]) {background-color: red;}
+
+:host([hasAttributes]) div.row:not(.hasAttributes),
+:host([hasChildNodes]) div.row:not(.hasChildNodes),
+:host([isConnected]) div.row:not(.isConnected),
+:host([isLoading]) div.row:not(.isLoading),
+:host([isCurrentScript]) div.row:not(.isCurrentScript),
+:host([isEventListener]) div.row:not(.isEventListener),
+:host([currentElementIsLastElement]) div.row:not(.currentElementIsLastElement),
+:host([currentScriptIsLastElement]) div.row:not(.currentScriptIsLastElement),
+:host([syncUpgrade]) div.row:not(.syncUpgrade),
+:host([predictive]) div.row:not(.predictive),
+:host([NEW]) div.row:not(.NEW),
+:host([hasParentNode]) div.row:not(.hasParentNode) {
+  display: none;
+}
