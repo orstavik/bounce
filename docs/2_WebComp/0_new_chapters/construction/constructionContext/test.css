@@ -33,9 +33,10 @@ div[value] {
 .upgrade[name] { background-color: lightgreen; }
 
 
-div[value='false'] { display: none; }
+div[value='false'], div[value='0'] { display: none; }
 .isConnected[value='true'] {background-color: blue;}
 .hasParentNode[value='true'] {background-color: lightblue;}
+.new_target[value='true']{background-color: salmon;}
 .hasAttributes[value='true'] {background-color: orange;}
 .hasChildNodes[value='true'] {background-color: hotpink;}
 
@@ -48,6 +49,8 @@ div[value='false'] { display: none; }
 .syncUpgrade[value='true'] {background-color: red;}
 .predictive[value='true'] {background-color: green;}
 .NEW[value='true'] {background-color: brown;}
+.withinCount[value='1'], .withinCount[value='2'] { background-color: burlywood;}
+
 .error:not([value]) {background-color: red;}
 
 :host([hasAttributes]) div.row:not(.hasAttributes),

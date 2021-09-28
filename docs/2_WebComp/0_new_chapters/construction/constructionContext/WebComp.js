@@ -1,7 +1,7 @@
 class WebComp extends HTMLElement {
   constructor() {
     super();
-    console.log(this);
+    console.log(this, new.target);
   }
 }
 
