@@ -197,4 +197,4 @@ Furthermore, we make this aggregation implicit, not using `super.connectedCallba
 
 ## References
 
- * omg, where to begin;) 
+ * Martin Fowler https://www.martinfowler.com/bliki/CallSuper.html
