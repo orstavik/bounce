@@ -1,0 +1,41 @@
+<script>
+  //Problem and solution for
+  //  new constructor() inside predictive constructor().
+  //
+  //The solution require a aggregate extends-syntax
+  //for attributeChangedCallback and connectedCallback.
+  let x;
+
+  function log(el) {
+    console.log(el, document.currentScript, document.readyState, x);
+  }
+
+  class WebA extends HTMLElement{
+    constructor() {
+      super();
+      log(this);
+      x = this;
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.appendChild(new WebB());
+    }
+    attributeChangedCallback(){
+      x = undefined;
+    }
+    connectedCallback(){
+      x = undefined;
+    }
+  }
+
+  class WebB extends HTMLElement{
+    constructor() {
+      super();
+      log(this);
+    }
+  }
+
+  customElements.define("web-a", WebA);
+  customElements.define("web-b", WebB);
+</script>
+
+<web-a></web-a>
+<web-a></web-a>
