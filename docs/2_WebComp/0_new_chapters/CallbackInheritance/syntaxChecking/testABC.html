@@ -1,0 +1,59 @@
+<script src="customElements.define.syntaxCheck.inheritance.js"></script>
+<script>
+
+  class FixedHTMLElement extends HTMLElement {
+    connectedCallback/*boo*/(/*boo*/) {//hoo
+      /*
+      https://ooppsi
+       */
+      console.log("HTMLElement.connectedCallback");
+    }
+
+    attributeChangedCallback() {
+      console.log("HTMLElement.attributeChangedCallback");
+    }
+  }
+
+  class A extends FixedHTMLElement {
+
+    attributeChangedCallback() {
+      super.attributeChangedCallback(...arguments);
+      if (name === 'a')
+        console.log("A.attributeChangedCallback");
+      else if (name === 'c')
+        console.log("A.attributeChangedCallback");
+    }
+
+    static get observedAttributes() {
+      return ['a', 'c'];
+    }
+  }
+
+  class B extends A {
+
+    attributeChangedCallback(name, oldValue, newValue) {
+      super.attributeChangedCallback(...arguments);
+      if (name === 'b')
+        console.log("B.attributeChangedCallback");
+    }
+
+    static get observedAttributes() {
+      return ['b', 'a', 'c'];
+    }
+  }
+
+  class C extends B {
+
+    attributeChangedCallback() {
+      super.attributeChangedCallback(...arguments);
+      if (name === 'c')
+        console.log("C.attributeChangedCallback");
+    }
+
+    static get observedAttributes() {
+      return ['c', 'b', 'a'];
+    }
+  }
+
+  customElements.define('web-c', C);
+</script>
