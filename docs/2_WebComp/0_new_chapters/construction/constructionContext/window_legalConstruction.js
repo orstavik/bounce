@@ -36,20 +36,20 @@
   //   within the predictive parser.
 
   //An additional scenario, upgradeInside can be added as either illegal or as a warning
-
-  function checkUpgradeInside(el) {
-    if (!(document.currentScript && document.currentScript.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_CONTAINS))
-      return;
-    const tag = el.tagName.toLowerCase();
-    throw new SyntaxError(`UpgradeInside! 
+  function upgradeInsideErrorMessage(tag) {
+    return `UpgradeInside! 
 <!-- move your script here instead, or at the end of the main document if it doesn't define layout on the page -->
 <${tag} ...>
   ...
   <script>      //it is not a good idea to do this positioning.
     ...
-    customElements.define('tag', ...);
+    customElements.define('${tag}', ...);
   </script>  
-</${tag}>`);
+</${tag}>`;
+  }
+
+  function makeNEWErrorMessage(el) {
+    return `Illegal constructor: "new ${(Object.getPrototypeOf(el).constructor.name)}()". Try "document.createElement('${(el.tagName.toLowerCase())}')"`;
   }
 
   let flag;
@@ -59,14 +59,18 @@
 
     constructor() {
       super();
-      checkUpgradeInside(this);
+      //1. upgradeInside!!
+      if (document.currentScript && document.currentScript.compareDocumentPosition(this) & Node.DOCUMENT_POSITION_CONTAINS)
+        throw new SyntaxError(upgradeInsideErrorMessage(this.tagName.toLowerCase()));
+      //2. scenarios easily identify as not new
       if (this.parentNode || this.attributes.length || this.childNodes.length || flag)
         return;
+      //3. predictive parser vs. new
       if (document.readyState === 'loading' && !document.currentScript && !flagPredictive) //signature for a predictive parser constructor.
         flagPredictive = this;
-      throw new SyntaxError(
-        `Illegal constructor: "new ${Object.getPrototypeOf(this).constructor.name}()". Try "document.createElement('${this.tagName.toLowerCase()}')"`
-      );
+      //4. new!!
+      else
+        throw new SyntaxError(makeNEWErrorMessage(this, this));
     }
 
     connectedCallback() {
@@ -97,5 +101,3 @@
     }
   }));
 })();
-
-//todo 1. don't think I need .connectedCallback() in the test class.

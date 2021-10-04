@@ -3,6 +3,10 @@ class WebComp extends HTMLElement {
     super();
     console.log(this, new.target);
   }
+
+  connectedCallback() {
+    super.connectedCallback && super.connectedCallback();
+  }
 }
 
 customElements.define('web-comp', WebComp);
