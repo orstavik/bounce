@@ -116,9 +116,8 @@
 </script>
 
 <body>
-<h3>This is a test of siblings: c-1, d-1</h3>
+<h3>Naive test</h3>
 <web-comp c-1>bob</web-comp>
-<!--<web-comp d-1></web-comp>-->
 
 <script>
   class InnerComp extends HTMLElement {
@@ -129,8 +128,8 @@
       this.shadowRoot.innerHTML = `<slot></slot>`;
     }
 
-    childChangedCallback(rec) {
-      console.log(this.tagName, rec.newNodes, rec.oldNodes, rec.addedNodes, rec.removedNodes);
+    childChangedCallback({newNodes, oldNodes, addedNodes, removedNodes}) {
+      console.log(this.tagName, newNodes, oldNodes, addedNodes, removedNodes);
     }
   }
 
@@ -142,8 +141,8 @@
       this.shadowRoot.innerHTML = `<inner-comp><slot></slot></inner-comp>`;
     }
 
-    childChangedCallback(rec) {
-      console.log(this.tagName, rec.newNodes, rec.oldNodes, rec.addedNodes, rec.removedNodes);
+    childChangedCallback({newNodes, oldNodes, addedNodes, removedNodes}) {
+      console.log(this.tagName, newNodes, oldNodes, addedNodes, removedNodes);
     }
   }
 
