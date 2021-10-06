@@ -49,7 +49,7 @@
           //4. call childReady on the remaining elements, but do so LIFO/bottom-up/right-left.
           //   The LIFO structure will then be the same for all elements waiting for childReady.
           const lastEl = list.pop();
-          doChildReady(el);
+          doChildReady(lastEl);
           //5. when the childReady is completed, reset the elements if there are no more elements in the list.
           if (lastEl === el)
             return list.length === 0 && (active = active.disconnect());
@@ -87,21 +87,21 @@
 </script>
 
 <body>
-<h3>This is a test of siblings: s-2, ss-2</h3>
-<web-comp s-2></web-comp>
-<web-comp ss-2></web-comp>
+<h3>This is a test of siblings: s-1, ss-1</h3>
+<web-comp s-1></web-comp>
+<web-comp ss-1></web-comp>
 
-<h3>This is a test of siblings NO whitespace: ss-1, s-1</h3>
+<h3>This is a test of siblings NO whitespace: ss-2, s-2</h3>
 <p>This will be treated as if it was nested, because there is no way to see the difference from JS. Currently. Unfortunately.</p>
-<web-comp s-1></web-comp><web-comp ss-1></web-comp>
+<web-comp s-2></web-comp><web-comp ss-2></web-comp>
 
-<h3>This is a test of nested: b-2, a-2</h3>
-<web-comp a-2>
-  <web-comp b-2></web-comp>
+<h3>This is a test of nested: b-1, a-1</h3>
+<web-comp a-1>
+  <web-comp b-1></web-comp>
 </web-comp>
 
-<h3>This is a test of nested NO whitespace: b-1, a-1</h3>
-<web-comp a-1><web-comp b-1></web-comp></web-comp>
+<h3>This is a test of nested NO whitespace: b-2, a-2</h3>
+<web-comp a-2><web-comp b-2></web-comp></web-comp>
 
 <h3>This is a test of sync script, x-1, x1</h3>
 <web-comp x-1></web-comp>
@@ -112,7 +112,7 @@
 
 <h3>This is a test of predictive before readystatechange event: </h3>
 <script>document.addEventListener('readystatechange', e => console.log(e.type, document.readyState));</script>
-<web-comp x-1>
+<web-comp y-1>
   <h5>Native stuff</h5>
   <h5>Native stuff</h5>
 </web-comp>
