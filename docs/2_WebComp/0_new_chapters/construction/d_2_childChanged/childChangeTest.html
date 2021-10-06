@@ -3,36 +3,32 @@
   (function () {
 
     class ChildChangedRecord {
-      #newOg;
-      #oldOg;
-      #addOg;
-      #remOg;
-      #new;
+      #news;
       #old;
-      #add;
-      #rem;
+      #added;
+      #removed;
 
-      constructor(newChildNodes, oldChildNodes, added, removed) {
-        this.#newOg = newChildNodes;
-        this.#oldOg = oldChildNodes;
-        this.#addOg = added;
-        this.#remOg = removed;
+      constructor(newNodes, oldNodes, added, removed) {
+        this.#news = newNodes;
+        this.#old = oldNodes;
+        this.#added = added;
+        this.#removed = removed;
       }
 
       get newNodes() {
-        return this.#new || Object.freeze(this.#new = this.#newOg.slice());
+        return Object.freeze(this.#news);
       }
 
       get oldNodes() {
-        return this.#old || Object.freeze(this.#old = this.#oldOg.slice());
+        return Object.freeze(this.#old);
       }
 
       get addedNodes() {
-        return this.#add || Object.freeze(this.#add = this.#addOg.slice());
+        return Object.freeze(this.#added);
       }
 
       get removedNodes() {
-        return this.#rem || Object.freeze(this.#rem = this.#remOg.slice());
+        return Object.freeze(this.#removed);
       }
     }
 
@@ -153,7 +149,7 @@
 <script>
   for (let wc of document.querySelectorAll("web-comp"))
     wc.append(document.createElement('div'));
-  setTimeout(()=>{
+  setTimeout(() => {
     for (let wc of document.querySelectorAll("web-comp"))
       wc.firstChild.remove();
   })
