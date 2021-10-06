@@ -25,6 +25,10 @@ If your web component has a fixed shadowRoot (ie. do not add/remove or change th
 
 If HTML elements or CSS rules in your web component varies with the presence or value of attributes, create your web component in `ready()`. The goal of CSS and CSS variables and CSS shadow parts etc is to make such shadowRoot structures unnecessary. However, this might be too difficult, not yet available in all browsers, or otherwise hindered, so that the most efficient overall solution is to change the HTML structure of the DOM using JS event listeners in `attributeChangedCallback()`. If you try to implement `<details open>` using web components today for example, creating the shadowDOM during `ready()` is best.
 
+You don't need ready for event listeners. What you need for event listeners is an off attribute. And if you manage to construct the shadowRoot that only use css to react to host node attributes, then you don't need ready for shadowRoot. Maybe there is no real use-case for ready.
+
+No. There is still a big use-case for ready. What if the component needs to observe *other* aspects of its context, such as browser type or 'offline/online' at the beginning? And show these properties as attributes? Then, it cannot write attributes during predictive parser, not from a prt either, and that means that it must have a ready-callback.. Or does it. I need 
+
 ## WhenTo: construct shadowRoot during the first `childChangedCallback()`?
 
 Some web components <slot> around its childNodes and might cause FOUC if you have different childNode configuration. Again, think `<details>` and the edge cases with missing `<summary>` elements. Here, you might need to make dynamic changes to the shadowRoot elements that vary with the presence of certain child nodes. And when that happens, you wish to delay the construction of the shadowRoot until you know that the children are listed.
