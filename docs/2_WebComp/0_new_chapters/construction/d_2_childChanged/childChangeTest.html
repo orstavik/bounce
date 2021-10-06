@@ -2,6 +2,40 @@
 
   (function () {
 
+    class ChildChangedRecord {
+      #newOg;
+      #oldOg;
+      #addOg;
+      #remOg;
+      #new;
+      #old;
+      #add;
+      #rem;
+
+      constructor(newChildNodes, oldChildNodes, added, removed) {
+        this.#newOg = newChildNodes;
+        this.#oldOg = oldChildNodes;
+        this.#addOg = added;
+        this.#remOg = removed;
+      }
+
+      get newNodes() {
+        return this.#new || Object.freeze(this.#new = this.#newOg.slice());
+      }
+
+      get oldNodes() {
+        return this.#old || Object.freeze(this.#old = this.#oldOg.slice());
+      }
+
+      get addedNodes() {
+        return this.#add || Object.freeze(this.#add = this.#addOg.slice());
+      }
+
+      get removedNodes() {
+        return this.#rem || Object.freeze(this.#rem = this.#remOg.slice());
+      }
+    }
+
     function nextSlotMatroschkaHost(el) {
       for (let c of el.childNodes) {
         if (c instanceof HTMLSlotElement)
@@ -41,13 +75,13 @@
 
     function observeFlatChildNodes(el) {
       let mo = moCache.get(el);
-      mo ? mo.disconnect() : mo = new MutationObserver(()=>doChildChanged(el));
+      mo ? mo.disconnect() : mo = new MutationObserver(() => doChildChanged(el));
       for (let obs of slotMatroschkaHosts(el))
         mo.observe(obs, {childList: true});
     }
 
     function doChildChanged(el) {
-      const oldChildren = flatChildNodesCache.get(el);
+      const oldChildren = flatChildNodesCache.get(el) || [];
       const newChildren = Array.from(flatChildNodes(el));
       const d = diff(oldChildren, newChildren);
       if (!d)
@@ -55,7 +89,7 @@
       flatChildNodesCache.set(el, newChildren);
       observeFlatChildNodes(el);
       try {
-        el.childChangedCallback({oldChildren, newChildren});  //todo make a class here for the value object returned.
+        el.childChangedCallback(new ChildChangedRecord(newChildren, oldChildren, d.added, d.removed));
       } catch (err) {
         window.dispatchEvent(new Event('Uncaught Error: ' + err.message)); //todo
       }
@@ -69,10 +103,11 @@
 
       constructor() {
         super();
-        if (!this.childChangedCallback)
-          return;
-        flatChildNodesCache.set(this, Array.from(flatChildNodes(this)));
-        observeFlatChildNodes(this);
+        this.childReadyCallback(); //todo this is a hack since we don't implement childReady here.
+      }
+
+      childReadyCallback() {
+        this.childChangedCallback && doChildChanged(this);
       }
     }
 
@@ -94,11 +129,10 @@
       this.shadowRoot.innerHTML = `<slot></slot>`;
     }
 
-    childChangedCallback(o, n) {
-      console.log("inner", o, n);
+    childChangedCallback(rec) {
+      console.log(this.tagName, rec.newNodes, rec.oldNodes, rec.addedNodes, rec.removedNodes);
     }
   }
-
 
   class WebComp extends HTMLElement {
 
@@ -108,8 +142,8 @@
       this.shadowRoot.innerHTML = `<inner-comp><slot></slot></inner-comp>`;
     }
 
-    childChangedCallback(o, n) {
-      console.log("web", o, n);
+    childChangedCallback(rec) {
+      console.log(this.tagName, rec.newNodes, rec.oldNodes, rec.addedNodes, rec.removedNodes);
     }
   }
 
@@ -120,5 +154,9 @@
 <script>
   for (let wc of document.querySelectorAll("web-comp"))
     wc.append(document.createElement('div'));
+  setTimeout(()=>{
+    for (let wc of document.querySelectorAll("web-comp"))
+      wc.firstChild.remove();
+  })
 </script>
 </body>
