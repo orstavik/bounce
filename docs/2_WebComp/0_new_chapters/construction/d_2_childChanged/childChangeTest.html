@@ -1,0 +1,124 @@
+<script>
+
+  (function () {
+
+    function nextSlotMatroschkaHost(el) {
+      for (let c of el.childNodes) {
+        if (c instanceof HTMLSlotElement)
+          return c.getRootNode().host;
+      }
+    }
+
+    function* slotMatroschkaHosts(el) {
+      for (; el; el = nextSlotMatroschkaHost(el))
+        yield el;
+    }
+
+    function* flatChildNodes(el) {
+      for (let i = 0; i < el.childNodes.length; i++) {
+        let c = el.childNodes[i];
+        if (c instanceof HTMLSlotElement) {
+          for (let c2 of c.assignedNodes({flatten: true}))
+            yield c2;
+        } else {
+          yield c;
+        }
+      }
+    }
+
+    //difference between two maps
+    //note, if elements are moved around, not added or removed, then this will return {added: [], removed:[]}, which is good.
+    function diff(as, bs) {
+      if (as.length !== bs.length || !as.every((e, i) => bs[i] === e))
+        return {
+          added: bs.filter(b => as.indexOf(b) === -1),
+          removed: as.filter(a => bs.indexOf(a) === -1)
+        };
+    }
+
+    const flatChildNodesCache = new WeakMap();
+    const moCache = new WeakMap();
+
+    function observeFlatChildNodes(el) {
+      let mo = moCache.get(el);
+      mo ? mo.disconnect() : mo = new MutationObserver(()=>doChildChanged(el));
+      for (let obs of slotMatroschkaHosts(el))
+        mo.observe(obs, {childList: true});
+    }
+
+    function doChildChanged(el) {
+      const oldChildren = flatChildNodesCache.get(el);
+      const newChildren = Array.from(flatChildNodes(el));
+      const d = diff(oldChildren, newChildren);
+      if (!d)
+        return;
+      flatChildNodesCache.set(el, newChildren);
+      observeFlatChildNodes(el);
+      try {
+        el.childChangedCallback({oldChildren, newChildren});  //todo make a class here for the value object returned.
+      } catch (err) {
+        window.dispatchEvent(new Event('Uncaught Error: ' + err.message)); //todo
+      }
+    }
+
+    //todo this require the childReady callback point to avoid problems during loading construction.
+    //todo as a way to bypass this problem, we can simply do all the tests after loading.
+    const HTMLElementOG = HTMLElement;
+
+    class ChildChangedHTMLElement extends HTMLElementOG {
+
+      constructor() {
+        super();
+        if (!this.childChangedCallback)
+          return;
+        flatChildNodesCache.set(this, Array.from(flatChildNodes(this)));
+        observeFlatChildNodes(this);
+      }
+    }
+
+    window.HTMLElement = ChildChangedHTMLElement;
+  })();
+</script>
+
+<body>
+<h3>This is a test of siblings: c-1, d-1</h3>
+<web-comp c-1>bob</web-comp>
+<!--<web-comp d-1></web-comp>-->
+
+<script>
+  class InnerComp extends HTMLElement {
+
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = `<slot></slot>`;
+    }
+
+    childChangedCallback(o, n) {
+      console.log("inner", o, n);
+    }
+  }
+
+
+  class WebComp extends HTMLElement {
+
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = `<inner-comp><slot></slot></inner-comp>`;
+    }
+
+    childChangedCallback(o, n) {
+      console.log("web", o, n);
+    }
+  }
+
+  customElements.define('inner-comp', InnerComp);
+  customElements.define('web-comp', WebComp);
+</script>
+
+<script>
+  for (let wc of document.querySelectorAll("web-comp"))
+    wc.append(document.createElement('div'));
+</script>
+</body>
