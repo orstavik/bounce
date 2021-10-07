@@ -1,0 +1,35 @@
+<script src="../constructionContext/window_constructionFrames.js"></script>
+<script src="AttributeReadyCallback.js"></script>
+<script>
+  class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      console.log(this, "constructor");
+    }
+
+    attributeReadyCallback(){
+      console.log(this, "attributeReadyCallback");
+    }
+    
+    attributeChangedCallback() {
+      super.attributeChangedCallback();
+      console.log(this, "attributeChangedCallback");
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      console.log(this, "connectedCallback");
+    }
+
+    static get observedAttributes() {
+      return ['a'];
+    }
+  }
+
+  customElements.define('web-comp', WebComp);
+</script>
+
+<web-comp a>
+  <web-comp></web-comp>
+</web-comp>
+</span>

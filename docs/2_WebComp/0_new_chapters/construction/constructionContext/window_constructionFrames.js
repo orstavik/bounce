@@ -15,7 +15,7 @@
   } 
 
   window.constructionFrameEnd = function constructionFrameEnd(){
-    constructionFrames.shift();
+    return constructionFrames.shift();
   } 
 
   function wrapConstructionFunction(og, type) {
@@ -42,7 +42,7 @@
   monkeyPatch(CustomElementRegistry.prototype, "define", 'value');
 
   if (document.readyState === "loading") {
-    constructionFrames.unshift('predictive');
-    window.addEventListener('readystatechange', () => constructionFrames.shift());
+    constructionFrameStart('predictive');
+    window.addEventListener('readystatechange', constructionFrameEnd);
   }
 })();
