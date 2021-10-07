@@ -1,5 +1,5 @@
 (function () {
-  //NewIllegalConstructor
+  //NoNewConstructorHTMLElement
   //
   //Monkeypatch which makes *new* an illegal constructor mechanism for custom HTMLElements, not just native HTMLElements.
   //Most likely this can be removed during production, this mechanism is only to dissuade the developer from using

@@ -47,7 +47,7 @@ class TestHtml extends HTMLElement {
   runTest() {
     this.#div.innerHTML = '';
     const slotted = this.#slot.assignedElements();
-    const context = this.hasAttribute('context') ?'<script src="window_constructionContext.js"></script>':'';
+    const context = this.hasAttribute('context') ?'<script src="window_constructionFrames.js"></script>':'';
     const legal =this.hasAttribute('legal') ? '<script src="window_legalConstruction.js"></script>':'';
     const testTxt = slotted[0].innerHTML.trim();
     const txt = `<base href='${document.location.href}'/><script src='log.js'></script>${context}${legal}${testTxt}`;
