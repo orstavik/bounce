@@ -1,7 +1,7 @@
 //DEPENDS ON childReadyCallback()
 (function () {
 
-  class SlotHostObserver  {
+  class SlotHostObserver {
 
     static #cache = new WeakMap();
 
@@ -20,7 +20,8 @@
     static observe(el, cb) {
       const cache = SlotHostObserver.#cache;
       let mo = cache.get(el);
-      mo ? mo.disconnect() : cache.set(el, mo = new MutationObserver(cb));
+      mo ? mo.disconnect() : cache.set(el, mo = new MutationObserver(() => cb(el)));
+      //todo it is possible to *not* disconnect and re-observe if the slotMatroschkaHosts have not changed.
       for (let host of SlotHostObserver.#slotMatroschkaHosts(el))
         mo.observe(host, {childList: true});
     }
@@ -95,7 +96,7 @@
     if (!d)
       return;
     flatChildNodesCache.set(el, newChildren);
-    SlotHostObserver.observe(el, ()=>doChildChanged(el));
+    SlotHostObserver.observe(el, doChildChanged);
     callChildChangedCallback(el, new ChildChangedRecord(newChildren, oldChildren, d.added, d.removed));
   }
 
@@ -104,8 +105,12 @@
   class ChildChangedHTMLElement extends HTMLElementOG {
 
     childReadyCallback() {
-      //todo bug. when the element has no children, the system never starts
-      this.childChangedCallback && doChildChanged(this);
+      if (!this.childChangedCallback)
+        return;
+      const newChildren = Array.from(flatChildNodes(this));
+      flatChildNodesCache.set(this, newChildren);
+      SlotHostObserver.observe(this, doChildChanged);
+      callChildChangedCallback(this, new ChildChangedRecord(newChildren, [], newChildren, []));
     }
   }
 
