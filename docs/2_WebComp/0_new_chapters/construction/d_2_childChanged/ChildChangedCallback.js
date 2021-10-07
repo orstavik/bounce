@@ -1,6 +1,7 @@
 //DEPENDS ON childReadyCallback()
 (function () {
 
+  //observes the host chain for all hosts that might slot in an element.
   class SlotHostObserver {
 
     static #cache = new WeakMap();
@@ -34,6 +35,9 @@
   }
 
   class ChildChangedRecord {
+
+    static #flatChildNodesCache = new WeakMap();
+
     #news;
     #old;
     #added;
@@ -61,18 +65,30 @@
     get removedNodes() {
       return Object.freeze(this.#removed);
     }
+
+    static #init(el) {
+      const nowChildren = flatChildNodes(el);
+      const rec = new ChildChangedRecord(nowChildren, [], nowChildren, []);
+      ChildChangedRecord.#flatChildNodesCache.set(el, rec);
+      return rec;
+    }
+
+    static check(el) {
+      const prev = ChildChangedRecord.#flatChildNodesCache.get(el);
+      if(!prev)
+        return ChildChangedRecord.#init(el);
+      const nowChildren = flatChildNodes(el);
+      const d = diff(prev.#news, nowChildren);
+      if(!d)
+        return;
+      const rec = new ChildChangedRecord(nowChildren, prev.#news, d.added, d.removed);
+      ChildChangedRecord.#flatChildNodesCache.set(el, rec);
+      return rec;
+    }
   }
 
-  function* flatChildNodes(el) {
-    for (let i = 0; i < el.childNodes.length; i++) {
-      let c = el.childNodes[i];
-      if (c instanceof HTMLSlotElement) {
-        for (let c2 of c.assignedNodes({flatten: true}))
-          yield c2;
-      } else {
-        yield c;
-      }
-    }
+  function flatChildNodes(el) {
+    return Array.from(el.childNodes).map(c => c instanceof HTMLSlotElement ? c.assignedNodes({flatten: true}) : c).flat(1);
   }
 
   //difference between two maps
@@ -85,8 +101,6 @@
       };
   }
 
-  const flatChildNodesCache = new WeakMap();
-
   function callChildChangedCallback(el, childChangedRecord) {
     try {
       el.childChangedCallback(childChangedRecord);
@@ -96,14 +110,11 @@
   }
 
   function doChildChanged(el) {
-    const oldChildren = flatChildNodesCache.get(el) || [];
-    const newChildren = Array.from(flatChildNodes(el));
-    const d = diff(oldChildren, newChildren);
-    if (!d)
-      return;
-    flatChildNodesCache.set(el, newChildren);
-    SlotHostObserver.refresh(el);
-    callChildChangedCallback(el, new ChildChangedRecord(newChildren, oldChildren, d.added, d.removed));
+    const rec = ChildChangedRecord.check(el);
+    if (rec) {
+      SlotHostObserver.refresh(el); //todo here we can pass in added/removed to check if there are any slot elements that are mutated.
+      callChildChangedCallback(el, rec);
+    }
   }
 
   const HTMLElementOG = HTMLElement;
@@ -113,10 +124,13 @@
     childReadyCallback() {
       if (!this.childChangedCallback)
         return;
-      const newChildren = Array.from(flatChildNodes(this));
-      flatChildNodesCache.set(this, newChildren);
+      //todo fuck new bug. because the childReady is called on the child first, then it will not get the parent slotted children.. why?
+      //todo it happens because the childReady is called on the nested element first, while the host element is not ready.
+      //todo and when that happens, the childNodes of the hostElement is not connected and thus the hostElement doesn't have the things it needs yet.
+      //todo this is seriously difficult stuff.
+      //todo this is fixed using a prt..
       SlotHostObserver.observe(this, doChildChanged);
-      callChildChangedCallback(this, new ChildChangedRecord(newChildren, [], newChildren, []));
+      callChildChangedCallback(this, ChildChangedRecord.check(this));
     }
   }
 
