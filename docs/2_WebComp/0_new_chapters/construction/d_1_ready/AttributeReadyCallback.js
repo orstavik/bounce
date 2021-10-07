@@ -22,17 +22,16 @@
   /**
    * mechanism for calling readyCallback on an element
    */
-  function doReadyCallback(frame) {
+  function doReadyCallback(frame, el) {
     frame.ready && callAttributeReadyCallback(frame.ready);
-    frame.ready = undefined;
+    frame.ready = el?.attributeReadyCallback ? el : undefined;
   }
 
   class AttributeReadyCallbackHTMLElement extends HTMLElement {
 
     constructor() {
       super();
-      doReadyCallback(constructionFrames[0]);
-      this.attributeReadyCallback && (constructionFrames[0].ready = this);
+      doReadyCallback(constructionFrames[0], this);
     }
 
     attributeChangedCallback() {
