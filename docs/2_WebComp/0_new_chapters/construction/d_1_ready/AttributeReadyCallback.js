@@ -25,7 +25,6 @@
   function doReadyCallback(frame) {
     frame.ready && callAttributeReadyCallback(frame.ready);
     frame.ready = undefined;
-    return frame;
   }
 
   class AttributeReadyCallbackHTMLElement extends HTMLElement {
@@ -52,6 +51,8 @@
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
   const constructionFrameEndOG = window.constructionFrameEnd;
   window.constructionFrameEnd = function attributeReadyConstructionFrameEnd(){
-    return doReadyCallback(constructionFrameEndOG());
+    const frame = constructionFrameEndOG();
+    doReadyCallback(frame);
+    return frame;
   }
 })();
