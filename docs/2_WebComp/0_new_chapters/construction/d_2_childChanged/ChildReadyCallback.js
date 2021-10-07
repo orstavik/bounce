@@ -1,5 +1,5 @@
 //this is an observer for "tagEnd" for custom elements during predictive parser/loading of the main document.
-class PredictiveParserObserver {
+class TagEndObserver {
   #_mo;
   #list = [];
   #cb;
@@ -28,8 +28,8 @@ class PredictiveParserObserver {
   }
 
   #parseIndex() {
-    const lastParsed = PredictiveParserObserver.lastParsed();
-    return this.#list.findIndex(el => el !== lastParsed && !(el.compareDocumentPosition(lastParsed) & Node.DOCUMENT_POSITION_CONTAINED_BY));
+    const lastParsed = TagEndObserver.lastParsed();
+    return this.#list.findIndex(el => !(el.compareDocumentPosition(lastParsed) & Node.DOCUMENT_POSITION_CONTAINED_BY) && el !== lastParsed);
   }
 
   /**
@@ -51,7 +51,7 @@ class PredictiveParserObserver {
   static lastParsed() {
     return document.currentScript?.hasAttribute('async') ?
       document.currentScript :
-      PredictiveParserObserver.deepestElement(document.documentElement);
+      TagEndObserver.deepestElement(document.documentElement);
   }
 
   static deepestElement(root) {
@@ -78,7 +78,7 @@ class PredictiveParserObserver {
 
   let handle = doChildReady;
   if (document.readyState === 'loading') {
-    const obs = new PredictiveParserObserver(callChildReadyCallback);
+    const obs = new TagEndObserver(callChildReadyCallback);
     handle = (frame, el) => frame.type === 'predictive' ? obs.addElement(el) : doChildReady(frame, el);
     window.addEventListener('readystatechange', () => handle = doChildReady, {capture: true, once: true});
   }
