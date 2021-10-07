@@ -1,6 +1,31 @@
 //DEPENDS ON childReadyCallback()
 (function () {
 
+  class SlotHostObserver  {
+
+    static #cache = new WeakMap();
+
+    static* #slotMatroschkaHosts(el) {
+      for (; el; el = SlotHostObserver.#nextSlotMatroschkaHost(el))
+        yield el;
+    }
+
+    static #nextSlotMatroschkaHost(el) {
+      for (let c of el.childNodes) {
+        if (c instanceof HTMLSlotElement)
+          return c.getRootNode().host;
+      }
+    }
+
+    static observe(el, cb) {
+      const cache = SlotHostObserver.#cache;
+      let mo = cache.get(el);
+      mo ? mo.disconnect() : cache.set(el, mo = new MutationObserver(cb));
+      for (let host of SlotHostObserver.#slotMatroschkaHosts(el))
+        mo.observe(host, {childList: true});
+    }
+  }
+
   class ChildChangedRecord {
     #news;
     #old;
@@ -31,18 +56,6 @@
     }
   }
 
-  function nextSlotMatroschkaHost(el) {
-    for (let c of el.childNodes) {
-      if (c instanceof HTMLSlotElement)
-        return c.getRootNode().host;
-    }
-  }
-
-  function* slotMatroschkaHosts(el) {
-    for (; el; el = nextSlotMatroschkaHost(el))
-      yield el;
-  }
-
   function* flatChildNodes(el) {
     for (let i = 0; i < el.childNodes.length; i++) {
       let c = el.childNodes[i];
@@ -66,13 +79,13 @@
   }
 
   const flatChildNodesCache = new WeakMap();
-  const moCache = new WeakMap();
 
-  function observeFlatChildNodes(el) {
-    let mo = moCache.get(el);
-    mo ? mo.disconnect() : mo = new MutationObserver(() => doChildChanged(el));
-    for (let obs of slotMatroschkaHosts(el))
-      mo.observe(obs, {childList: true});
+  function callChildChangedCallback(el, childChangedRecord) {
+    try {
+      el.childChangedCallback(childChangedRecord);
+    } catch (err) {
+      window.dispatchEvent(new Event('Uncaught Error: ' + err.message)); //todo
+    }
   }
 
   function doChildChanged(el) {
@@ -82,20 +95,19 @@
     if (!d)
       return;
     flatChildNodesCache.set(el, newChildren);
-    observeFlatChildNodes(el);
-    try {
-      el.childChangedCallback(new ChildChangedRecord(newChildren, oldChildren, d.added, d.removed));
-    } catch (err) {
-      window.dispatchEvent(new Event('Uncaught Error: ' + err.message)); //todo
-    }
+    SlotHostObserver.observe(el, ()=>doChildChanged(el));
+    callChildChangedCallback(el, new ChildChangedRecord(newChildren, oldChildren, d.added, d.removed));
   }
 
   const HTMLElementOG = HTMLElement;
+
   class ChildChangedHTMLElement extends HTMLElementOG {
 
     childReadyCallback() {
+      //todo bug. when the element has no children, the system never starts
       this.childChangedCallback && doChildChanged(this);
     }
   }
+
   window.HTMLElement = ChildChangedHTMLElement;
 })();
