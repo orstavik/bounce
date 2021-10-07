@@ -18,9 +18,15 @@
     }
 
     static observe(el, cb) {
-      const cache = SlotHostObserver.#cache;
-      let mo = cache.get(el);
-      mo ? mo.disconnect() : cache.set(el, mo = new MutationObserver(() => cb(el)));
+      const mo = new MutationObserver(() => cb(el))
+      SlotHostObserver.#cache.set(el, mo);
+      for (let host of SlotHostObserver.#slotMatroschkaHosts(el))
+        mo.observe(host, {childList: true});
+    }
+
+    static refresh(el) {
+      const mo = SlotHostObserver.#cache.get(el);
+      mo.disconnect();
       //todo it is possible to *not* disconnect and re-observe if the slotMatroschkaHosts have not changed.
       for (let host of SlotHostObserver.#slotMatroschkaHosts(el))
         mo.observe(host, {childList: true});
@@ -96,7 +102,7 @@
     if (!d)
       return;
     flatChildNodesCache.set(el, newChildren);
-    SlotHostObserver.observe(el, doChildChanged);
+    SlotHostObserver.refresh(el);
     callChildChangedCallback(el, new ChildChangedRecord(newChildren, oldChildren, d.added, d.removed));
   }
 
