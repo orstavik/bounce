@@ -14,30 +14,33 @@
   /**
    * mechanism for calling readyCallback on an element
    */
-  function doReadyCallback() {
-    const el = constructionFrames[0].ready;
-    constructionFrames[0].ready = undefined;
+  function doReadyCallback(frame) {
+    const el = frame.ready;
+    frame.ready = undefined;
+    if(!el)
+      return;
     try {
-      el?.attributeReadyCallback();
+      el.attributeReadyCallback();
     } catch (err) {
       window.dispatchEvent(new Event('Uncaught Error', err)); //todo don't remember exactly what this looks like.
     }
+    return frame;
   }
 
   class AttributeReadyCallbackHTMLElement extends HTMLElement {
 
     constructor() {
       super();
-      doReadyCallback();
+      doReadyCallback(constructionFrames[0]);
       this.attributeReadyCallback && (constructionFrames[0].ready = this);
     }
 
     attributeChangedCallback() {
-      doReadyCallback();
+      doReadyCallback(constructionFrames[0]);
     }
 
     connectedCallback() {
-      doReadyCallback();
+      doReadyCallback(constructionFrames[0]);
     }
   }
 
@@ -48,8 +51,6 @@
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
   const constructionFrameEndOG = window.constructionFrameEnd;
   window.constructionFrameEnd = function attributeReadyConstructionFrameEnd(){
-    const frame = constructionFrameEndOG();
-    doReadyCallback();
-    return frame;
+    return doReadyCallback(constructionFrameEndOG());
   }
 })();
