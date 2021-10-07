@@ -62,6 +62,13 @@
   </noscript>
 </test-html>
 
+<test-html id="predictive shadowDom NEW">
+  <noscript>
+    <script src="./WebCompWithNew.js"></script>
+    <web-comp a="a" b="b">hello sunshine</web-comp>
+  </noscript>
+</test-html>
+
 <test-html id="upgrade empty">
   <noscript>
     <web-comp></web-comp>
@@ -208,7 +215,7 @@
   </noscript>
 </test-html>
 
-<test-html id="NEW createElement disconnected async">
+<test-html id="createElement disconnected async">
   <noscript>
     <script src="./WebComp.js"></script>
     <script>setTimeout(function () {
