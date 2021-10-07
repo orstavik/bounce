@@ -1,4 +1,5 @@
-<script src="childReadyCallback.js"></script>
+<script src="../constructionContext/window_constructionFrames.js"></script>
+<script src="ChildReadyCallback.js"></script>
 <script>
   class WebComp extends HTMLElement {
 
@@ -16,8 +17,9 @@
 <web-comp d-1></web-comp>
 
 <h3>This is a test of siblings NO whitespace: d-2, c-2</h3>
-<p>This will be treated as if it was nested, because there is no way to see the difference from JS. Currently.
-  Unfortunately.</p>
+<p>This will be treated as if it was nested,
+  because there is no way to see the difference from JS when the constructor for the second web comp is called.
+  Currently. Unfortunately.</p>
 <web-comp c-2></web-comp><web-comp d-2></web-comp>
 
 <h3>This is a test of nested: b-1, a-1</h3>
@@ -36,10 +38,9 @@
 <web-comp x-2></web-comp>
 <script>console.log("x2")</script>
 
-<h3>This is a test of predictive before readystatechange event: </h3>
-<script>document.addEventListener('readystatechange', e => console.log(e.type, document.readyState));</script>
+<h3>This is a test of predictive before readystatechange event: y-1, interactive</h3>
+<script>document.addEventListener('readystatechange', e => console.log(document.readyState));</script>
 <web-comp y-1>
-  <h5>Native stuff</h5>
   <h5>Native stuff</h5>
 </web-comp>
 <h5>Native stuff</h5>
