@@ -28,8 +28,8 @@
   monkeyPatch(Document.prototype, "createElement", 'value');
   monkeyPatch(CustomElementRegistry.prototype, "define", 'value');
 
-  constructionContext.unshift('predictive');
-  window.addEventListener('DOMContentLoaded', function () {
-    constructionContext.shift();
-  });
+  if (document.readyState === "loading") {
+    constructionContext.unshift('predictive');
+    window.addEventListener('readystatechange', () => constructionContext.shift());
+  }
 })();
