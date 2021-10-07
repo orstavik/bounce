@@ -11,19 +11,20 @@
   //
   // 3. constructionFramesEnd() must be patched to trigger doReadyCallback().
 
-  /**
-   * mechanism for calling readyCallback on an element
-   */
-  function doReadyCallback(frame) {
-    const el = frame.ready;
-    frame.ready = undefined;
-    if(!el)
-      return;
+  function callAttributeReadyCallback(el) {
     try {
       el.attributeReadyCallback();
     } catch (err) {
       window.dispatchEvent(new Event('Uncaught Error', err)); //todo don't remember exactly what this looks like.
     }
+  }
+
+  /**
+   * mechanism for calling readyCallback on an element
+   */
+  function doReadyCallback(frame) {
+    frame.ready && callAttributeReadyCallback(frame.ready);
+    frame.ready = undefined;
     return frame;
   }
 
