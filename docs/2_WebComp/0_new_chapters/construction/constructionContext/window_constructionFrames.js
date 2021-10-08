@@ -10,22 +10,33 @@
    */
   window.constructionFrame = undefined;
 
-  //you must call OG.constructionFrameStart(type) when overriding
-  function constructionFrameStart(type) {
-    constructionFrame = {type, parent: constructionFrame};
-  }
+  class ConstructionFrame {
+    #children = [];
+    // #type;
+    // #parent;
 
-  //you must call OG.constructionFrameEnd() when overriding
-  function constructionFrameEnd() {
-    window.dispatchEvent(new Event('construction-end'));
-    constructionFrame = constructionFrame.parent;
+    constructor(type, parent) {
+      this.type = type;
+      this.parent = parent;
+      parent && parent.#children.push(this);
+    }
+
+    static start(type) {
+      window.constructionFrame = new ConstructionFrame(type, window.constructionFrame);
+      window.dispatchEvent(new Event('construction-start'));
+    }
+
+    static end(){
+      window.dispatchEvent(new Event('construction-end'));
+      constructionFrame = constructionFrame.parent;
+    }
   }
 
   function wrapConstructionFunction(og, type) {
     return function constructHtmlElement(...args) {
-      constructionFrameStart(type);
+      ConstructionFrame.start(type);
       const res = og.call(this, ...args);
-      constructionFrameEnd();
+      ConstructionFrame.end();
       return res;
     };
   }
@@ -45,7 +56,7 @@
   monkeyPatch(CustomElementRegistry.prototype, "define", 'value');
 
   if (document.readyState === "loading") {
-    constructionFrameStart('predictive');
-    window.addEventListener('readystatechange', () => constructionFrameEnd(constructionFrame));
+    ConstructionFrame.start('predictive');
+    window.addEventListener('readystatechange', ConstructionFrame.end);
   }
 })();

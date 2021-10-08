@@ -22,9 +22,9 @@
   /**
    * mechanism for calling readyCallback on an element
    */
-  function doReadyCallback(frame, el) {
-    frame.ready && callAttributeReadyCallback(frame.ready);
-    frame.ready = el?.attributeReadyCallback ? el : undefined;
+  function doReadyCallback(el) {
+    constructionFrame.ready && callAttributeReadyCallback(constructionFrame.ready);
+    constructionFrame.ready = el?.attributeReadyCallback ? el : undefined;
   }
 
   //monkeyPatch the HTMLElement so that it includes the readyCallback().
@@ -32,18 +32,18 @@
 
     constructor() {
       super();
-      doReadyCallback(constructionFrame, this);
+      doReadyCallback(this);
     }
 
     attributeChangedCallback() {
-      doReadyCallback(constructionFrame);
+      doReadyCallback();
     }
 
     connectedCallback() {
-      doReadyCallback(constructionFrame);
+      doReadyCallback();
     }
   }
 
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
-  window.addEventListener('construction-end', () => doReadyCallback(constructionFrame));
+  window.addEventListener('construction-end', doReadyCallback);
 })();

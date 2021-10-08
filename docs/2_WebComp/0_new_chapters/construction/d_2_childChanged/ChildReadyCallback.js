@@ -83,6 +83,7 @@ class TagEndObserver {
     window.addEventListener('readystatechange', () => handle = doChildReady, {capture: true, once: true});
   }
 
+  //todo rename to endTagCallback(){};?? because the visibleChildren are not ready..
   window.HTMLElement = class ChildReadyHTMLElement extends HTMLElement {
     constructor() {
       super();
