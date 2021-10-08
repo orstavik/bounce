@@ -8,19 +8,21 @@
    * When upgrading and fixing the callbacks on the HTMLElement for attributeReadyCallback() and childReadyCallback(),
    * then you need to patch into the constructionFrameEnd() function.
    */
-  window.constructionFrames = [];
-  
-  window.constructionFrameStart = function constructionFrameStart(type){
-    constructionFrames.unshift({type});
-  } 
+  window.constructionFrame = undefined;
 
-  window.constructionFrameEnd = function constructionFrameEnd(){
-    return constructionFrames.shift();
-  } 
+  //you must call OG.constructionFrameStart(type) when overriding
+  window.constructionFrameStart = function constructionFrameStart(type) {
+    constructionFrame = {type, parent: constructionFrame};
+  }
+
+  //you must call OG.constructionFrameEnd() when overriding
+  window.constructionFrameEnd = function constructionFrameEnd() {
+    constructionFrame = constructionFrame.parent;
+  }
 
   function wrapConstructionFunction(og, type) {
     return function constructHtmlElement(...args) {
-      constructionFrameStart(type, ...args);
+      constructionFrameStart(type);
       const res = og.call(this, ...args);
       constructionFrameEnd();
       return res;
@@ -43,6 +45,6 @@
 
   if (document.readyState === "loading") {
     constructionFrameStart('predictive');
-    window.addEventListener('readystatechange', constructionFrameEnd);
+    window.addEventListener('readystatechange', () => constructionFrameEnd(constructionFrame));
   }
 })();

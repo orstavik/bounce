@@ -31,15 +31,15 @@
 
     constructor() {
       super();
-      doReadyCallback(constructionFrames[0], this);
+      doReadyCallback(constructionFrame, this);
     }
 
     attributeChangedCallback() {
-      doReadyCallback(constructionFrames[0]);
+      doReadyCallback(constructionFrame);
     }
 
     connectedCallback() {
-      doReadyCallback(constructionFrames[0]);
+      doReadyCallback(constructionFrame);
     }
   }
 
@@ -50,8 +50,7 @@
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
   const constructionFrameEndOG = window.constructionFrameEnd;
   window.constructionFrameEnd = function attributeReadyConstructionFrameEnd(){
-    const frame = constructionFrameEndOG();
-    doReadyCallback(frame);
-    return frame;
+    doReadyCallback(constructionFrame);
+    constructionFrameEndOG();
   }
 })();

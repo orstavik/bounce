@@ -87,15 +87,14 @@ class TagEndObserver {
   window.HTMLElement = class ChildReadyHTMLElement extends HTMLElementOG {
     constructor() {
       super();
-      handle(constructionFrames[0], this);
+      handle(constructionFrame, this);
     }
   }
 
   //
   const constructionFrameEndOG = window.constructionFrameEnd;
   window.constructionFrameEnd = function constructionFrameEnd() {
-    const frame = constructionFrameEndOG();
-    doChildReady(frame); //doChildReady is unproblematic for predictive mode, because there are no .child in predictive mode. Unless you document.write.
-    return frame;
+    doChildReady(constructionFrame); //doChildReady is unproblematic for predictive mode, because there are no .child in predictive mode. Unless you document.write.
+    constructionFrameEndOG();
   }
 })();
