@@ -10,7 +10,7 @@ class TagEndObserver {
 
   addElement(el) {
     !this.#list.length && this.#mo.observe(document.documentElement, {childList: true, subtree: true});
-    this.#list.push(el)
+    el.childReadyCallback && this.#list.push(el);
   }
 
   get #mo() {
@@ -83,18 +83,12 @@ class TagEndObserver {
     window.addEventListener('readystatechange', () => handle = doChildReady, {capture: true, once: true});
   }
 
-  const HTMLElementOG = HTMLElement;
-  window.HTMLElement = class ChildReadyHTMLElement extends HTMLElementOG {
+  window.HTMLElement = class ChildReadyHTMLElement extends HTMLElement {
     constructor() {
       super();
       handle(constructionFrame, this);
     }
   }
 
-  //
-  const constructionFrameEndOG = window.constructionFrameEnd;
-  window.constructionFrameEnd = function constructionFrameEnd() {
-    doChildReady(constructionFrame); //doChildReady is unproblematic for predictive mode, because there are no .child in predictive mode. Unless you document.write.
-    constructionFrameEndOG();
-  }
+  window.addEventListener('construction-end', () => doChildReady(constructionFrame));
 })();

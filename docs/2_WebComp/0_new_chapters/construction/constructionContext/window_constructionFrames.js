@@ -11,12 +11,13 @@
   window.constructionFrame = undefined;
 
   //you must call OG.constructionFrameStart(type) when overriding
-  window.constructionFrameStart = function constructionFrameStart(type) {
+  function constructionFrameStart(type) {
     constructionFrame = {type, parent: constructionFrame};
   }
 
   //you must call OG.constructionFrameEnd() when overriding
-  window.constructionFrameEnd = function constructionFrameEnd() {
+  function constructionFrameEnd() {
+    window.dispatchEvent(new Event('construction-end'));
     constructionFrame = constructionFrame.parent;
   }
 

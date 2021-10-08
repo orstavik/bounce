@@ -27,7 +27,8 @@
     frame.ready = el?.attributeReadyCallback ? el : undefined;
   }
 
-  class AttributeReadyCallbackHTMLElement extends HTMLElement {
+  //monkeyPatch the HTMLElement so that it includes the readyCallback().
+  window.HTMLElement = class AttributeReadyCallbackHTMLElement extends HTMLElement {
 
     constructor() {
       super();
@@ -43,14 +44,6 @@
     }
   }
 
-  //monkeyPatch the HTMLElement so that it includes the readyCallback().
-  const HTMLElementOG = Object.getOwnPropertyDescriptor(window, 'HTMLElement');
-  Object.defineProperty(window, 'HTMLElement', Object.assign(HTMLElementOG, {value: AttributeReadyCallbackHTMLElement}));
-
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
-  const constructionFrameEndOG = window.constructionFrameEnd;
-  window.constructionFrameEnd = function attributeReadyConstructionFrameEnd(){
-    doReadyCallback(constructionFrame);
-    constructionFrameEndOG();
-  }
+  window.addEventListener('construction-end', () => doReadyCallback(constructionFrame));
 })();
