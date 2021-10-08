@@ -128,7 +128,7 @@
       //todo it happens because the childReady is called on the nested element first, while the host element is not ready.
       //todo and when that happens, the childNodes of the hostElement is not connected and thus the hostElement doesn't have the things it needs yet.
       //todo this is seriously difficult stuff.
-      //todo this is fixed using a prt..
+      //todo this is fixed using a prt.. no, because the childReadyCallback() is triggered by innerHTML on one, and not by the callback.
       SlotHostObserver.observe(this, doChildChanged);
       callChildChangedCallback(this, ChildChangedRecord.check(this));
     }

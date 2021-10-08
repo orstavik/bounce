@@ -84,15 +84,12 @@ class TagEndObserver {
   }
 
   const HTMLElementOG = HTMLElement;
-
-  class ChildReadyHTMLElement extends HTMLElementOG {
+  window.HTMLElement = class ChildReadyHTMLElement extends HTMLElementOG {
     constructor() {
       super();
       handle(constructionFrames[0], this);
     }
   }
-
-  window.HTMLElement = ChildReadyHTMLElement;
 
   //
   const constructionFrameEndOG = window.constructionFrameEnd;
