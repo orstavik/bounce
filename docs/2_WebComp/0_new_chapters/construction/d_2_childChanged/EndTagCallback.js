@@ -10,7 +10,7 @@ class TagEndObserver {
 
   observe(el) {
     !this.#list.length && this.#mo.observe(document.documentElement, {childList: true, subtree: true});
-    el.childReadyCallback && this.#list.push(el);
+    this.#list.push(el);
   }
 
   get #mo() {
@@ -63,28 +63,27 @@ class TagEndObserver {
 (function () {
   //One dependencies:
   // 1. construction-end event on window
-  function callChildReadyCallback(p) {
+  function callEndTagCallback(p) {
     try {
-      p.childReadyCallback();
+      p.endTagCallback();
     } catch (err) {
       window.dispatchEvent(new Event('Uncaught Error: ' + err.message)); //todo
     }
   }
 
-  function doChildReady(el) {
-    constructionFrame.child && callChildReadyCallback(constructionFrame.child);
-    constructionFrame.child = el?.childReadyCallback ? el : undefined;
+  function doEndTag(el) {
+    constructionFrame.endTagEl && callEndTagCallback(constructionFrame.endTagEl);
+    constructionFrame.endTagEl = el?.endTagCallback ? el : undefined;
   }
 
-  const tagEnder = new TagEndObserver(callChildReadyCallback);
+  const tagEnder = new TagEndObserver(callEndTagCallback);
 
-  //todo rename to endTagCallback(){};?? because the visibleChildren are not ready..
-  window.HTMLElement = class ChildReadyHTMLElement extends HTMLElement {
+  window.HTMLElement = class EndTagCallbackHTMLElement extends HTMLElement {
     constructor() {
       super();
-      constructionFrame.type === 'predictive' ? this.childReadyCallback && tagEnder.observe(this) : doChildReady(this);
+      constructionFrame.type === 'predictive' ? this.endTagCallback && tagEnder.observe(this) : doEndTag(this);
     }
   }
 
-  window.addEventListener('construction-end', doChildReady);
+  window.addEventListener('construction-end', doEndTag);
 })();

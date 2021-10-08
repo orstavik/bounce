@@ -1,10 +1,10 @@
 <script src="../constructionContext/window_constructionFrames.js"></script>
-<script src="ChildReadyCallback.js"></script>
+<script src="EndTagCallback.js"></script>
 <script>
   class WebComp extends HTMLElement {
 
-    childReadyCallback() {
-      console.log(this, 'childReady');
+    endTagCallback() {
+      console.log(this);
     }
   }
 

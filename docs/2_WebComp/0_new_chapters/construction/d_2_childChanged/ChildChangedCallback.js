@@ -121,7 +121,7 @@
 
   class ChildChangedHTMLElement extends HTMLElementOG {
 
-    childReadyCallback() {
+    endTagCallback() {
       if (!this.childChangedCallback)
         return;
       //todo fuck new bug. because the childReady is called on the child first, then it will not get the parent slotted children.. why?
