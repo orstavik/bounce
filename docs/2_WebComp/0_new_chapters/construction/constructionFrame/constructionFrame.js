@@ -80,7 +80,7 @@
    */
   let now;
 
-  class ConstructionFrame {
+  window.ConstructionFrame = class ConstructionFrame {
 
     #children = [];
     #parent;
