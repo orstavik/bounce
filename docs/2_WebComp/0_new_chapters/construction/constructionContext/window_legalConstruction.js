@@ -1,5 +1,6 @@
 (function () {
-  //NoNewConstructorHTMLElement
+  // todo depends on beforescriptexecute event.
+  // NoNewConstructorHTMLElement
   //
   //Monkeypatch which makes *new* an illegal constructor mechanism for custom HTMLElements, not just native HTMLElements.
   //Most likely this can be removed during production, this mechanism is only to dissuade the developer from using
@@ -11,29 +12,28 @@
   //3. no childNodes
 
   //However, there are three other scenarios where this can occur:
-  //a. customElement.cloneNode() directly on the customElement and the
-  //   customElement has a) no attributes and b) either no childNodes or deep=false.
-  //b. document.createElement('custom-element')
+  //a. document.createElement('custom-element')
+  //b. customElement.cloneNode()
   //c. predictive parser
   //
-  //These scenarios are handled using the following strategies:
-  //a. .cloneNode() *must* be called on the customElement directly (otherwise parentNode will be set).
-  //   This means that the LegalHTMLElement can intercept the cloneNode method itself.
-  //   But. Others might call cloneNode from the Node.prototype.cloneNode definition, for example:
-  //   `Node.cloneNode.call(customElement)`
-  //   Therefore, a monkeypatch of Node.prototype.cloneNode is safer.
-  //b. document.createElement() is monkeyPatched the same way as cloneNode
-  //   The monkeypatches sets a simple boolean flag notifying the constructor
-  //   that the call comes from document.createElement, and not from new.
-  //c. The predictive parser is slightly more complicated. First, the patch relies on correct aggregation of the
-  //   lifecycle method connectedCallback(). Any web component must call super.connectedCallback() at the beginning of the callback.
-  //   Then, any element created by the predictive parser will always call connectedCallback() as part of its construction
-  //   sequence. Therefore, if the document.readyState === 'loading' && !document.currentScript at the beginning of
-  //   the constructor, we either have c1) the predictive parser instantiating a custom element, or c2) a "new" custom
-  //   element from within either a predictive parser constructor or connectedCallback call. So, by flagging the *first*
-  //   constructor being triggered in this state, and then removing the flag at the connectedCallback for the same HTMLElement,
-  //   we get a safe mechanism for distinguishing predictive parser initialized constructors, and new constructor calls from
-  //   within the predictive parser.
+  //But there are some gotchas:
+  // 1. The _constructor()_ of the customElement of both document.createElement and .cloneNode can create new custom
+  //    elements, for example to put in its shadowDom.
+  //    This means that all these three methods can *nest* new constructor() calls inside.
+  //    The flags therefore has to work only *once* and then be *reset* by *both* the constructor itself and the end
+  //    of the method again!
+  //
+  // 2. Yes, the .cloneNode() *must* be called on the customElement itself for .parentNode to be undefined.
+  //    Yes, that means that it is likely sufficient to override .cloneNode from the HTMLElement class, and not Node.
+  //    But. It is possible that someone might call Node.cloneNode.call(customElement).
+  //    Since this plugin is meant to only be used during development to produce `SyntaxError`s,
+  //    we therefore monkeypatch Node.cloneNode().
+  //
+  // 3. There are two scenarios that are hard to distinguish:
+  //    a) two custom element constructor()s are called back-to-back and
+  //    b) a custom element constructor() is called that calls a new constructor() inside.
+  //    The best way to patch this is to depend on the beforescriptexecute event to continuously
+  //    reset a predictiveFlag before any customElement constructor() is called by the predictive parser.
 
   //An additional scenario, upgradeInside can be added as either illegal or as a warning
   function upgradeInsideErrorMessage(tag) {
@@ -52,35 +52,7 @@
     return `Illegal constructor: "new ${(Object.getPrototypeOf(el).constructor.name)}()". Try "document.createElement('${(el.tagName.toLowerCase())}')"`;
   }
 
-  let flag;
-  let flagPredictive;
-
-  class NoNewConstructorHTMLElement extends HTMLElement {
-
-    constructor() {
-      super();
-      //1. upgradeInside!!
-      if (document.currentScript && document.currentScript.compareDocumentPosition(this) & Node.DOCUMENT_POSITION_CONTAINS)
-        throw new SyntaxError(upgradeInsideErrorMessage(this.tagName.toLowerCase()));
-      //2. scenarios easily identify as not new
-      if (this.parentNode || this.attributes.length || this.childNodes.length || flag)
-        return;
-      //3. predictive parser vs. new
-      if (document.readyState === 'loading' && !document.currentScript && !flagPredictive) //signature for a predictive parser constructor.
-        flagPredictive = this;
-      //4. new!!
-      else
-        throw new SyntaxError(makeNEWErrorMessage(this, this));
-    }
-
-    connectedCallback() {
-      flagPredictive === this && (flagPredictive = undefined);
-    }
-  }
-
-  const HTMLElementOG = Object.getOwnPropertyDescriptor(window, 'HTMLElement');
-  Object.defineProperty(window, "HTMLElement", Object.assign(HTMLElementOG, {value: NoNewConstructorHTMLElement}));
-
+  let flag = false;
   const createElementOG = Object.getOwnPropertyDescriptor(Document.prototype, 'createElement');
   Object.defineProperty(Document.prototype, 'createElement', Object.assign({}, createElementOG, {
     value: function createElement(...args) {
@@ -100,4 +72,31 @@
       return res;
     }
   }));
+
+  let flagPredictive = true;
+  window.addEventListener('beforescriptexecute', () => flagPredictive = true, true);
+
+  window.HTMLElement = class NoNewConstructorHTMLElement extends HTMLElement {
+
+    constructor() {
+      super();
+      //1. document.createElement and .cloneNode()
+      if(flag) {
+        flag = false;
+        return;
+      }
+      //2. predictive parser
+      const canBePredictive = flagPredictive;
+      flagPredictive = false;
+      if(document.readyState === 'loading' && !document.currentScript && canBePredictive)
+        return;
+      //3. upgradeInside
+      if (document.currentScript && document.currentScript.compareDocumentPosition(this) & Node.DOCUMENT_POSITION_CONTAINS)
+        throw new SyntaxError(upgradeInsideErrorMessage(this.tagName.toLowerCase()));
+      //4. new constructor()
+      if (!(this.parentNode || this.attributes.length || this.childNodes.length))
+        throw new SyntaxError(makeNEWErrorMessage(this, this));
+      //5. the rest is fine
+    }
+  }
 })();
