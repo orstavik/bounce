@@ -121,6 +121,10 @@
       endEvent.ended = frame;
       window.dispatchEvent(endEvent);
     }
+
+    static get now(){
+      return now;
+    }
   }
 
   function wrapConstructionFunction(og, type) {
@@ -179,7 +183,7 @@
     class WhileLoadingHTMLElement extends HTMLElement {
       constructor() {
         super();
-        if (now.type === 'predictive' || now.type === 'branch')
+        if (ConstructionFrame.now.type === 'predictive' || ConstructionFrame.now.type === 'branch')
           observeFrame(this, ConstructionFrame.start('branch'));
       }
     }
