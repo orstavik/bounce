@@ -1,0 +1,27 @@
+<script>
+  var res = "";
+  window.addEventListener('beforescriptexecute', ({lastParsed}) => res += lastParsed.textContent[0]);
+  document.addEventListener('readystatechange', function () {
+    console.log(res, res === '1234567');
+    console.log(document.readyState, document.readyState === 'interactive');
+  }, {once: true});
+
+  customElements.define('web-comp', class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      res += parseInt(res[res.length - 1]) + 1;
+    }
+  });
+</script>
+
+<script src="beforescriptexecute.js"></script>
+
+<body>
+<h3>Test of beforescriptexecute</h3>
+<!--1--><web-comp a>
+  <!--3--><web-comp b></web-comp>
+</web-comp>
+
+<script>5; res+=6;</script>
+</body>
+<!--7-->
