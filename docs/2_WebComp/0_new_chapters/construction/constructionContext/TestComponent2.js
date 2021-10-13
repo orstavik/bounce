@@ -47,11 +47,11 @@ class TestHtml extends HTMLElement {
   runTest() {
     this.#div.innerHTML = '';
     const slotted = this.#slot.assignedElements();
-    const context = this.hasAttribute('context') ?'<script src="window_constructionFrames.js"></script>':'';
+    const frame = this.hasAttribute('frame') ?'<script src="../constructionFrame/constructionFrame.js"></script>':'';
     const legal =this.hasAttribute('legal') ?
       '<script src="window_legalConstruction.js"></script><script src="../beforeScriptExecute/beforescriptexecute.js"></script>':'';
     const testTxt = slotted[0].innerHTML.trim();
-    const txt = `<base href='${document.location.href}'/><script src='log.js'></script>${context}${legal}${testTxt}`;
+    const txt = `<base href='${document.location.href}'/><script src='log.js'></script>${frame}${legal}${testTxt}`;
     this.shadowRoot.getElementById('code').innerText = testTxt;
     this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(txt)}#${this.#id}`;
   }
@@ -61,7 +61,7 @@ class TestHtml extends HTMLElement {
   }
 
   static get observedAttributes(){
-    return ['legal', 'context'];
+    return ['legal', 'frame'];
   }
 }
 
