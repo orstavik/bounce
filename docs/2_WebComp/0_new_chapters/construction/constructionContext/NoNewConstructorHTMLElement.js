@@ -16,12 +16,12 @@
   //b. customElement.cloneNode()
   //c. predictive parser
   //
-  //But there are some gotchas:
+  //And, there are some gotchas:
   // 1. The _constructor()_ of the customElement of both document.createElement and .cloneNode can create new custom
   //    elements, for example to put in its shadowDom.
   //    This means that all these three methods can *nest* new constructor() calls inside.
-  //    The flags therefore has to work only *once* and then be *reset* by *both* the constructor itself and the end
-  //    of the method again!
+  //    The flags therefore has to work only *once* and then be *reset* by *both* the constructor itself for custom elements
+  //    and the method itself (for native elements).
   //
   // 2. Yes, the .cloneNode() *must* be called on the customElement itself for .parentNode to be undefined.
   //    Yes, that means that it is likely sufficient to override .cloneNode from the HTMLElement class, and not Node.
@@ -34,9 +34,19 @@
   //    b) a custom element constructor() is called that calls a new constructor() inside.
   //    The best way to patch this is to depend on the beforescriptexecute event to continuously
   //    reset a predictiveFlag before any customElement constructor() is called by the predictive parser.
+  //
+  //Problem X:
+  //             <script>new WebComp();</script><web-comp></web-comp>
+  //
+  //1. During the beforescriptexecute, there is no document.currentScript set.
+  //   We can therefore only use the beforescriptexecute to reset the first empty constructor.
+  //2. So, to recognize a customElement constructor, from within the constructor itself, we therefore check two things:
+  //   a) is the document.currentScript === null inside the constructor, this will not happen in any <script> that is
+  //      called while loading.
+  //   b) is this the first time an HTMLElement.constructor() is called since the last beforescriptexecute.
 
-  //An additional scenario, upgradeInside can be added as either illegal or as a warning
-  function upgradeInsideErrorMessage(tag) {
+  //upgradeInside throws a SyntaxError too.
+    function upgradeInsideErrorMessage(tag) {
     return `UpgradeInside! 
 <!-- move your script here instead, or at the end of the main document if it doesn't define layout on the page -->
 <${tag} ...>
@@ -80,16 +90,16 @@
 
     constructor() {
       super();
-      //1. document.createElement and .cloneNode()
+      //1. predictive parser
+      const fp = flagPredictive;
+      flagPredictive = false;
+      if(document.readyState === 'loading' && !document.currentScript && fp)
+        return;
+      //2. document.createElement and .cloneNode()
       if(flag) {
         flag = false;
         return;
       }
-      //2. predictive parser
-      const canBePredictive = flagPredictive;
-      flagPredictive = false;
-      if(document.readyState === 'loading' && !document.currentScript && canBePredictive)
-        return;
       //3. upgradeInside
       if (document.currentScript && document.currentScript.compareDocumentPosition(this) & Node.DOCUMENT_POSITION_CONTAINS)
         throw new SyntaxError(upgradeInsideErrorMessage(this.tagName.toLowerCase()));

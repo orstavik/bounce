@@ -49,7 +49,7 @@ class TestHtml extends HTMLElement {
     const slotted = this.#slot.assignedElements();
     const frame = this.hasAttribute('frame') ?'<script src="../constructionFrame/constructionFrame.js"></script>':'';
     const legal =this.hasAttribute('legal') ?
-      '<script src="window_legalConstruction.js"></script><script src="../beforeScriptExecute/beforescriptexecute.js"></script>':'';
+      '<script src="NoNewConstructorHTMLElement.js"></script><script src="../beforeScriptExecute/beforescriptexecute.js"></script>':'';
     const testTxt = slotted[0].innerHTML.trim();
     const txt = `<base href='${document.location.href}'/><script src='log.js'></script>${frame}${legal}${testTxt}`;
     this.shadowRoot.getElementById('code').innerText = testTxt;
