@@ -1,4 +1,4 @@
-(function () {
+(function initConstructionFrameAPI() {
   /*
    * The ConstructionFrame API
    *
@@ -83,46 +83,30 @@
   window.ConstructionFrame = class ConstructionFrame {
 
     #children = [];
-    #parent;
-    #finished = false;
 
-    constructor(type) {
+    constructor(type, parent) {
       this.type = type;
+      this.parent = parent;                             //todo make parent hidden again.
+      this.parent?.#children.push(this);
     }
 
     toString() {
-      let el = this;
-      const stack = [el];
-      while (el.#parent) stack.unshift(el = el.#parent);
-      return stack.map(el => el.type).join(', ');
-    }
-
-    static make(type) {
-      const frame = new ConstructionFrame(type);
-      frame.#parent = now;
-      frame.#parent?.#children.push(frame);
-      return now = frame;
+      return this.parent ? this.parent.toString() + ', ' + this.type : this.type;
     }
 
     static start(type) {
-      const startEvent = new Event('construction-start');
-      const frame = startEvent.now = ConstructionFrame.make(type);
-      window.dispatchEvent(startEvent);
+      const frame = now = new ConstructionFrame(type, now);
+      window.dispatchEvent(new Event('construction-start'));
       return frame;
     }
 
     static end(frame) {
-      frame.#finished = true;
-      //Commonly: frame === now,
-      //but. Nested predictive.branches are not, and then we don't.
-      frame === now && (now = now.#parent);
       const endEvent = new Event('construction-end');
-      endEvent.now = now;
       endEvent.ended = frame;
       window.dispatchEvent(endEvent);
     }
 
-    static get now(){
+    static get now() {
       return now;
     }
   }
@@ -131,6 +115,7 @@
     return function constructHtmlElement(...args) {
       const frame = ConstructionFrame.start(type);
       const res = og.call(this, ...args);
+      now = frame.parent;                                        //todo make parent hidden again.
       ConstructionFrame.end(frame);
       return res;
     };
@@ -150,6 +135,9 @@
   monkeyPatch(Document.prototype, "createElement", 'value');
   monkeyPatch(CustomElementRegistry.prototype, "define", 'value');
 
+  if (document.readyState !== 'loading')
+    return;
+
   /*
    * PREDICTIVE PARSER
    */
@@ -157,43 +145,35 @@
     return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
   }
 
+  function dropParentPrototype(proto) {
+    Object.setPrototypeOf(proto, Object.getPrototypeOf(Object.getPrototypeOf(proto)));
+  }
+
   const frames = [];
 
-  function observeFrame(el, frame) {
-    !frame.length && window.addEventListener('beforescriptexecute', checkPredictiveBranchEnd);
-    frames.push({frame, el});
+  function onParseBreak(e) {
+    now = undefined;
+    const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.lastParsed));
+    if (endTagReadElement < 0) return;
+    frames.splice(endTagReadElement).forEach(({frame}) => ConstructionFrame.end(frame));
+    !endTagReadElement && window.removeEventListener('beforescriptexecute', onParseBreak, true);
   }
 
-  function checkPredictiveBranchEnd(e) {
-    const ended = frames.findIndex(({el}) => endTagRead(el, e.lastParsed));
-    if (ended === -1)
-      return;
-    const endedFrames = frames.splice(ended);
-    for (let i = endedFrames.length - 1; i >= 0; i--)
-      ConstructionFrame.end(endedFrames[i].frame);
-    if (frames.length === 0) window.removeEventListener('beforescriptexecute', checkPredictiveBranchEnd);
+  function predictiveConstructionFrameStart(el) {
+    !frames.length && window.addEventListener('beforescriptexecute', onParseBreak, true);
+    const frame = ConstructionFrame.start('predictive');
+    frames.push({el, frame});
   }
 
-  if (document.readyState === "loading") {
-
-    const predictiveFrame = ConstructionFrame.start('predictive');
-
-    const HTMLElementOG = HTMLElement;
-
-    class WhileLoadingHTMLElement extends HTMLElement {
-      constructor() {
-        super();
-        if (ConstructionFrame.now.type === 'predictive' || ConstructionFrame.now.type === 'branch')
-          observeFrame(this, ConstructionFrame.start('branch'));
-      }
+  class ConstructionFrameHTMLElement extends class OnlyWhileLoadingHTMLElement extends HTMLElement {
+    constructor() {
+      super();
+      !now && predictiveConstructionFrameStart(this);
     }
-
-    const patchedClass = window.HTMLElement = class ConstructionFrameHTMLElement extends WhileLoadingHTMLElement {
-    };
-
-    window.addEventListener('readystatechange', function () {
-      Object.setPrototypeOf(patchedClass.prototype, HTMLElementOG.prototype);  //todo test this, don't remember exactly how
-      ConstructionFrame.end(predictiveFrame);
-    }, {once: true, capture: true});
+  } {
   }
+
+  HTMLElement = ConstructionFrameHTMLElement;
+  window.addEventListener('readystatechange',
+    () => dropParentPrototype(ConstructionFrameHTMLElement.prototype), {once: true, capture: true});
 })();

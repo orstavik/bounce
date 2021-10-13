@@ -1,7 +1,7 @@
 <script>
   const res = [];
-  window.addEventListener('construction-start', ({type, now}) => (res.push(now),console.log(type +':  ', now.toString())));
-  window.addEventListener('construction-end', ({type, now, ended}) => (now && res.push(now),console.log(type +':    ', ended.toString())));
+  window.addEventListener('construction-start', ({type}) => (res.push(ConstructionFrame.now),console.log(type +':  ', ConstructionFrame.now?.toString())));
+  window.addEventListener('construction-end', ({type, ended}) => (ConstructionFrame.now && res.push(ConstructionFrame.now),console.log(type +':    ', ended.toString())));
   setTimeout(() => console.log(res.map(frame => frame.toString())), 100);
 </script>
 
