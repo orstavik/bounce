@@ -2,16 +2,17 @@
   /*
    * The ConstructionFrame API
    *
-   *  1. construction-start. Dispatched *before* a new constructionFrame starts: .now
-   *  2. construction-end. Dispatched *before* a constructionFrame ends: .now and .ended
+   *  1. construction-start. Dispatched immediately *before* a new constructionFrame starts.
+   *  2. construction-end.   Dispatched immediately *after* a constructionFrame ends. Has one property,
+   *                         .ended which is the constructionFrame recently dropped.
    *
    * The ConstructionFrame API depends on:
-   *  1. NoNewConstructorHTMLElement.
+   *  1. beforescriptexecute event.
+   *  2. NoNewConstructorHTMLElement.
    *     The NoNewContructorHTMLElement essentially ensures that no 'new HTMLElement()' constructor is called directly.
    *     This is a restriction that applies to native elements, and this restriction is extended to custom elements.
-   *     The ConstructionFrame API will not produce correct extra callbacks if used with 'new constructor()',
+   *     The ConstructionFrame API will produce wrong events if used with 'new HTMLElement.constructor()',
    *     but error management is not included to make the ConstructionFrame API faster in production.
-   *  2. beforescriptexecute event.
    *
    * Whenever a custom element is defined and referenced in an HTMLElement construction method or template, then
    * the browser will call all the callbacks *sync* for those elements as part of the construction process.
@@ -49,34 +50,40 @@
 <comp-a></comp-a>
    *
    *  In this example, the constructionFrame will nest like this:
-   *  { predictive:html { branch:comp-a { innerHTML:comp-b { createElement:comp-c } } } }
+   *  { predictive:comp-a { innerHTML:comp-b { createElement:comp-c } } }
    *
    * Problem 1: main document nests lightDom branches while loading
    * While loading, the browser can create custom elements directly. And while loading, the browser's parser
    * may be delayed for a long time while waiting for sync <scripts>. And with custom web components that direct layout,
    * you need to load custom elements synchronously and block rendering to avoid FOUC.
    *
-   * This creates a situation where you wish to *nest* custom element lightDom children in the main document *more or less*
-   * as if they were shadowDom constructionFrames. This can for example enable the browser to call childReadyCallback on
-   * a completed branch in the main document, while still waiting for another script to load.
+   * This creates a situation where you wish to mark the *end* of a construction frame as early as possible, ie.
+   * on a per element level. When we mark a construction frame for an individual element, the frame begins just before
+   * the start tag is read and ends when the end tag is read. As there is no possible means to know when the end tag is,
+   * the document frame would end as soon as possible after the end tag is read.
    *
-   * We accomplish this with a fairly complex mechanism:
-   * 1. every time a constructor() is called directly by the predictive parser, we nest them according to their lightDom
-   *    position. This means that custom element descendant nodes in the main document are construction frame descendants
-   *    too.
-   * 2. The main document lightDom branches don't finish until the parser has definitively parsed the endTag of the custom
-   *    element node.
-   * 3. We therefore
-   *    a) create a new constructionFrame each time the predictive parser directly calls a custom element constructor(), and
-   *    b) use the beforescriptexecute event to check when the constructionFrame ends.
-   * 4. todo When such delayed constructionFrames end, should they be called bottom up or top down?
-   *     I think always bottom up, but then we do it differently with childReadyCallback.
-   *     Here we do it only on either top level, or second top level if it begins with predictive.
+   * The per element construction frames that are created when the predictive parser calls the custom element constructor
+   * directly is called a "predictive construction frame".
+   *
+   * We make "predictive construction frames" with a somewhat complex mechanism:
+   * 1. every time an HTMLElement.constructor() is called directly by the predictive parser, we start a new
+   *    predictive constructionFrame and issue a construction-start event. all predictive constructionFrames will have
+   *    an empty parent construction frame (ie. be a root construction frame).
+   * 2. then, every time the predictive parser breaks to either a) run a script or b) run another custom element constructor,
+   *    ie. at beforescriptexecute time during loading, then the mechanism will check if the endTag of the custom element
+   *    whose constructor triggered the predictive construction frame has been read.
+   * 3. If the endTag of the custom element that triggered the predictive frame has been read, the construction-end event
+   *    is dispatched for that predictive construction frame.
+   * 4. This means that predictive construction frames for parent nodes will remain open (but no longer be accessible from
+   *    ConstructionFrame.now) while the predictive construction frames of the light dom child nodes are also active.
+   * 5. For nested construction frame contexts, construction contexts start and end recursively.
+   *    A predictive construction frame associated with a descendant element will always end before
+   *    a predictive construction frame associated with an ancestor element.
    *
    * The ConstructionFrame API is a low level API. It is not intended to be used directly, but intended for use by other
    * API such as attributeReadyCallback() and childReadyCallback() APIs.
-   * These APIs need mainly to listen for construction-end events so that they can trigger the callbacks at the
-   * appropriate times.
+   * These APIs need mainly to listen for construction-end events so that they can trigger
+   * attributeReadyCallback() and childReadyCallback() at the correct time.
    */
   let now;
 
@@ -155,7 +162,9 @@
     now = undefined;
     const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.lastParsed));
     if (endTagReadElement < 0) return;
-    frames.splice(endTagReadElement).forEach(({frame}) => ConstructionFrame.end(frame));
+    const endedContexts = frames.splice(endTagReadElement);
+    for (let i = endedContexts.length - 1; i >= 0; i--)
+      ConstructionFrame.end(endedContexts[i].frame);
     !endTagReadElement && window.removeEventListener('beforescriptexecute', onParseBreak, true);
   }
 
