@@ -12,10 +12,6 @@ class WebComp extends HTMLElement {
     console.log(this, new.target);
     const inner = new InnerComp();
   }
-
-  connectedCallback() {
-    super.connectedCallback && super.connectedCallback();
-  }
 }
 
 customElements.define('web-comp', WebComp);
