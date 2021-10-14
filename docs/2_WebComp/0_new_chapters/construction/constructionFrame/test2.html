@@ -1,0 +1,115 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="constructionFrame.js"></script>
+<script>
+  (function () {
+    const res = [];
+    let count = 0;
+
+    function printFrame(type, frame) {
+      const id = frame ? frame.__id || (frame.__id = ++count) : 0;
+      res.push([id, type, frame?.toString()]);
+    }
+
+    addEventListener('construction-start', _ => printFrame('start', ConstructionFrame.now));
+    addEventListener('construction-end', ({ended}) => (printFrame('end', ended), printFrame('after', ConstructionFrame.now)));
+
+    customElements.define('inner-comp', class InnerComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame('constructor', ConstructionFrame.now);
+      }
+    });
+    customElements.define('middle-comp', class MiddleComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame('constructor start', ConstructionFrame.now);
+        this.attachShadow({mode: "open"});
+        this.shadowRoot.innerHTML = '<inner-comp></inner-comp>';
+        this.shadowRoot.children[0].insertAdjacentHTML('afterend', '<h1></h1>');
+        printFrame('constructor end', ConstructionFrame.now);
+      }
+    });
+    customElements.define('outer-comp', class OuterComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame('constructor start', ConstructionFrame.now);
+        const a = document.createElement('middle-comp');
+        const b = a.cloneNode();
+        this.attachShadow({mode: "open"});
+        this.shadowRoot.append(b);
+        printFrame('constructor end', ConstructionFrame.now);
+      }
+    });
+
+    var expect = [
+      [1, "start", "CustomElementRegistry.define"],
+      [1, "end", "CustomElementRegistry.define"],
+      [0, "after", null],
+      [2, "start", "CustomElementRegistry.define"],
+      [2, "end", "CustomElementRegistry.define"],
+      [0, "after", null],
+      [3, "start", "CustomElementRegistry.define"],
+      [3, "end", "CustomElementRegistry.define"],
+      [0, "after", null],
+
+      [4, "start", "predictive"],
+      [4, "constructor", "predictive"],
+      [4, "end", "predictive"],
+      [0, "after", null],
+
+      [5, "start", "predictive"],
+      [5, "constructor start", "predictive"],
+      [6, "start", "predictive, ShadowRoot.innerHTML"],
+      [6, "constructor", "predictive, ShadowRoot.innerHTML"],
+      [6, "end", "predictive, ShadowRoot.innerHTML"],
+      [5, "after", "predictive"],
+      [7, "start", "predictive, Element.insertAdjacentHTML"],
+      [7, "end", "predictive, Element.insertAdjacentHTML"],
+      [5, "after", "predictive"],
+      [5, "constructor end", "predictive"],
+      [5, "end", "predictive"],
+      [0, "after", null],
+
+      [8, "start", "predictive"],
+      [8, "constructor start", "predictive"],
+      [9, "start", "predictive, Document.createElement"],
+      [9, "constructor start", "predictive, Document.createElement"],
+      [10, "start", "predictive, Document.createElement, ShadowRoot.innerHTML"],
+      [10, "constructor", "predictive, Document.createElement, ShadowRoot.innerHTML"],
+      [10, "end", "predictive, Document.createElement, ShadowRoot.innerHTML"],
+      [9, "after", "predictive, Document.createElement"],
+      [11, "start", "predictive, Document.createElement, Element.insertAdjacentHTML"],
+      [11, "end", "predictive, Document.createElement, Element.insertAdjacentHTML"],
+      [9, "after", "predictive, Document.createElement"],
+      [9, "constructor end", "predictive, Document.createElement"],
+      [9, "end", "predictive, Document.createElement"],
+      [8, "after", "predictive"],
+      [12, "start", "predictive, Node.cloneNode"],
+      [12, "constructor start", "predictive, Node.cloneNode"],
+      [13, "start", "predictive, Node.cloneNode, ShadowRoot.innerHTML"],
+      [13, "constructor", "predictive, Node.cloneNode, ShadowRoot.innerHTML"],
+      [13, "end", "predictive, Node.cloneNode, ShadowRoot.innerHTML"],
+      [12, "after", "predictive, Node.cloneNode"],
+      [14, "start", "predictive, Node.cloneNode, Element.insertAdjacentHTML"],
+      [14, "end", "predictive, Node.cloneNode, Element.insertAdjacentHTML"],
+      [12, "after", "predictive, Node.cloneNode"],
+      [12, "constructor end", "predictive, Node.cloneNode"],
+      [12, "end", "predictive, Node.cloneNode"],
+      [8, "after", "predictive"],
+      [8, "constructor end", "predictive"],
+      [8, "end", "predictive"],
+      [0, "after", null]
+    ];
+    setTimeout(() => {
+      console.log(JSON.stringify(res));
+      console.table(res);
+      console.table(expect);
+      console.log(JSON.stringify(res) === JSON.stringify(expect));
+    }, 100);
+  })();
+</script>
+
+<h3>Test of shadowDom construction frames</h3>
+<inner-comp></inner-comp>
+<middle-comp></middle-comp>
+<outer-comp></outer-comp>
