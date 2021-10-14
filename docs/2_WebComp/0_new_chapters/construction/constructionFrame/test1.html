@@ -1,0 +1,102 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="constructionFrame.js"></script>
+<script>
+  (function () {
+    const res = [];
+    let count = 0;
+
+    function printFrame(type, frame) {
+      const id = frame ? frame.__id || (frame.__id = ++count) : 0;
+      res.push([id, type, frame?.toString()]);
+    }
+
+    addEventListener('construction-start', _ => printFrame('start', ConstructionFrame.now));
+    addEventListener('construction-end', ({ended}) => (printFrame('end', ended), printFrame('after', ConstructionFrame.now)));
+
+    customElements.define('web-comp', class WebComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame('constructor', ConstructionFrame.now);
+      }
+    });
+
+    var expect = [
+      [1, "start", "CustomElementRegistry.define"],
+      [1, "end", "CustomElementRegistry.define"],
+      [0, "after", undefined],
+      [2, "start", "predictive"],
+      [2, "constructor", "predictive"],
+      [2, "end", "predictive"],
+      [0, "after", undefined],
+      [3, "start", "predictive"],
+      [3, "constructor", "predictive"],
+      [3, "end", "predictive"],
+      [0, "after", undefined],
+      [4, "start", "predictive"],
+      [4, "constructor", "predictive"],
+      [5, "start", "predictive"],
+      [5, "constructor", "predictive"],
+      [5, "end", "predictive"],
+      [0, "after", undefined],
+      [4, "end", "predictive"],
+      [0, "after", undefined],
+      [6, "start", "predictive"],
+      [6, "constructor", "predictive"],
+      [7, "start", "predictive"],
+      [7, "constructor", "predictive"],
+      [7, "end", "predictive"],
+      [0, "after", undefined],
+      [6, "end", "predictive"],
+      [0, "after", undefined],
+      [8, "start", "predictive"],
+      [8, "constructor", "predictive"],
+      [9, "start", "predictive"],
+      [9, "constructor", "predictive"],
+      [9, "end", "predictive"],
+      [0, "after", undefined],
+      [8, "end", "predictive"],
+      [0, "after", undefined],
+      [10, "start", "predictive"],
+      [10, "constructor", "predictive"],
+      [10, "end", "predictive"],
+      [0, "after", undefined],
+      [-1, "script", undefined],
+      [11, "start", "predictive"],
+      [11, "constructor", "predictive"],
+      [11, "end", "predictive"],
+      [0, "after", undefined],
+      [-2, "dom interactive", undefined],
+    ]
+    setTimeout(() => {
+      console.table(res);
+      console.table(expect);
+      console.log(JSON.stringify(res) === JSON.stringify(expect));
+    }, 100);
+  })();
+</script>
+
+<h3>This is a test of siblings</h3>
+<web-comp></web-comp>
+<web-comp></web-comp>
+
+<h3>This is a test of nested</h3>
+<web-comp>
+  <web-comp></web-comp>
+</web-comp>
+
+<h3>This is a test of nested NO whitespace</h3>
+<web-comp><web-comp></web-comp></web-comp>
+
+<h3>This is a test of siblings NO whitespace</h3>
+<p>This will be treated as if it was nested,
+  because there is no way to see the difference from JS when the constructor for the second web comp is called.
+  Currently. Unfortunately.</p>
+<web-comp></web-comp><web-comp></web-comp>
+
+<h3>This is a test of sync script, x-1, x1</h3>
+<web-comp></web-comp>
+<script>res.push([-1, "script", undefined])</script>
+
+<h3>This is a test of predictive before readystatechange event</h3>
+<script>document.addEventListener('readystatechange', _ => res.push([-2, 'dom interactive', undefined]), {once: true});</script>
+<web-comp></web-comp>
