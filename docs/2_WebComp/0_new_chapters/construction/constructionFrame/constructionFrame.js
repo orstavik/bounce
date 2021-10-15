@@ -95,6 +95,7 @@
       this.type = type;
       this.parent = parent;                             //todo make parent hidden again.
       this.parent?.#children.push(this);
+      this.children = this.#children;
     }
 
     toString() {

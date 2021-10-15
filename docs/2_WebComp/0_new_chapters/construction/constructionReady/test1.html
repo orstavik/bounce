@@ -1,0 +1,129 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="AttributeReadyCallback.js"></script>
+<script src="ChildReadyCallback.js"></script>
+<script>
+  (function () {
+    window.result = [];
+
+    function printCB(type, el) {
+      result.push([el.__id, type]);
+    }
+
+    class WebComp extends HTMLElement {
+
+      static #ids = 0;
+
+      constructor() {
+        super();
+        this.__id = ++WebComp.#ids;
+        printCB('constructor', this);
+      }
+
+      attributeChangedCallback() {
+        super.attributeChangedCallback();
+        printCB("attributeChanged", this);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        printCB("connected", this);
+      }
+
+      attributeReadyCallback() {
+        printCB("attributeReady", this);
+      }
+
+      childReadyCallback() {
+        printCB("childReady", this);
+      }
+
+      static get observedAttributes() {
+        return ["a"];
+      }
+    }
+
+    customElements.define('web-comp', WebComp);
+
+    var expect = [
+      [1, "constructor"],
+      [1, "attributeReady"],
+      [1, "attributeChanged"],
+      [1, "connected"],
+      [1, "childReady"],
+      [2, "constructor"],
+      [2, "attributeReady"],
+      [2, "connected"],
+      [2, "childReady"],
+      [3, "constructor"],
+      [3, "attributeReady"],
+      [3, "connected"],
+      [4, "constructor"],
+      [4, "attributeReady"],
+      [4, "connected"],
+      [4, "childReady"],
+      [3, "childReady"],
+      [5, "constructor"],
+      [5, "attributeReady"],
+      [5, "connected"],
+      [6, "constructor"],
+      [6, "attributeReady"],
+      [6, "connected"],
+      [6, "childReady"],
+      [5, "childReady"],
+      [7, "constructor"],
+      [7, "attributeReady"],
+      [7, "connected"],
+      [8, "constructor"],
+      [8, "attributeReady"],
+      [8, "connected"],
+      [8, "childReady"],
+      [7, "childReady"],
+      [9, "constructor"],
+      [9, "attributeReady"],
+      [9, "connected"],
+      [9, "childReady"],
+      [-1, "script"],
+      [10, "constructor"],
+      [10, "attributeReady"],
+      [10, "connected"],
+      [10, "childReady"],
+      [-2, "dom interactive"],
+    ];
+    setTimeout(() => {
+      const resultStr = JSON.stringify(result);
+      const expectStr = JSON.stringify(expect);
+      console.log(resultStr);
+      console.log(expectStr);
+      console.log(resultStr === expectStr);
+    }, 100);
+  })();
+</script>
+
+<!--todo because the construction contexts are run bottom up, then I get the childReady also bottom up in the lightDom. which is ok.-->
+
+<h3>This is a test of siblings</h3>
+<web-comp a></web-comp>
+<web-comp></web-comp>
+
+<h3>This is a test of nested</h3>
+<web-comp>
+  <web-comp></web-comp>
+</web-comp>
+
+<h3>This is a test of nested NO whitespace</h3>
+<web-comp><web-comp></web-comp></web-comp>
+
+<h3>This is a test of siblings NO whitespace</h3>
+<p>This will be treated as if it was nested,
+  because there is no way to see the difference from JS when the constructor for the second web comp is called.
+  Currently. Unfortunately.</p>
+<web-comp></web-comp><web-comp></web-comp>
+
+<h3>This is a test of sync script, x-1, x1</h3>
+<web-comp></web-comp>
+<script>result.push([-1, "script"])</script>
+
+<h3>This is a test of predictive before readystatechange event</h3>
+<script>document.addEventListener('readystatechange', _ => result.push([-2, 'dom interactive']), {once: true});</script>
+<web-comp></web-comp>
