@@ -1,0 +1,28 @@
+<script>
+  var res = [];
+
+  function check(x) {
+    res.push(x);
+    Promise.resolve().then(() => res.push(x));
+    Promise.resolve().then(() => Promise.resolve().then(() => res.push(x)));
+  }
+
+  window.addEventListener('beforescriptexecute', () => check('b'));
+
+  document.addEventListener('readystatechange', function () {
+    console.log(document.readyState, document.readyState === 'interactive');
+    res = res.join(',');
+    console.log(res, res === 'b,b,b,c,c,c');
+  }, {once: true});
+
+  customElements.define('web-comp', class WebComp extends HTMLElement {
+    connectedCallback() {
+      check('c');
+    }
+  });
+</script>
+
+<script src="beforescriptexecute.js"></script>
+<h3>Test of beforescriptexecute with connectedCallback</h3>
+
+<web-comp></web-comp>
