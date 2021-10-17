@@ -1,15 +1,16 @@
 <script>
-  var res = "";
-  window.addEventListener('beforescriptexecute', ({lastParsed}) => res += lastParsed.textContent[0]);
+  var res = [];
+  window.addEventListener('beforescriptexecute', ({lastParsed}) => res.push(lastParsed.textContent[0]));
   document.addEventListener('readystatechange', function () {
-    console.log(res, res === '1234567');
+    console.log(res.join(','), res.join(',') === '1,2,3,4,5,6,7');
     console.log(document.readyState, document.readyState === 'interactive');
   }, {once: true});
 
+  const tests = [4, 2];
   customElements.define('web-comp', class WebComp extends HTMLElement {
     constructor() {
       super();
-      res += parseInt(res[res.length - 1]) + 1;
+      res.push(tests.pop());
     }
   });
 </script>
@@ -22,6 +23,6 @@
   <!--3--><web-comp b></web-comp>
 </web-comp>
 
-<script>5; res+=6;</script>
+<script>5; res.push(6);</script>
 </body>
 <!--7-->
