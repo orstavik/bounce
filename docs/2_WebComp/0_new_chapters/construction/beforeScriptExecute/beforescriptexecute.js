@@ -65,16 +65,10 @@ function deepestElement(root) {
   return root;
 }
 
-function lastParsed() {
-  return !document.currentScript || document.currentScript.hasAttribute('async') ?
-    deepestElement(document.documentElement) :
-    document.currentScript;
-}
-
 document.readyState === "loading" && (function () {
   function dispatchBeforeScriptExecute() {
     const ev = new Event('beforescriptexecute');
-    ev.lastParsed = lastParsed();
+    ev.lastParsed = deepestElement(document.documentElement);
     return window.dispatchEvent(ev);
   }
 
