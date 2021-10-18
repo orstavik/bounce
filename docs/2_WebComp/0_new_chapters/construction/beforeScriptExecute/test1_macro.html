@@ -3,8 +3,8 @@
 
   function check(x) {
     res.push(x)
-    Promise.resolve().then(() => res.push(x));
-    Promise.resolve().then(() => Promise.resolve().then(() => res.push(x)));
+    Promise.resolve().then(() => res.push(x + "m"));
+    Promise.resolve().then(() => Promise.resolve().then(() => res.push(x + "mm")));
   }
 
   window.addEventListener('beforescriptexecute', ({lastParsed}) => check(lastParsed.textContent[0]));
