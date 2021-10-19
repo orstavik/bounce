@@ -161,16 +161,22 @@
 
   function onParseBreak(e) {
     now = undefined;
-    const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.lastParsed));
+    const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.target));
     if (endTagReadElement < 0) return;
     const endedContexts = frames.splice(endTagReadElement);
     for (let i = endedContexts.length - 1; i >= 0; i--)
       ConstructionFrame.end(endedContexts[i].frame);
-    !endTagReadElement && window.removeEventListener('beforescriptexecute', onParseBreak, true);
+    if (endTagReadElement)
+      return;
+    document.removeEventListener('beforescriptexecute', onParseBreak, true);
+    document.removeEventListener('readystatechange', onParseBreak, true);
   }
 
   function predictiveConstructionFrameStart(el) {
-    !frames.length && window.addEventListener('beforescriptexecute', onParseBreak, true);
+    if (!frames.length) {
+      document.addEventListener('beforescriptexecute', onParseBreak, true);
+      document.addEventListener('readystatechange', onParseBreak, true);
+    }
     const frame = ConstructionFrame.start('predictive');
     frames.push({el, frame});
   }
