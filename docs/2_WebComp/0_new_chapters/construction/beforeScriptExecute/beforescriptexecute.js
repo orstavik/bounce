@@ -68,7 +68,7 @@
   const mo = new MutationObserver(mrs => {
     const nodes = mrs[mrs.length - 1].addedNodes;
     const target = nodes[nodes.length - 1];
-    if (target !== lastTarget && !(lastTarget = target).connectedCallback)
+    if (target !== lastTarget && !((lastTarget = target).connectedCallback))
       target.dispatchEvent(new Event('beforescriptexecute'));
   });
   mo.observe(document.documentElement, {childList: true, subtree: true});
