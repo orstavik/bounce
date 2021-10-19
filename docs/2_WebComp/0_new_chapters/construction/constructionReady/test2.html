@@ -1,0 +1,166 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="AttributeReadyCallback.js"></script>
+<script src="ChildReadyCallback.js"></script>
+<script>
+  (function () {
+    window.result = [];
+
+    function printCB(type, el) {
+      result.push([el.__id, el.tagName, type]);
+    }
+
+    let ids = 0;
+
+    class InnerComp extends HTMLElement {
+
+      constructor() {
+        super();
+        this.__id = ++ids;
+        printCB('constructor', this);
+      }
+
+      attributeChangedCallback() {
+        super.attributeChangedCallback();
+        printCB("attributeChanged", this);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        printCB("connected", this);
+      }
+
+      attributeReadyCallback() {
+        printCB("attributeReady", this);
+      }
+
+      childReadyCallback() {
+        printCB("childReady", this);
+      }
+
+      static get observedAttributes() {
+        return ["a"];
+      }
+    }
+
+    class MiddleComp extends HTMLElement {
+      constructor() {
+        super();
+        this.__id = ++ids;
+        printCB('constructor', this);
+        this.attachShadow({mode: "open"});
+        this.shadowRoot.innerHTML = '<inner-comp></inner-comp>';
+        this.shadowRoot.children[0].insertAdjacentHTML('afterend', '<h1></h1>');
+      }
+
+      attributeChangedCallback() {
+        super.attributeChangedCallback();
+        printCB("attributeChanged", this);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        printCB("connected", this);
+      }
+
+      attributeReadyCallback() {
+        printCB("attributeReady", this);
+      }
+
+      childReadyCallback() {
+        printCB("childReady", this);
+      }
+
+      static get observedAttributes() {
+        return ["a"];
+      }
+    }
+
+    class OuterComp extends HTMLElement {
+      constructor() {
+        super();
+        this.__id = ++ids;
+        printCB('constructor', this);
+        this.attachShadow({mode: "open"});
+        const og = document.createElement('middle-comp'); //once
+        const clone = og.cloneNode();                     //twice
+        this.shadowRoot.append(clone);
+      }
+
+      attributeChangedCallback() {
+        super.attributeChangedCallback();
+        printCB("attributeChanged", this);
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        printCB("connected", this);
+      }
+
+      attributeReadyCallback() {
+        printCB("attributeReady", this);
+      }
+
+      childReadyCallback() {
+        printCB("childReady", this);
+      }
+
+      static get observedAttributes() {
+        return ["a"];
+      }
+    }
+
+    customElements.define('inner-comp', InnerComp);
+    customElements.define('middle-comp', MiddleComp);
+    customElements.define('outer-comp', OuterComp);
+
+
+    var expect = [
+      [1, "INNER-COMP", "constructor"],
+      [1, "INNER-COMP", "attributeReady"],
+      [1, "INNER-COMP", "connected"],
+      [1, "INNER-COMP", "childReady"],
+      null,
+      [2, "MIDDLE-COMP", "constructor"],
+      [3, "INNER-COMP", "constructor"],
+      [3, "INNER-COMP", "attributeReady"],
+      [2, "MIDDLE-COMP", "attributeReady"],
+      [2, "MIDDLE-COMP", "connected"],
+      [3, "INNER-COMP", "connected"],
+      [2, "MIDDLE-COMP", "childReady"],
+      [3, "INNER-COMP", "childReady"],
+      null,
+      [4, "OUTER-COMP", "constructor"],
+      [5, "MIDDLE-COMP", "constructor"],
+      [6, "INNER-COMP", "constructor"],
+      [6, "INNER-COMP", "attributeReady"],
+      [5, "MIDDLE-COMP", "attributeReady"],
+      [7, "MIDDLE-COMP", "constructor"],
+      [8, "INNER-COMP", "constructor"],
+      [8, "INNER-COMP", "attributeReady"],
+      [7, "MIDDLE-COMP", "attributeReady"],
+      [4, "OUTER-COMP", "attributeReady"],
+      [4, "OUTER-COMP", "connected"],
+      [7, "MIDDLE-COMP", "connected"],
+      [8, "INNER-COMP", "connected"],
+      [4, "OUTER-COMP", "childReady"],
+      [5, "MIDDLE-COMP", "childReady"],
+      [6, "INNER-COMP", "childReady"],
+      [7, "MIDDLE-COMP", "childReady"],
+      [8, "INNER-COMP", "childReady"]
+    ];
+    setTimeout(() => {
+      console.table(result);
+      const resultStr = JSON.stringify(result);
+      const expectStr = JSON.stringify(expect);
+      console.log(resultStr === expectStr);
+    }, 100);
+  })();
+</script>
+
+<h3>Test of shadowDom construction frames</h3>
+<inner-comp></inner-comp>
+<script>result.push(null)</script>
+<middle-comp></middle-comp>
+<script>result.push(null)</script>
+<outer-comp></outer-comp>

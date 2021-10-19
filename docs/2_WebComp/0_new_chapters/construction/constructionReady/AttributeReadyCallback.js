@@ -21,28 +21,42 @@
   /**
    * mechanism for calling readyCallback on an element
    */
-  function doReadyCallback(el) {
-    ConstructionFrame.now.ready && callAttributeReadyCallback(ConstructionFrame.now.ready);
-    ConstructionFrame.now.ready = el?.attributeReadyCallback ? el : undefined;
-  }
+  // function doReadyCallback(el) {
+  //   ConstructionFrame.now.ready && callAttributeReadyCallback(ConstructionFrame.now.ready);
+  //   ConstructionFrame.now.ready = el?.attributeReadyCallback ? el : undefined;
+  // }
 
   //monkeyPatch the HTMLElement so that it includes the readyCallback().
   window.HTMLElement = class AttributeReadyCallbackHTMLElement extends HTMLElement {
 
     constructor() {
       super();
-      doReadyCallback(this);
+      // debugger
+      ConstructionFrame.now.ready && callAttributeReadyCallback(ConstructionFrame.now.ready);
+      ConstructionFrame.now.ready = this.attributeChangedCallback ? this : undefined;
     }
 
     attributeChangedCallback() {
-      doReadyCallback();
+      // debugger
+      if(ConstructionFrame.now?.ready !== this)
+        return;
+      ConstructionFrame.now.ready = undefined;
+      callAttributeReadyCallback(this);
     }
 
     connectedCallback() {
-      doReadyCallback();
+      // debugger
+      if(ConstructionFrame.now?.ready !== this)
+        return;
+      ConstructionFrame.now.ready = undefined;
+      callAttributeReadyCallback(this);
     }
   }
 
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
-  window.addEventListener('construction-end', ({ended: {ready}}) => ready && callAttributeReadyCallback(ready));
+  window.addEventListener('construction-end', e => {
+    const ready = e.ended.ready;
+    // debugger
+    ready && callAttributeReadyCallback(ready);
+  });
 })();

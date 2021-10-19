@@ -34,7 +34,7 @@
   window.HTMLElement = class ChildReadyCallbackHTMLElement extends HTMLElement {
     constructor() {
       super();
-      this.childReadyCallback && (ConstructionFrame.now.childReadies || (ConstructionFrame.now.childReadies = [])).push(this);
+      this.childReadyCallback && (ConstructionFrame.now.childReadies ??= []).push(this);
     }
   }
 
