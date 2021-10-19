@@ -1,8 +1,8 @@
 <script>
   var res = [];
-  window.addEventListener('beforescriptexecute', ({lastParsed}) => res.push(lastParsed.textContent[0]));
+  window.addEventListener('beforescriptexecute', e => res.push(e.target.textContent[0]), true);
   document.addEventListener('readystatechange', function () {
-    console.log(res.join(','), res.join(',') === '1,2,3,4,5,6,7');
+    console.log(res.join(','), res.join(',') === '1,2,3,4,5,6');
     console.log(document.readyState, document.readyState === 'interactive');
   }, {once: true});
 
@@ -25,4 +25,3 @@
 
 <script>5; res.push(6);</script>
 </body>
-<!--7-->

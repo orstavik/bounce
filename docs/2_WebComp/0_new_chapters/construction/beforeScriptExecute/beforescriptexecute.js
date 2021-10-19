@@ -60,24 +60,19 @@
  *    This problem is solved by adding a one-time, EarlyBird event listener for readystatechange event
  *    that dispatch a beforescriptexecute event.
  */
-function deepestElement(root) {
-  while (root.lastChild) root = root.lastChild;
-  return root;
-}
 
-document.readyState === "loading" && (function () {
-  function dispatchBeforeScriptExecute() {
-    const ev = new Event('beforescriptexecute');
-    ev.lastParsed = deepestElement(document.documentElement);
-    return window.dispatchEvent(ev);
-  }
-
-  const mo = new MutationObserver(dispatchBeforeScriptExecute);
+(function () {
+  if (document.readyState !== "loading")
+    return;
+  let lastTarget;
+  const mo = new MutationObserver(mrs => {
+    const nodes = mrs[mrs.length - 1].addedNodes;
+    const target = nodes[nodes.length - 1];
+    if (target !== lastTarget && !(lastTarget = target).connectedCallback)
+      target.dispatchEvent(new Event('beforescriptexecute'));
+  });
   mo.observe(document.documentElement, {childList: true, subtree: true});
-  window.addEventListener('readystatechange', function () {
-    dispatchBeforeScriptExecute();
-    mo.disconnect();
-  }, {capture: true, once: true});
+  window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
 })();
 
 //todo need to test how it behaves in Safari and Firefox,
