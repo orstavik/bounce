@@ -92,12 +92,12 @@
   window.ConstructionFrame = class ConstructionFrame {
 
     #children = [];
+    #parent;
 
     constructor(type, parent) {
       this.type = type;
-      this.parent = parent;                             //todo make parent hidden again.
-      this.parent?.#children.push(this);
-      this.children = this.#children;
+      this.#parent = parent;
+      this.#parent?.#children.push(this);
     }
 
     * #allFrames() {
@@ -108,7 +108,7 @@
     }
 
     toString() {
-      return this.parent ? this.parent.toString() + ', ' + this.type : this.type;
+      return this.#parent ? this.#parent.toString() + ', ' + this.type : this.type;
     }
 
     static start(type) {
@@ -124,10 +124,11 @@
     }
 
     static end(frame) {
+      now = frame.#parent;
       const endEvent = new Event('construction-end');
       endEvent.ended = frame;
       window.dispatchEvent(endEvent);
-      !frame.parent && ConstructionFrame.complete(frame);
+      !frame.#parent && ConstructionFrame.complete(frame);
     }
 
     static get now() {
@@ -139,8 +140,7 @@
     return function constructHtmlElement(...args) {
       const frame = ConstructionFrame.start(type);
       const res = og.call(this, ...args);
-      now = frame.parent;                         //todo make parent hidden again.
-      ConstructionFrame.end(frame);               //todo reverse, so that ConstructionFrame.now is the frame that ends?? I think this is better.
+      ConstructionFrame.end(frame);
       return res;
     };
   }
