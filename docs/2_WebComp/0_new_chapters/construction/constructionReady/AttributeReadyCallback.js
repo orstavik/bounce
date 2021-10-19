@@ -14,7 +14,7 @@
     try {
       el.attributeReadyCallback();
     } catch (error) {
-      window.dispatchEvent(new ErrorEvent('error', {error})); //todo don't remember exactly what this looks like.
+      window.dispatchEvent(new ErrorEvent('error', {error}));
     }
   }
 
@@ -31,13 +31,11 @@
 
     constructor() {
       super();
-      // debugger
       ConstructionFrame.now.ready && callAttributeReadyCallback(ConstructionFrame.now.ready);
       ConstructionFrame.now.ready = this.attributeChangedCallback ? this : undefined;
     }
 
     attributeChangedCallback() {
-      // debugger
       if(ConstructionFrame.now?.ready !== this)
         return;
       ConstructionFrame.now.ready = undefined;
@@ -45,7 +43,6 @@
     }
 
     connectedCallback() {
-      // debugger
       if(ConstructionFrame.now?.ready !== this)
         return;
       ConstructionFrame.now.ready = undefined;
@@ -54,9 +51,5 @@
   }
 
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
-  window.addEventListener('construction-end', e => {
-    const ready = e.ended.ready;
-    // debugger
-    ready && callAttributeReadyCallback(ready);
-  });
+  window.addEventListener('construction-end', ({ended:{ready}}) => ready && callAttributeReadyCallback(ready));
 })();
