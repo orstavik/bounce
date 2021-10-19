@@ -18,17 +18,12 @@
 //todo Use the imperative Slotting API in a test case
 
 (function () {
-  function callChildReadyCallback(p) {
+  function callChildReadyCallback(el) {
     try {
-      p.childReadyCallback();
+      el.childReadyCallback();
     } catch (error) {
-      window.dispatchEvent(new ErrorEvent('error', {error})); //todo don't remember exactly what this looks like.
+      window.dispatchEvent(new ErrorEvent('error', {error}));
     }
-  }
-
-  function runRecursive(constructionFrame) {
-    constructionFrame.childReadies?.forEach(callChildReadyCallback);
-    constructionFrame.children.forEach(runRecursive);
   }
 
   window.HTMLElement = class ChildReadyCallbackHTMLElement extends HTMLElement {
@@ -38,5 +33,5 @@
     }
   }
 
-  window.addEventListener('construction-end', ({ended: frame}) => !frame.parent && runRecursive(frame));
+  window.addEventListener('construction-complete', ({completed}) => completed.forEach(frame => frame.childReadies?.forEach(callChildReadyCallback)));
 })();

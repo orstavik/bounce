@@ -5,6 +5,8 @@
    *  1. construction-start. Dispatched immediately *before* a new constructionFrame starts.
    *  2. construction-end.   Dispatched immediately *after* a constructionFrame ends. Has one property,
    *                         .ended which is the constructionFrame recently dropped.
+   *  3. construction-complete. Dispatched after a top constructionFrame ends. Has one property: .completed
+   *                         which is a top-down iterator of all the frames completed.
    *
    * The ConstructionFrame API depends on:
    *  1. beforescriptexecute event.
@@ -98,6 +100,13 @@
       this.children = this.#children;
     }
 
+    * #allFrames() {
+      yield this;
+      for (let child of this.#children)
+        for (let desc of child.#allFrames())
+          yield desc;
+    }
+
     toString() {
       return this.parent ? this.parent.toString() + ', ' + this.type : this.type;
     }
@@ -108,10 +117,17 @@
       return frame;
     }
 
+    static complete(frame){
+      const completeEvent = new Event('construction-complete');
+      completeEvent.completed = Array.from(frame.#allFrames());
+      window.dispatchEvent(completeEvent);
+    }
+
     static end(frame) {
       const endEvent = new Event('construction-end');
       endEvent.ended = frame;
       window.dispatchEvent(endEvent);
+      !frame.parent && ConstructionFrame.complete(frame);
     }
 
     static get now() {
@@ -123,8 +139,8 @@
     return function constructHtmlElement(...args) {
       const frame = ConstructionFrame.start(type);
       const res = og.call(this, ...args);
-      now = frame.parent;                                        //todo make parent hidden again.
-      ConstructionFrame.end(frame);
+      now = frame.parent;                         //todo make parent hidden again.
+      ConstructionFrame.end(frame);               //todo reverse, so that ConstructionFrame.now is the frame that ends?? I think this is better.
       return res;
     };
   }
