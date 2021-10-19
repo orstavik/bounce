@@ -1,0 +1,32 @@
+<script>
+  var res = [];
+
+  function check(x) {
+    res.push(x);
+    Promise.resolve().then(() => res.push(x + 'm'));
+    Promise.resolve().then(() => Promise.resolve().then(() => res.push(x + 'mm')));
+  }
+
+  document.addEventListener('beforescriptexecute', e => check(e.target.textContent[0]), true);
+  document.addEventListener('readystatechange', function () {
+    console.log(document.readyState, document.readyState === 'interactive');
+    console.log(res.join(','), res.join(',') === '1,1m,1mm,2,2m,2mm,3,3m,3mm,4,4m,4mm,5,5m,5mm,6,6m,6mm,7,7m,7mm,8,8m,8mm');
+  }, {once: true});
+
+  const tests = [8, 7, 6, 5, 3, 2];
+  customElements.define('web-comp', class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      check(tests.pop());
+    }
+
+    connectedCallback() {
+      check(tests.pop());
+    }
+  });
+</script>
+
+<script src="beforescriptexecute.js"></script>
+<h3>Test of beforescriptexecute with connectedCallback</h3>
+<!--1--><web-comp></web-comp>
+<!--4--><web-comp></web-comp><web-comp></web-comp>
