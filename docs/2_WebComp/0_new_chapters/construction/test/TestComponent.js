@@ -64,7 +64,10 @@ class TestHtml extends HTMLElement {
       const testTxt = await response.text();
       this.#code.textContent = testTxt;
       const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
-      this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(txt)}#${this.#id}`;
+      const data = encodeURI(txt);
+      console.log(newValue, data.length)
+      // debugger
+      this.#iframe.src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
     }
   }
 
@@ -73,4 +76,4 @@ class TestHtml extends HTMLElement {
   }
 }
 
-setTimeout(_=>customElements.define('test-html', TestHtml));
+customElements.define('test-html', TestHtml);
