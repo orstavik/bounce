@@ -95,7 +95,7 @@
   let flagPredictive;
   if (document.readyState === 'loading') {
     flagPredictive = true;
-    const mo = new MutationObserver(_ => flagPredictive = true);
+    const mo = new MutationObserver(_ => Promise.resolve().then(() => Promise.resolve().then(() => Promise.resolve().then(() => Promise.resolve().then(() => flagPredictive = true)))));
     mo.observe(document.documentElement, {childList: true, subtree: true});
     window.addEventListener('readystatechange', _ => mo.disconnect(), {capture: true, once: true});
   }

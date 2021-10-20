@@ -3,7 +3,8 @@
 <script>
   let count = 0;
   window.addEventListener('error', _ => count++);
-  setTimeout(() => console.log(count === 6), 500);
+  window.addEventListener('unhandledrejection', _ => count++);
+  setTimeout(() => console.log(count === 6), 0);
 </script>
 
 <!--error 1, upgrade inside-->
