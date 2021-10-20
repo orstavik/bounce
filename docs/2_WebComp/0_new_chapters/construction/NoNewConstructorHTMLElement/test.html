@@ -1,16 +1,20 @@
+<script src="NoNewConstructorHTMLElement.js"></script>
+
 <script>
   let count = 0;
   window.addEventListener('error', _ => count++);
-  setTimeout(() => console.log(count === 4), 500);
+  setTimeout(() => console.log(count === 6), 500);
 </script>
-<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
-<script src="NoNewConstructorHTMLElement.js"></script>
 
 <!--error 1, upgrade inside-->
 <web-comp a="a" b="b">
   hello
   <script>
     class WebComp extends HTMLElement {
+      connectedCallback() {
+        if (this.hasAttribute('no-whitespace'))
+          Promise.resolve().then(() => Promise.resolve().then(() => new WebComp()));
+      }
     }
 
     customElements.define('web-comp', WebComp);
@@ -24,6 +28,10 @@
 <!--predictive normal, should be ok-->
 <web-comp a="a" b="b">hello <i>wonderful</i> sunshine</web-comp>
 
+<!--predictive with connectedCallback and no whitespace, should not throw an Error-->
+<web-comp no-whitespace>no</web-comp>
+<web-comp no-whitespace>whitespace</web-comp>
+
 <!--createElement and cloneNode, should be fine-->
 <script>
   const a = document.createElement('web-comp');
@@ -34,7 +42,7 @@
 <script>new WebComp()</script>
 
 <!--error 3, new WebComp() inside event listener-->
-<script>window.addEventListener('bob-bob', e => new WebComp())</script>
+<script>window.addEventListener('bob-bob', _ => new WebComp())</script>
 <script>window.dispatchEvent(new Event('bob-bob'))</script>
 
 <!--error 4, new WebComp() inside shadowDom in predictive parser-->

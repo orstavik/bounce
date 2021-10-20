@@ -1,38 +1,46 @@
-// todo depends on beforescriptexecute event.
-
 // NoNewConstructorHTMLElement
-//
-//Monkeypatch which makes *new* an illegal constructor mechanism for custom HTMLElements, not just native HTMLElements.
-//Most likely this can be removed during production, this mechanism is only to dissuade the developer from using
-//new as a means to construct HTMLElements.
 
-//A "new constructor()" is recognized by having:
+//Developer tool/monkeypatch that bans using *new* for custom HTMLElements.
+//If this script is added before a script loads, then neither custom nor native HTMLElements can be constructed using new.
+//Intended for use in a browser extension.
+
+//Technically, a "new constructor()" is recognized by having:
 //1. no parentNode
 //2. no attributes
 //3. no childNodes
 
-//However, there are three other scenarios where this can occur:
+//However, there are three other legal scenarios where no parentNode, no attributes, no childNodes can occur:
 //a. document.createElement('custom-element')
 //b. customElement.cloneNode()
 //c. predictive parser
 //
 //And, there are some gotchas:
-// 1. The _constructor()_ of the customElement of both document.createElement and .cloneNode can create new custom
-//    elements, for example to put in its shadowDom.
-//    This means that all these three methods can *nest* new constructor() calls inside.
-//    The flags therefore has to work only *once* and then be *reset* by *both* the constructor itself for custom elements
-//    and the method itself (for native elements).
+// 1. When a custom element is created using either document.createElement or .cloneNode, then
+//    *inside* the constructor() of that customElement another custom element can be attempted constructed using new.
+//    However, when a native element is constructed using either document.createElement or .cloneNode, then
+//    there will not be an HTMLElement.constructor() callback.
+//    This means that any flag set to mark document.createElement or .cloneNode as legal, must be turned off
+//    *both* by a) the custom HTMLElement.constructor() as soon as possible and
+//    b) the document.createElement or .cloneNode methods themselves when native elements are created.
 //
 // 2. Yes, the .cloneNode() *must* be called on the customElement itself for .parentNode to be undefined.
 //    Yes, that means that it is likely sufficient to override .cloneNode from the HTMLElement class, and not Node.
-//    But. It is possible that someone might call Node.cloneNode.call(customElement).
-//    Since this plugin is meant to only be used during development to produce `SyntaxError`s,
-//    we therefore monkeypatch Node.cloneNode().
+//    But. It is possible that someone *could* call Node.cloneNode.call(customElement).
+//    Since this plugin is meant to *only* be used during development to produce `SyntaxError`s,
+//    we therefore choose to make it as safe as possible and thus monkeypatch Node.cloneNode().
 //
-// 3. There are two scenarios that are hard to distinguish:
+// 3. During loading, when the custom element has a custom connectedCallback(), the MutationObserver watching the
+//    document.childNodes.subtree will trigger as a microtask at the end of the connectedCallback() macro frame.
+//    If the connectedCallback() then triggers a *new* HTMLElement.constructor() from inside a micro task that holds
+//    the connectedCallback(), then it might get the flagPredictive wrongly. To avoid this problem, the
+//    resetting of flagPredictive is done in a 4-level deep microtask.
+//
+// old. There are two scenarios that are hard to distinguish:
 //    a) two custom element constructor()s are called back-to-back and
 //    b) a custom element constructor() is called that calls a new constructor() inside.
-//    The best way to patch this is to depend on the beforescriptexecute event to continuously
+//    The best way to patch this is therefore to reset the predictiveFlag at every possible break in the predictive parsing.
+//    Every possible break during predictive parser is monitored like this.
+//    to depend on the beforescriptexecute event to continuously
 //    reset a predictiveFlag before any customElement constructor() is called by the predictive parser.
 //
 //Problem X:
@@ -84,17 +92,22 @@
     }
   }));
 
-  let flagPredictive = true;
-  window.addEventListener('beforescriptexecute', () => flagPredictive = true, true);
+  let flagPredictive;
+  if (document.readyState === 'loading') {
+    flagPredictive = true;
+    const mo = new MutationObserver(_ => flagPredictive = true);
+    mo.observe(document.documentElement, {childList: true, subtree: true});
+    window.addEventListener('readystatechange', _ => mo.disconnect(), {capture: true, once: true});
+  }
 
   window.HTMLElement = class NoNewConstructorHTMLElement extends HTMLElement {
 
     constructor() {
       super();
       //1. predictive parser
-      const fp = flagPredictive;
+      const predictiveOk = document.readyState === 'loading' && !document.currentScript && flagPredictive;
       flagPredictive = false;
-      if (document.readyState === 'loading' && !document.currentScript && fp)
+      if (predictiveOk)
         return;
       //2. document.createElement and .cloneNode()
       if (flag) {
