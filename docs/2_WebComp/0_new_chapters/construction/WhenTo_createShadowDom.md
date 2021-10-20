@@ -2,9 +2,11 @@
 
 The content in the `shadowRoot` can be added at different points:
 1. `constructor()`,
-2. first `attributeChangedCallback()`, ie. `ready()`,
-3. first `connectedCallback()`, or
-4. first `childChangedCallback()` 
+2. first `attributeChangedCallback()`,
+3. `attributeReadyCallback()`,
+4. first `connectedCallback()`,
+5. `childReadyCallback()`,
+6. first `childChangedCallback()` 
 
 ## Anti-pattern: create shadowRoot from `connectedCallback()`
 
