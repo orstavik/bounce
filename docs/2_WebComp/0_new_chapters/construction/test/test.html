@@ -1,15 +1,67 @@
 <script src="TestComponent.js"></script>
 
-<test-html
-    test="../beforeScriptExecute/test1.html"
-    expected='[["1"],["2"],["3"],["4"],["5"],["6"],["interactive"]]'
-></test-html>
+<test-html test="../beforeScriptExecute/test1.html">
+      <pre expected>
+        [["1"],["2"],["3"],["4"],["5"],["6"],["interactive"]]
+    </pre>
+</test-html>
 
-<test-html
-    test="../beforeScriptExecute/test1_macro.html"
-    expected='[["1"],["mm1"],["2"],["mm2"],["3"],["mm3"],["4"],["mm4"],["5"],["mm5"],["6"],["mm6"],["interactive"]]'
-></test-html>
-<test-html
-    test="../beforeScriptExecute/test2_connectedCallback.html"
-    expected='[["1"],["mm1"],["2"],["mm2"],["3"],["mm3"],["4"],["mm4"],["5"],["mm5"],["6"],["mm6"],["7"],["mm7"],["8"],["mm8"],["interactive"]]'
-></test-html>
+<test-html test="../beforeScriptExecute/test1_macro.html">
+    <pre expected>
+  [["1"],["mm1"],["2"],["mm2"],["3"],["mm3"],["4"],["mm4"],["5"],["mm5"],["6"],["mm6"],["interactive"]]
+    </pre>
+</test-html>
+<test-html test="../beforeScriptExecute/test2_connectedCallback.html">
+    <pre expected>
+              [["1"],["mm1"],["2"],["mm2"],["3"],["mm3"],["4"],["mm4"],["5"],["mm5"],["6"],["mm6"],["7"],["mm7"],["8"],["mm8"],["interactive"]]
+    </pre>
+</test-html>
+<test-html test="../constructionFrame/test1.html">
+  <pre expected>
+    [
+    [[1,"start","CustomElementRegistry.define"]],
+    [[1,"end","CustomElementRegistry.define"]],
+    [[0,"after",null]],[[2,"start","predictive"]],
+    [[2,"constructor","predictive"]],
+    [[2,"end","predictive"]],
+    [[0,"after",null]],
+    [[3,"start","predictive"]],
+    [[3,"constructor","predictive"]],
+    [[3,"end","predictive"]],
+    [[0,"after",null]],
+    [[4,"start","predictive"]],
+    [[4,"constructor","predictive"]],
+    [[5,"start","predictive"]],
+    [[5,"constructor","predictive"]],
+    [[5,"end","predictive"]],
+    [[0,"after",null]],
+    [[4,"end","predictive"]],
+    [[0,"after",null]],
+    [[6,"start","predictive"]],
+    [[6,"constructor","predictive"]],
+    [[7,"start","predictive"]],
+    [[7,"constructor","predictive"]],
+    [[7,"end","predictive"]],
+    [[0,"after",null]],
+    [[6,"end","predictive"]],
+    [[0,"after",null]],
+    [[8,"start","predictive"]],
+    [[8,"constructor","predictive"]],
+    [[9,"start","predictive"]],
+    [[9,"constructor","predictive"]],
+    [[9,"end","predictive"]],
+    [[0,"after",null]],
+    [[8,"end","predictive"]],
+    [[0,"after",null]],
+    [[10,"start","predictive"]],
+    [[10,"constructor","predictive"]],
+    [[10,"end","predictive"]],
+    [[0,"after",null]],
+    [[-1,"script",null]],
+    [[11,"start","predictive"]],
+    [[11,"constructor","predictive"]],
+    [[11,"end","predictive"]],
+    [[0,"after",null]],
+    [[-2,"dom interactive",null]]]
+  </pre>
+</test-html>

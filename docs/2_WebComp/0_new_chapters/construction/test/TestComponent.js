@@ -1,27 +1,41 @@
-//language=CSS
-const style = `
-  :host([ok="true"]) {
-    background: green;
-  }
-  :host([ok="false"]) {
-    background: red;
-  }
+//language=HTML
+const template = `
+  <style>
+    :host([ok="true"]) {
+      background: green;
+    }
+    :host([ok="false"]) {
+      background: red;
+    }
+    :host {
+      display: block;
+      width: 100px;
+      height: 100px;
+      overflow: scroll;
+    }
+  </style>
+  <pre id="result"></pre>
+  <pre id="code"></pre>
+  <iframe></iframe>
 `;
 
 class TestHtml extends HTMLElement {
-  #result;
-  #iframe;
-  #id;
 
   static #count = 0;
+
+  #resultObj = [];
+  #iframe;
+  #id = TestHtml.#count++;
+  #result;
+  #code;
 
   constructor() {
     super();
     this.attachShadow({mode: "open"});
-    this.shadowRoot.innerHTML = `<style>${style}</style><iframe></iframe>`;
-    this.#iframe = this.shadowRoot.childNodes[1];
-    this.#id = TestHtml.#count++;
-    this.#result = [];
+    this.shadowRoot.innerHTML = template;
+    this.#result = this.shadowRoot.querySelector("#result");
+    this.#code = this.shadowRoot.querySelector("#code");
+    this.#iframe = this.shadowRoot.querySelector("iframe");
     window.addEventListener('message', e => this.onMessage(e));
   }
 
@@ -29,13 +43,14 @@ class TestHtml extends HTMLElement {
     let res = JSON.parse(e.data);
     if (!(res instanceof Array) || res[0] !== this.#id + '')
       return;
-    this.#result.push(res[1]);
+    this.#resultObj.push(res[1]);
     this.render();
   }
 
   render() {
-    this.setAttribute('result', JSON.stringify(this.#result));
-    this.setAttribute('ok', this.getAttribute('expected') === this.getAttribute('result'));
+    this.#result.textContent = JSON.stringify(this.#resultObj, null, 2);
+    const expect = JSON.stringify(JSON.parse(this.children[0].textContent), null, 2);
+    this.setAttribute('ok', expect === this.#result.textContent);
   }
 
   async attributeChangedCallback(name, oldValue, newValue) {
@@ -45,7 +60,7 @@ class TestHtml extends HTMLElement {
       const logUrl = new URL('log.js', document.location);
       const response = await fetch(testUrl);
       const testTxt = await response.text();
-      this.setAttribute('code', testTxt);
+      this.#code.textContent = testTxt;
       const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
       this.#iframe.src = `data:text/html;charset=utf-8,${encodeURI(txt)}#${this.#id}`;
     }
