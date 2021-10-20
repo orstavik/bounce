@@ -1,64 +1,79 @@
 /**
  * beforescriptexecute polyfill
  *
- * This beforescriptexecute polyfill has two differences with the FF original event (I think)
- * 1. It dispatches a beforescriptexecute event at the *end of parsing*. This will happen whether or not any async or
- *    <script defer> scripts is added or not.
- * 2. It will not dispatch any beforescriptexecute events *after* the document has finished loading and
- *    switched to interactive.
+ * The beforescriptexecute event is dispatched before a <script> is triggered during loading of the main document.
+ * As such, the beforescriptexecute event signify a break when the parser switches from adding native elements into the
+ * DOM to running some JS script.
  *
- * During "loading"/interpretation of the main document:
- * the `new MutationObserver(callback).observe(document.documentElement, {childList: true, subtree: true});`
- * will aggregate all changes and only *break* off and
- * trigger the callback **before** either
- * 1. a <script> begins (not defer, as they only run once "loading" has completed) or
- * 2. the predictive parser calls a custom element constructor
- *    (which is essentially the same as if the predictive parser would invoke a script).
+ * However, with web components there are *two* ways that JS scripts/functions can be triggered during loading:
+ * 1. the good old <script> and <script async>, and
+ * 2. the constructor(), attributeChangedCallback(), and connectedCallback() of elements already defined and
+ *    placed in the DOM.
  *
- * The beforescriptexecute event has *one* property: .lastParsed.
- * The lastParsed is the current position of the parser at the time of beforescriptexecute dispatch.
- * This position is known or guesstimated as:
- * 1. If a sync <script> is about to run, then
- *    the document.currentScript represent the last parsed element.
- * 2. If the predictive parser calls an already defined custom element, then
- *    the innermost element found from the <html> element in the document
- *    can be assumed to be the element currently being parsed.
+ * The original Firefox beforescriptexecute event only triggers before <script> elements (1), and
+ * *not* before custom element constructor() and ...Callback()s.
  *
- * Problem 1:
+ * The beforescriptexecute polyfill triggers before *both* custom elements *and* custom element constructors(),
+ * with the following *two* exceptions:.
+ * a. If the last element added to the DOM is the same, then there will be no second beforescriptevent,
+ *    even though two different scripts are technically triggered. There are two examples of such a situation:
+ *    I.  <script>console.log('script1');</script><web-comp><web-comp>
+ *    II. <web-comp-x></web-comp-x><web-comp><web-comp>   where web-comp-x implements connectedCallback().
+ *
+ *    When a web component's <start-tag> *immediately* follows either a <script> or another <web-comp-x>
+ *    (and where web-comp-x implements a custom connectedCallback()),
+ *    then there will be no beforescriptexecute trigger *before* the web-comp constructor.
+ *
+ * Note: When would a custom element start tag immediately follow a <script>, <start-tag>, or <end-tag>?
+ * 1. For some container elements whitespace might be meaningful. In such container elements no whitespace is meaningful.
+ * 2. An html minifier of some sort might remove all whitespace.
+ * In such situations custom elements *can* immediately follow either <script> or
+ * other custom elements' <start-tag> or <end-tag>. And in such sitautions, no beforescriptexecute event will be
+ * dispatched.
+ *
+ * WhatIs: the `.target` of the `beforescriptexecute` polyfill event?
+ *
+ * The `target` of the `beforescriptexecute` event is the last element the parser has added to the DOM.
+ * a) For sync `<script>`'s that is the <script> element itself. The <script> element is always added to the DOM before the
+ * javascript functions it contains are triggered.
+ * b) When web component constructors are triggered, the web component itself is not yet added to the DOM.
+ *    This means that the last element added by the parser to the DOM is either a) a previous sibling node, b) the parent
+ *    element, or c) a descendant of a previous sibling.
+ *
+ * Most commonly, web component start tags are preceded by whitespace. Therefore, most commonly the `target` of a
+ * beforescriptexecute event would be a text node.
+ *
+ * How is the beforescriptexecute polyfill implemented?
+ *
+ * During "loading"/interpretation of the main document a
+ *    `new MutationObserver(callback).observe(document.documentElement, {childList: true, subtree: true});`
+ * will aggregate all changes and only *break off* and trigger either
+ * 1. as a separte macro-task *before* a <script> begins,
+ * 2. as a micro-task that is added to a connectedCallback() macro-task for an already defined custom element,
+ * 3. as a separate macro-task *before* the constructor() of an already defined custom element,
+ *    iff that custom element doesn't immediately follow either
+ *    a) a </script> of a sync script,
+ *    b) the startTag <web-comp-x>,   (*)
+ *    c) the endTag </web-comp-x>, or (*)
+ *    *) where <web-comp-x> implements a custom connectedCallback().
+ *
+ * Important test case 1:
  *    a) Imagine the main document containing two *sibling* custom element tags
  *    with **NO** whitespace in between:
  *       <a-a></a-a><b-b></b-b>
  *
- *    When the constructor() of <b-b> is called, then lastParsed will find the "<a-a>" element.
+ *    <a-a>'s definition implement a custom connectedCallback().
+ *    Here, there should be no beforescriptexecute event dispatched before <b-b>.
  *
  *    b) Imagine the main document containing two *nested* custom element tags:
  *       <a-a><b-b></b-b></a-a>
  *
- *    Again, when the constructor() og "<b-b>" is called, then
- *    again lastParsed will find the "<a-a>" element.
+ *    <a-a>'s definition implement a custom connectedCallback().
+ *    Here, there should be no beforescriptexecute event dispatched before <b-b>.
  *
- *    The problem is:
- *    1. Yes, you and I can *plainly read* in the HTML text that
- *       these two situations are different.
- *    2. Yes, in the sibling scenario the browser's parser **has read** the
- *       endTag "</a-a>" and there **knows** the difference between the two scenarios.
- *    3. No, the browers' parsers **DO NOT** write the knowledge that it **has read**
- *       the endTag "</a-a>" in the sibling scenario to any property in the DOM nor
- *       JS land.
- *    4. Therefore, from JS, there is no way for you and I and JS scripts to
- *       distinguish **no space custom element siblings** from **no space custom element
- *       parent-child** scenarios. So, if you are to guess, then you should guess that
- *       "<b-b>" is a child, not a sibling.
- *
- * Problem 2:
- *    The first 'readystatechange' event happens before the mutationObserver is triggered when parsing ends:
- *    ie. at the end of the document we get sequence:
- *    1. readystatechange(loading => interactive)
- *    2. mutationObserver trigger
- *    3. readystatechange(interactive => completed)
- *
- *    This problem is solved by adding a one-time, EarlyBird event listener for readystatechange event
- *    that dispatch a beforescriptexecute event.
+ * Important test case 2:
+ *    There should be no beforescriptexecute event after the first <script defer> has begun
+ *    or after the first 'readystatechange' event that marks the start of document.readyState === 'interactive'
  */
 
 (function () {
@@ -75,6 +90,6 @@
   window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
 })();
 
+//todo rename to parser-break or beforescriptexecute- to avoid conflict with native FF event?
 //todo need to test how it behaves in Safari and Firefox,
-// In 2021 Chrome, this behavior will only trigger before the next script or when the predictive parser calls a custom element constructor.
-// that it only triggers before custom events or <script> functions.
+//todo test the end of the parsing sequence.
