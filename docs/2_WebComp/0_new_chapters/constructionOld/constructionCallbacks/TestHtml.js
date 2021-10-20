@@ -37,7 +37,7 @@ export class TestHtml extends HTMLElement {
 
   constructor() {
     super();
-    this.#id = this.id.replace(' ', '');
+    this.#id = this.id.replaceAll(' ', '');
     this.attachShadow({mode: "open"});
     this.shadowRoot.addEventListener('slotchange', e => this.slotchange(e));
     this.shadowRoot.innerHTML = `<link rel="stylesheet" href="test.css"/><slot></slot><iframe hidden></iframe><div></div>`;

@@ -1,0 +1,31 @@
+<script>
+  var res = [];
+  window.addEventListener('beforescriptexecute', ({lastParsed}) => res.push(lastParsed.textContent));
+  document.addEventListener('readystatechange', function () {
+    res = res.join(',');
+    console.log(res, res  === '1,2,3,4,,6');
+    console.log(document.readyState, document.readyState === 'interactive');
+  }, {once: true});
+
+  customElements.define('web-comp', class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      res.push(2);
+    }
+    attributeChangedCallback() {
+      res.push(3);
+    }
+    connectedCallback() {
+      res.push(4);
+      // this.innerText = 'xxx';
+      Promise.resolve().then(()=>{res.push('yyy')});
+    }
+    static get observedAttributes(){
+      return ['a'];
+    }
+  });
+</script>
+<script src="beforescriptexecute.js"></script>
+
+<!--1--><web-comp a>xxx</web-comp>
+<!--5-->

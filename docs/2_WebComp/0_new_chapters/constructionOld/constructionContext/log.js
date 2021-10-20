@@ -29,6 +29,7 @@ console.log = function (el, new_target) {
     //if we have upgrade within, we go into predictive mode in childChanged.
     //for all the elements that are not ancestor , then we can remove the
   };
+  data['frame_' + window.ConstructionFrame?.now?.type] = true; //we can check the frame for the constructor //todo use window.ConstructionFrame?.now?.toString() instead?
   data.predictive = data.isLoading && !data.isCurrentScript;
   data.NEW = !data.hasParentNode && !data.hasAttributes && !data.hasChildNodes;
   parent.postMessage(JSON.stringify([location.hash.substr(1), data]), '*');

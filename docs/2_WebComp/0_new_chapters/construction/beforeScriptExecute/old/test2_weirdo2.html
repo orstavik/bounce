@@ -3,8 +3,7 @@
 
   function check(x) {
     res.push(x);
-    Promise.resolve().then(() => res.push(x));
-    Promise.resolve().then(() => Promise.resolve().then(() => res.push(x)));
+    Promise.resolve().then(() => res.push(x + 'm'));
   }
 
   window.addEventListener('beforescriptexecute', () => check('b'));
@@ -12,17 +11,20 @@
   document.addEventListener('readystatechange', function () {
     console.log(document.readyState, document.readyState === 'interactive');
     res = res.join(',');
-    console.log(res, res === 'b,b,b,c,c,c');
+    const expected = 'b,bm,b,bm,c,cm,b,bm';
+    console.log(res === expected, 'expected: ' + expected, 'result: ' + res);
   }, {once: true});
 
   customElements.define('web-comp', class WebComp extends HTMLElement {
-    connectedCallback() {
+    constructor() {
+      super();
       check('c');
     }
   });
 </script>
 
 <script src="beforescriptexecute.js"></script>
-<h3>Test of beforescriptexecute with connectedCallback</h3>
+<h3>Test of no-whitespace between lastParsed and new web-comp</h3>
 
-<web-comp></web-comp>
+<!--<web-comp></web-comp>&lt;!&ndash;bob&ndash;&gt;<web-comp></web-comp>-->
+<script></script><web-comp></web-comp>

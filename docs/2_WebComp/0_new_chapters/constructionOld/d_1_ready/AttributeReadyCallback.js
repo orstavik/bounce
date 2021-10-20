@@ -1,13 +1,14 @@
+// AttributeReadyCallbackHTMLElement depends on:
+//
+// 1. ReadyHTMLElement needs aggregate/correct lifecycle method inheritance.
+//    Aggregate lifecycle method inheritance means that
+//    a base class' connectedCallback(){...} and/or attributeChangedCallback(){...} **must call**
+//    super.connectedCallback() and/or super.attributeChangedCallback() at the beginning of the
+//    **if and only if** the super class implements such a lifecycle method.
+//
+// 2. ConstructionFrame API with construction-end and ConstructionFrame.now.
+
 (function () {
-  // AttributeReadyCallbackHTMLElement depends on:
-  //
-  // 1. ReadyHTMLElement needs aggregate/correct lifecycle method inheritance.
-  //    Aggregate lifecycle method inheritance means that
-  //    a base class' connectedCallback(){...} and/or attributeChangedCallback(){...} **must call**
-  //    super.connectedCallback() and/or super.attributeChangedCallback() at the beginning of the
-  //    **if and only if** the super class implements such a lifecycle method.
-  //
-  // 2. ConstructionFrame API with construction-end and ConstructionFrame.now.
 
   function callAttributeReadyCallback(el) {
     try {

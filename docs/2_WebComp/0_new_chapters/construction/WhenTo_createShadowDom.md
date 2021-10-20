@@ -31,6 +31,8 @@ No. There is still a big use-case for ready. What if the component needs to obse
 
 ## WhenTo: construct shadowRoot during the first `childChangedCallback()`?
 
+todo The new Imperative Slotting API.
+
 Some web components <slot> around its childNodes and might cause FOUC if you have different childNode configuration. Again, think `<details>` and the edge cases with missing `<summary>` elements. Here, you might need to make dynamic changes to the shadowRoot elements that vary with the presence of certain child nodes. And when that happens, you wish to delay the construction of the shadowRoot until you know that the children are listed.
 
 If you create the shadowDom at first `ChildChangedCallback()`, then we need to hide the rendering of the children until the first `childChangedCallback()` is made. We do that by creating a `this.attachShadow({mode: "open"});` in the constructor, but not adding a `<slot>` element. If not, during the predictive parser, we might can get a flash of unstyled content as the children are being interpreted.  

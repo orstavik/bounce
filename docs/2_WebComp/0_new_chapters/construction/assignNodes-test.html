@@ -1,0 +1,33 @@
+<script>
+  class InnerComp extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open", slotAssignment: "manual"});
+      this.shadowRoot.innerHTML = `
+<ol>
+   <li>one</li>
+   <li>and a two and..</li>
+   <slot></slot>
+</ol>`;
+      const bob = this.shadowRoot.querySelector('slot');
+      setTimeout(() => {
+        bob.assign(this.childNodes);
+        // bob.assign([this.previousSibling]);
+        // bob.assign(this.querySelectorAll('li'));
+      });
+    }
+  }
+
+  class MiddleComp extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<li>thinking outside the box</li><inner-comp><slot></slot><li>hello shadow </li><ul><li>inside inside</li></ul></inner-comp>';
+    }
+  }
+
+  customElements.define('inner-comp', InnerComp);
+  customElements.define('middle-comp', MiddleComp);
+</script>
+
+<middle-comp><li>hello sunshine</li></middle-comp>
