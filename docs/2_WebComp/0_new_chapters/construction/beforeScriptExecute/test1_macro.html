@@ -1,20 +1,13 @@
 <script>
-  var res = [];
-
   function check(x) {
-    res.push(x)
-    Promise.resolve().then(() => res.push(x + "m"));
-    Promise.resolve().then(() => Promise.resolve().then(() => res.push(x + "mm")));
+    console.log(x)
+    Promise.resolve().then(() => Promise.resolve().then(() => console.log("mm" + x)));
   }
 
   document.addEventListener('beforescriptexecute', e => check(e.target.textContent[0]), true);
+  document.addEventListener('readystatechange', () => console.log(document.readyState), {once: true});
 
-  document.addEventListener('readystatechange', function () {
-    console.log(res.join(','), res.join(',') === '1,1m,1mm,2,2m,2mm,3,3m,3mm,4,4m,4mm,5,5m,5mm,6,6m,6mm');
-    console.log(document.readyState, document.readyState === 'interactive');
-  }, {once: true});
-
-  const tests = [4, 2];
+  const tests = ["4", "2"];
   customElements.define('web-comp', class WebComp extends HTMLElement {
     constructor() {
       super();
@@ -26,10 +19,10 @@
 <script src="beforescriptexecute.js"></script>
 
 <body>
-<h3>Test of beforescriptexecute</h3>
+<h3>Test of beforescriptexecute with macro</h3>
 <!--1--><web-comp a>
   <!--3--><web-comp b></web-comp>
 </web-comp>
 
-<script>5; check(6);</script>
+<script>5; check("6");</script>
 </body>
