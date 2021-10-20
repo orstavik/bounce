@@ -1,15 +1,15 @@
 <script src="TestComponent.js"></script>
 
 <test-html test="../beforeScriptExecute/test1.html">
-      <pre expected>
-        [["1"],["2"],["3"],["4"],["5"],["6"],["interactive"]]
-    </pre>
+  <script expected>
+    [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["interactive"]]
+  </script>
 </test-html>
 
 <test-html test="../beforeScriptExecute/test1_macro.html">
-    <pre expected>
-  [["1"],["mm1"],["2"],["mm2"],["3"],["mm3"],["4"],["mm4"],["5"],["mm5"],["6"],["mm6"],["interactive"]]
-    </pre>
+  <script expected>
+    [["1"], ["mm1"], ["2"], ["mm2"], ["3"], ["mm3"], ["4"], ["mm4"], ["5"], ["mm5"], ["6"], ["mm6"], ["interactive"]]
+  </script>
 </test-html>
 <test-html test="../beforeScriptExecute/test2_connectedCallback.html">
     <pre expected>
@@ -17,51 +17,116 @@
     </pre>
 </test-html>
 <test-html test="../constructionFrame/test1.html">
-  <pre expected>
+  <script expected>
     [
-    [[1,"start","CustomElementRegistry.define"]],
-    [[1,"end","CustomElementRegistry.define"]],
-    [[0,"after",null]],[[2,"start","predictive"]],
-    [[2,"constructor","predictive"]],
-    [[2,"end","predictive"]],
-    [[0,"after",null]],
-    [[3,"start","predictive"]],
-    [[3,"constructor","predictive"]],
-    [[3,"end","predictive"]],
-    [[0,"after",null]],
-    [[4,"start","predictive"]],
-    [[4,"constructor","predictive"]],
-    [[5,"start","predictive"]],
-    [[5,"constructor","predictive"]],
-    [[5,"end","predictive"]],
-    [[0,"after",null]],
-    [[4,"end","predictive"]],
-    [[0,"after",null]],
-    [[6,"start","predictive"]],
-    [[6,"constructor","predictive"]],
-    [[7,"start","predictive"]],
-    [[7,"constructor","predictive"]],
-    [[7,"end","predictive"]],
-    [[0,"after",null]],
-    [[6,"end","predictive"]],
-    [[0,"after",null]],
-    [[8,"start","predictive"]],
-    [[8,"constructor","predictive"]],
-    [[9,"start","predictive"]],
-    [[9,"constructor","predictive"]],
-    [[9,"end","predictive"]],
-    [[0,"after",null]],
-    [[8,"end","predictive"]],
-    [[0,"after",null]],
-    [[10,"start","predictive"]],
-    [[10,"constructor","predictive"]],
-    [[10,"end","predictive"]],
-    [[0,"after",null]],
-    [[-1,"script",null]],
-    [[11,"start","predictive"]],
-    [[11,"constructor","predictive"]],
-    [[11,"end","predictive"]],
-    [[0,"after",null]],
-    [[-2,"dom interactive",null]]]
-  </pre>
+      [[1, "start", "CustomElementRegistry.define"]],
+      [[1, "end", "CustomElementRegistry.define"]],
+      [[0, "after", null]], [[2, "start", "predictive"]],
+      [[2, "constructor", "predictive"]],
+      [[2, "end", "predictive"]],
+      [[0, "after", null]],
+      [[3, "start", "predictive"]],
+      [[3, "constructor", "predictive"]],
+      [[3, "end", "predictive"]],
+      [[0, "after", null]],
+      [[4, "start", "predictive"]],
+      [[4, "constructor", "predictive"]],
+      [[5, "start", "predictive"]],
+      [[5, "constructor", "predictive"]],
+      [[5, "end", "predictive"]],
+      [[0, "after", null]],
+      [[4, "end", "predictive"]],
+      [[0, "after", null]],
+      [[6, "start", "predictive"]],
+      [[6, "constructor", "predictive"]],
+      [[7, "start", "predictive"]],
+      [[7, "constructor", "predictive"]],
+      [[7, "end", "predictive"]],
+      [[0, "after", null]],
+      [[6, "end", "predictive"]],
+      [[0, "after", null]],
+      [[8, "start", "predictive"]],
+      [[8, "constructor", "predictive"]],
+      [[9, "start", "predictive"]],
+      [[9, "constructor", "predictive"]],
+      [[9, "end", "predictive"]],
+      [[0, "after", null]],
+      [[8, "end", "predictive"]],
+      [[0, "after", null]],
+      [[10, "start", "predictive"]],
+      [[10, "constructor", "predictive"]],
+      [[10, "end", "predictive"]],
+      [[0, "after", null]],
+      [[-1, "script", null]],
+      [[11, "start", "predictive"]],
+      [[11, "constructor", "predictive"]],
+      [[11, "end", "predictive"]],
+      [[0, "after", null]],
+      [[-2, "dom interactive", null]]
+    ]
+  </script>
+</test-html>
+
+<test-html test="../constructionFrame/test2.html">
+  <script expected>
+    [
+      [[1, "start", "CustomElementRegistry.define"]],
+      [[1, "end", "CustomElementRegistry.define"]],
+      [[0, "after", null]],
+      [[2, "start", "CustomElementRegistry.define"]],
+      [[2, "end", "CustomElementRegistry.define"]],
+      [[0, "after", null]],
+      [[3, "start", "CustomElementRegistry.define"]],
+      [[3, "end", "CustomElementRegistry.define"]],
+      [[0, "after", null]],
+
+      [[4, "start", "predictive"]],
+      [[4, "constructor", "predictive"]],
+      [[4, "end", "predictive"]],
+      [[0, "after", null]],
+
+      [[5, "start", "predictive"]],
+      [[5, "constructor start", "predictive"]],
+      [[6, "start", "predictive, ShadowRoot.innerHTML"]],
+      [[6, "constructor", "predictive, ShadowRoot.innerHTML"]],
+      [[6, "end", "predictive, ShadowRoot.innerHTML"]],
+      [[5, "after", "predictive"]],
+      [[7, "start", "predictive, Element.insertAdjacentHTML"]],
+      [[7, "end", "predictive, Element.insertAdjacentHTML"]],
+      [[5, "after", "predictive"]],
+      [[5, "constructor end", "predictive"]],
+      [[5, "end", "predictive"]],
+      [[0, "after", null]],
+
+      [[8, "start", "predictive"]],
+      [[8, "constructor start", "predictive"]],
+      [[9, "start", "predictive, Document.createElement"]],
+      [[9, "constructor start", "predictive, Document.createElement"]],
+      [[10, "start", "predictive, Document.createElement, ShadowRoot.innerHTML"]],
+      [[10, "constructor", "predictive, Document.createElement, ShadowRoot.innerHTML"]],
+      [[10, "end", "predictive, Document.createElement, ShadowRoot.innerHTML"]],
+      [[9, "after", "predictive, Document.createElement"]],
+      [[11, "start", "predictive, Document.createElement, Element.insertAdjacentHTML"]],
+      [[11, "end", "predictive, Document.createElement, Element.insertAdjacentHTML"]],
+      [[9, "after", "predictive, Document.createElement"]],
+      [[9, "constructor end", "predictive, Document.createElement"]],
+      [[9, "end", "predictive, Document.createElement"]],
+      [[8, "after", "predictive"]],
+      [[12, "start", "predictive, Node.cloneNode"]],
+      [[12, "constructor start", "predictive, Node.cloneNode"]],
+      [[13, "start", "predictive, Node.cloneNode, ShadowRoot.innerHTML"]],
+      [[13, "constructor", "predictive, Node.cloneNode, ShadowRoot.innerHTML"]],
+      [[13, "end", "predictive, Node.cloneNode, ShadowRoot.innerHTML"]],
+      [[12, "after", "predictive, Node.cloneNode"]],
+      [[14, "start", "predictive, Node.cloneNode, Element.insertAdjacentHTML"]],
+      [[14, "end", "predictive, Node.cloneNode, Element.insertAdjacentHTML"]],
+      [[12, "after", "predictive, Node.cloneNode"]],
+      [[12, "constructor end", "predictive, Node.cloneNode"]],
+      [[12, "end", "predictive, Node.cloneNode"]],
+      [[8, "after", "predictive"]],
+      [[8, "constructor end", "predictive"]],
+      [[8, "end", "predictive"]],
+      [[0, "after", null]]
+    ]
+  </script>
 </test-html>

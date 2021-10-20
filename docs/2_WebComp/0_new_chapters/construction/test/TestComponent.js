@@ -28,11 +28,13 @@ class TestHtml extends HTMLElement {
   #id = TestHtml.#count++;
   #result;
   #code;
+  #expected;
 
   constructor() {
     super();
     this.attachShadow({mode: "open"});
     this.shadowRoot.innerHTML = template;
+    this.#expected = this.children[0];
     this.#result = this.shadowRoot.querySelector("#result");
     this.#code = this.shadowRoot.querySelector("#code");
     this.#iframe = this.shadowRoot.querySelector("iframe");
@@ -48,8 +50,8 @@ class TestHtml extends HTMLElement {
   }
 
   render() {
-    this.#result.textContent = JSON.stringify(this.#resultObj, null, 2);
-    const expect = JSON.stringify(JSON.parse(this.children[0].textContent), null, 2);
+    this.#result.textContent = JSON.stringify(this.#resultObj, null, 3);
+    const expect = JSON.stringify(JSON.parse(this.#expected.textContent), null, 3);
     this.setAttribute('ok', expect === this.#result.textContent);
   }
 
@@ -71,4 +73,4 @@ class TestHtml extends HTMLElement {
   }
 }
 
-customElements.define('test-html', TestHtml);
+setTimeout(_=>customElements.define('test-html', TestHtml));
