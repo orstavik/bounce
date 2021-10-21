@@ -6,7 +6,7 @@
 
     function printFrame(type, frame) {
       const id = frame ? frame.__id || (frame.__id = ++count) : 0;
-      console.log([id, type, frame?.toString()]);
+      console.log(id, type, frame?.toString());
     }
 
     addEventListener('construction-start', _ => printFrame('start', ConstructionFrame.now));
@@ -41,8 +41,8 @@
 
 <h3>This is a test of sync script, x-1, x1</h3>
 <web-comp></web-comp>
-<script>console.log([-1, "script", undefined])</script>
+<script>console.log("script")</script>
 
 <h3>This is a test of predictive before readystatechange event</h3>
-<script>document.addEventListener('readystatechange', _ => console.log([-2, 'dom interactive', undefined]), {once: true});</script>
+<script>document.addEventListener('readystatechange', _ => console.log('dom interactive'), {once: true});</script>
 <web-comp></web-comp>

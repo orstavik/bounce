@@ -6,7 +6,7 @@
 
     function printFrame(type, frame) {
       const id = frame ? frame.__id || (frame.__id = ++count) : 0;
-      console.log([id, type, frame?.toString()]);
+      console.log(id, type, frame?.toString());
     }
 
     addEventListener('construction-start', _ => printFrame('start', ConstructionFrame.now));
