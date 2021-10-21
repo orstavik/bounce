@@ -9,19 +9,18 @@ const template = `
     }
     :host {
       display: block;
-      /*width: 100px;*/
-      height: 50px;
+      height: 1em;
       overflow: hidden;
     }
     :host([active]) {
-      width: 90vw;
-      height: 90vh;
+      height: 60vh;
+      overflow: scroll;
     }
     pre {
       border: 2px dashed grey;
     }
   </style>
-  <h3></h3>
+  <div></div>
   <pre id="code"></pre>
   <pre id="expected"></pre>
   <pre id="result"></pre>
@@ -51,7 +50,7 @@ class TestHtml extends HTMLElement {
     this.shadowRoot.innerHTML = template;
     this.#expected = this.children[0];
     this.#expectedShadow = this.shadowRoot.querySelector("#expected");
-    this.#title = this.shadowRoot.querySelector("h3");
+    this.#title = this.shadowRoot.querySelector("div");
     this.#result = this.shadowRoot.querySelector("#result");
     this.#code = this.shadowRoot.querySelector("#code");
     this.#diff = this.shadowRoot.querySelector("#diff");
@@ -90,8 +89,6 @@ class TestHtml extends HTMLElement {
       this.#code.textContent = testTxt;
       const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
       const data = encodeURI(txt);
-      console.log(newValue, data.length)
-      // debugger
       this.#iframe.src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
     } else if (name === 'active' && newValue) {
       this.#diff.textContent = Diff.diffWords(this.#expected.textContent, this.#result.textContent);

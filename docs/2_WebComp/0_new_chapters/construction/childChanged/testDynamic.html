@@ -1,0 +1,68 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="ChildChangedCallback.js"></script>
+<script>
+  class InnerComp extends HTMLElement {
+
+    constructor() {
+      super();
+      console.log('constructor', this.tagName);
+    }
+
+    connectedCallback() {
+      console.log('connected', this.tagName);
+    }
+
+    childChangedCallback(rec) {
+      console.log("childChanged", this.tagName, rec.newNodes.length);
+    }
+  }
+
+  class MiddleComp extends HTMLElement {
+    constructor() {
+      super();
+      console.log('constructor', this.tagName);
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<inner-comp><slot></slot></inner-comp>';
+    }
+
+    connectedCallback() {
+      console.log('connected', this.tagName);
+    }
+
+    childChangedCallback(rec) {
+      console.log("childChanged", this.tagName, rec.newNodes.length);
+    }
+  }
+
+  class OuterComp extends HTMLElement {
+    constructor() {
+      super();
+      console.log('constructor', this.tagName);
+      this.attachShadow({mode: "open"});
+      this.shadowRoot.innerHTML = '<middle-comp><slot></slot></middle-comp>';
+    }
+
+    connectedCallback() {
+      console.log('connected', this.tagName);
+    }
+
+    childChangedCallback(rec) {
+      console.log("childChanged", this.tagName, rec.newNodes.length);
+    }
+  }
+
+  customElements.define('inner-comp', InnerComp);
+  customElements.define('middle-comp', MiddleComp);
+  customElements.define('outer-comp', OuterComp);
+</script>
+
+<h3>Test of shadowDom construction frames</h3>
+<outer-comp></outer-comp>
+<script>
+  setTimeout(function () {
+    Promise.resolve().then(() => console.log("before"));
+    document.querySelector('outer-comp').innerHTML = '<h1>hello</h1>';
+    Promise.resolve().then(() => console.log("after"));
+  }, 10);
+</script>

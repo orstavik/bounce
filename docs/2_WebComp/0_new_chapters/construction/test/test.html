@@ -1,4 +1,5 @@
 <h1>Test for ready and childChanged callbacks</h1>
+<h3>beforeScriptExecute</h3>
 <test-html test="../beforeScriptExecute/test1.html">
   <script expected>
     ["1", "2", "3", "4", "5", "6", "interactive"]
@@ -14,6 +15,7 @@
     ["1", "mm1", "2", "mm2", "3", "mm3", "4", "mm4", "5", "mm5", "6", "mm6", "7", "mm7", "8", "mm8", "interactive"]
   </script>
 </test-html>
+<h3>ConstructionFrame</h3>
 <test-html test="../constructionFrame/test1.html">
   <script expected>
     [
@@ -128,7 +130,7 @@
     ]
   </script>
 </test-html>
-
+<h3>attributeReadyCallback and childReadyCallback</h3>
 <test-html test="../constructionReady/test1.html">
   <script expected>
     [
@@ -218,7 +220,8 @@
   </script>
 </test-html>
 
-<test-html test="../childChanged/test.html">
+<h3>childChangedCallback</h3>
+<test-html test="../childChanged/testBeginnings.html">
   <script expected>
     [
       [1, "INNER-COMP", "constructor", null],
@@ -239,6 +242,27 @@
       [6, "INNER-COMP", "childChanged", {}],
       [7, "MIDDLE-COMP", "childChanged", {}],
       [8, "INNER-COMP", "childChanged", {}]
+    ]
+  </script>
+</test-html>
+
+<test-html test="../childChanged/testDynamic.html">
+  <script expected>
+    [
+      ["constructor", "OUTER-COMP"],
+      ["constructor", "MIDDLE-COMP"],
+      ["constructor", "INNER-COMP"],
+      ["connected", "OUTER-COMP"],
+      ["connected", "MIDDLE-COMP"],
+      ["connected", "INNER-COMP"],
+      ["childChanged", "OUTER-COMP", 0],
+      ["childChanged", "MIDDLE-COMP", 0],
+      ["childChanged", "INNER-COMP", 0],
+      "before",
+      ["childChanged", "OUTER-COMP", 1],
+      ["childChanged", "MIDDLE-COMP", 1],
+      ["childChanged", "INNER-COMP", 1],
+      "after"
     ]
   </script>
 </test-html>
