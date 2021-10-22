@@ -68,9 +68,9 @@ class TestHtml extends HTMLElement {
   }
 
   render() {
-    this.#expectedShadow.textContent = this.#expected.textContent;
     this.#result.textContent = JSON.stringify(this.#resultObj, null, 3);
     const expect = JSON.stringify(JSON.parse(this.#expected.textContent), null, 3);
+    this.#expectedShadow.textContent = expect;
     this.setAttribute('ok', expect === this.#result.textContent);
   }
 
@@ -90,8 +90,9 @@ class TestHtml extends HTMLElement {
       const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
       const data = encodeURI(txt);
       this.#iframe.src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
-    } else if (name === 'active' && newValue) {
-      this.#diff.textContent = Diff.diffWords(this.#expected.textContent, this.#result.textContent);
+    } else if (name === 'active' && (typeof newValue) === 'string' ) {
+      const diff = Diff.diffWords(this.#expectedShadow.textContent, this.#result.textContent);
+      this.#diff.textContent = JSON.stringify(diff, null, 2);
     }
   }
 
