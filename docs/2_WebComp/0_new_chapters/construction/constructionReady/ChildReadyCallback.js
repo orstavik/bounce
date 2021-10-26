@@ -33,5 +33,5 @@
     }
   }
 
-  window.addEventListener('construction-complete', e => e.frame.childReadies?.forEach(callChildReadyCallback));
+  ConstructionFrame.observe('complete', frame => frame.childReadies?.forEach(callChildReadyCallback));
 })();

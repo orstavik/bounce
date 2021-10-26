@@ -96,6 +96,8 @@
     #children = [];
     #parent;
 
+    static #observers = {'start': [], 'end': [], 'complete': []};
+
     constructor(type, parent, el) {
       this.type = type;
       this.el = el;
@@ -104,18 +106,16 @@
     }
 
     #doEvent(type) {
-      const completeEvent = new Event(type);
-      completeEvent.frame = this;
-      window.dispatchEvent(completeEvent);
+      ConstructionFrame.#observers[type].forEach(cb => cb(this));
     }
 
     #complete() {
-      this.#doEvent('construction-complete');
+      this.#doEvent('complete');
       for (let frame of this.#children)
         frame.#complete();
     }
 
-    get parent(){
+    get parent() {
       return this.#parent;
     }
 
@@ -124,19 +124,30 @@
     }
 
     end() {
-      this.#doEvent('construction-end');
+      this.#doEvent('end');
       !this.#parent && this.#complete();
       now = this.#parent;
     }
 
     static start(type, el, Type, ...args) {
       const frame = now = new Type(type, now, el, ...args);
-      frame.#doEvent('construction-start');
+      frame.#doEvent('start');
       return frame;
     }
 
     static get now() {
       return now;
+    }
+
+    static observe(type, cb) {
+      this.#observers[type]?.push(cb);
+    }
+
+    static disconnect(type, cb) {
+      const ar = this.#observers[type];
+      if (!ar) return;
+      const pos = ar.indexOf(cb);
+      pos >= 0 && ar.splice(pos, 1);
     }
   }
 
@@ -155,6 +166,11 @@
         if (skips.indexOf(c) >= 0)
           for (let desc of recursiveNodes(c))
             yield desc;
+  }
+
+  function* siblingUntil(start, end) {
+    for (let next = start; next !== end; next = next.nextSibling)
+      yield next;
   }
 
   class UpgradeConstructionFrame extends ConstructionFrame {
@@ -197,11 +213,6 @@
     }
   }
 
-  function* siblingUntil(start, end) {
-    for (let next = start; next !== end; next = next.nextSibling)
-      yield next;
-  }
-
   class InsertAdjacentHTMLConstructionFrame extends ConstructionFrame {
     #start;
     #end;
@@ -232,7 +243,7 @@
     }
 
     get nodes() {
-      return Array.from(recursiveNodesWithSkips(this.el, this.#skips)).map(c => Array.from(recursiveNodes(c))).flat(2);
+      return Array.from(recursiveNodesWithSkips(this.el, this.#skips));
     }
 
     static endPredictiveContexts(endedFrames) {

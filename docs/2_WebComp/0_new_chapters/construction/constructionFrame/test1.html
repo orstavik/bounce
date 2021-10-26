@@ -4,18 +4,21 @@
   (function () {
     let count = 0;
 
-    function printFrame({type, frame}) {
-      console.log(frame.__id ??= ++count, type.substr(13), frame.toString());
+    function printFrame(type, frame) {
+      console.log(frame.__id ??= ++count, type, frame.toString());
     }
 
-    addEventListener('construction-start', printFrame);
-    addEventListener('construction-end',  printFrame);
-    addEventListener('construction-complete',  printFrame);
+    ConstructionFrame.observe('start', frame => printFrame('start', frame));
+    ConstructionFrame.observe('end', frame => printFrame('end', frame));
+    ConstructionFrame.observe('complete', frame => printFrame('complete', frame));
+    // addEventListener('construction-start', printFrame);
+    // addEventListener('construction-end',  printFrame);
+    // addEventListener('construction-complete',  printFrame);
 
     customElements.define('web-comp', class WebComp extends HTMLElement {
       constructor() {
         super();
-        printFrame({type: 'construction-constructor', frame: ConstructionFrame.now});
+        printFrame('constructor', ConstructionFrame.now);
       }
     });
   })();
