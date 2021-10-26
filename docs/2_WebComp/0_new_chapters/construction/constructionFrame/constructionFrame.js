@@ -112,8 +112,8 @@
       return this.#parent ? this.#parent.toString() + ', ' + this.type : this.type;
     }
 
-    static start(type, el, ...args) {
-      const frame = now = new ConstructionFrame(type, now, el, ...args);
+    static start(type, el, Type, ...args) {
+      const frame = now = new Type(type, now, el, ...args);
       window.dispatchEvent(new Event('construction-start'));
       return frame;
     }
@@ -132,9 +132,13 @@
       !frame.#parent && ConstructionFrame.complete(frame);
     }
 
-    static endPredictiveContexts(endedContexts) {
-      for (let i = endedContexts.length - 1; i >= 0; i--)
-        ConstructionFrame.end(endedContexts[i]);
+    static endPredictiveContexts(endedFrames) {
+      const skips = endedFrames.map(({el}) => el);
+      for (let i = endedFrames.length - 1; i >= 0; i--){
+        const frame = endedFrames[i];
+        frame.updateSkips(skips);
+        ConstructionFrame.end(frame);
+      }
     }
 
     static get now() {
@@ -144,31 +148,127 @@
 
   window.ConstructionFrame = ConstructionFrame;
 
-  function wrapConstructionFunction(og, type) {
+  function* recursiveNodes(el) {
+    yield el;
+    if (el.childNodes)
+      for (let c of el.childNodes)
+        for (let desc of recursiveNodes(c))
+          yield desc;
+  }
+
+  function* recursiveNodesWithSkips(el, skips) {
+    yield el;
+    if (el.childNodes)
+      for (let c of el.childNodes)
+        if (skips.indexOf(c) >= 0)
+          for (let desc of recursiveNodes(c))
+            yield desc;
+  }
+
+  class UpgradeConstructionFrame extends ConstructionFrame {
+    #nodes = [];
+    #tagName;
+
+    constructor(type, parent, el, tagName) {
+      super(type, parent, el);
+      this.#tagName = tagName;
+    }
+
+    get tagName() {
+      return this.#tagName;
+    }
+
+    pushElement(el) {
+      this.#nodes.push(el);
+    }
+
+    get nodes() {
+      return Array.from(this.#nodes);
+    }
+  }
+
+  class ShallowConstructionFrame extends ConstructionFrame {
+    get nodes() {
+      return [this.el];
+    }
+  }
+
+  class DeepConstructionFrame extends ConstructionFrame {
+    get nodes() {
+      return Array.from(recursiveNodes(this.el));
+    }
+  }
+
+  class DescendantConstructionFrame extends ConstructionFrame {
+    get nodes() {
+      return Array.from(this.el.childNodes).map(n => Array.from(recursiveNodes(n))).flat(2);
+    }
+  }
+
+  function* siblingUntil(start, end) {
+    for (let next = start; next !== end; next = next.nextSibling)
+      yield next;
+  }
+
+  class InsertAdjacentHTMLConstructionFrame extends ConstructionFrame {
+    #start;
+    #end;
+
+    constructor(type, parent, el, position) {
+      super(type, parent, el);
+      if (position === 'beforebegin')
+        this.#start = el.previousSibling, this.#end = el;
+      else if (position === 'after#end')
+        this.#start = el, this.#end = el.nextSibling;
+      else if (position === 'afterbegin')
+        this.#start = undefined, this.#end = el.firstChild;
+      else if (position === 'before#end')
+        this.#start = el.lastChild, this.#end = undefined;
+    }
+
+    get nodes() {
+      return Array.from(siblingUntil(this.#start, this.#end)).map(c => Array.from(recursiveNodes(c))).flat(2);
+    }
+  }
+
+  class PredictiveHTMLConstructionFrame extends ConstructionFrame {
+    #skips;
+
+    updateSkips(skips) {
+      this.#skips = skips;
+    }
+
+    get nodes() {
+      return Array.from(recursiveNodesWithSkips(this.el, this.#skips)).map(c => Array.from(recursiveNodes(c))).flat(2);
+    }
+  }
+
+  function wrapConstructionFunction(og, type, Type) {
     return function constructHtmlElement(...args) {
-      const frame = ConstructionFrame.start(type, this, ...args);
+      const frame = ConstructionFrame.start(type, this, Type, ...args);
       const res = og.call(this, ...args);
       ConstructionFrame.end(frame);
+      //todo after this point, the .elements property is no longer safe.
       return res;
     };
   }
 
-  function monkeyPatch(proto, prop, setOrValue) {
+  function monkeyPatch(proto, prop, setOrValue, Type) {
     const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-    descriptor[setOrValue] = wrapConstructionFunction(descriptor[setOrValue], proto.constructor.name + '.' + prop);
+    descriptor[setOrValue] = wrapConstructionFunction(descriptor[setOrValue], proto.constructor.name + '.' + prop, Type);
     Object.defineProperty(proto, prop, descriptor);
   }
 
-  monkeyPatch(Element.prototype, "outerHTML", 'set');
-  monkeyPatch(Element.prototype, "innerHTML", 'set');
-  monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set');
-  monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value');
-  monkeyPatch(Node.prototype, "cloneNode", 'value');
-  monkeyPatch(Document.prototype, "createElement", 'value');
-  monkeyPatch(CustomElementRegistry.prototype, "define", 'value');
+  monkeyPatch(Element.prototype, "outerHTML", 'set', DeepConstructionFrame);
+  monkeyPatch(Element.prototype, "innerHTML", 'set', DescendantConstructionFrame);
+  monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', DescendantConstructionFrame);
+  monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
+  monkeyPatch(Node.prototype, "cloneNode", 'value', DeepConstructionFrame);
+  monkeyPatch(Document.prototype, "createElement", 'value', ShallowConstructionFrame);
+  monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
 
-  if (document.readyState !== 'loading')
-    return;
+  // if (document.readyState !== 'loading')
+  //   return;
 
   /*
    * PREDICTIVE PARSER
@@ -196,22 +296,31 @@
       document.addEventListener('beforescriptexecute', onParseBreak, true);
       document.addEventListener('readystatechange', onParseBreak, true);
     }
-    frames.push(ConstructionFrame.start('predictive', el));
+    frames.push(ConstructionFrame.start('predictive', el, PredictiveHTMLConstructionFrame));
   }
 
-  class ConstructionFrameHTMLElement extends class OnlyWhileLoadingHTMLElement extends HTMLElement {
+  const HTMLElementOG = HTMLElement;
+
+  class PredictiveConstructionFrameHTMLElement extends HTMLElementOG {
     constructor() {
       super();
       !now && predictiveConstructionFrameStart(this);
     }
-  } {
   }
+
+  class UpgradeConstructionFrameHTMLElement extends PredictiveConstructionFrameHTMLElement {
+    constructor() {
+      super();
+      now?.type === 'CustomElementRegistry.define' && this.tagName === now.tagName && now.pushElement(this);
+    }
+  }
+
+  window.HTMLElement = UpgradeConstructionFrameHTMLElement;
 
   function dropParentPrototype(proto) {
     Object.setPrototypeOf(proto, Object.getPrototypeOf(Object.getPrototypeOf(proto)));
   }
 
-  HTMLElement = ConstructionFrameHTMLElement;
   window.addEventListener('readystatechange',
-    () => dropParentPrototype(ConstructionFrameHTMLElement.prototype), {once: true, capture: true});
+    () => dropParentPrototype(UpgradeConstructionFrameHTMLElement.prototype), {once: true, capture: true});
 })();
