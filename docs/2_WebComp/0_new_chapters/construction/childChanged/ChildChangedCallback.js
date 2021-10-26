@@ -131,5 +131,5 @@
       this.childChangedCallback && (ConstructionFrame.now.childChangies ??= []).push(this);
     }
   }
-  window.addEventListener('construction-complete', ({completed}) => completed.forEach(frame => frame.childChangies?.forEach(setupChildChangedCallback)));
+  window.addEventListener('construction-complete', e => e.frame.childChangies?.forEach(setupChildChangedCallback));
 })();

@@ -5,8 +5,10 @@
    *  1. construction-start. Dispatched immediately *before* a new constructionFrame starts.
    *  2. construction-end.   Dispatched immediately *after* a constructionFrame ends. Has one property,
    *                         .ended which is the constructionFrame recently dropped.
+   *                         runs shadow-light, bottom-up, right-left.
    *  3. construction-complete. Dispatched after a top constructionFrame ends. Has one property: .completed
    *                         which is a top-down iterator of all the frames completed.
+   *                         runs light-shadow, top-down, left-right.
    *
    * The ConstructionFrame API depends on:
    *  1. beforescriptexecute event.
@@ -119,9 +121,13 @@
     }
 
     complete() {
-      const completeEvent = new Event('construction-complete');
-      completeEvent.completed = Array.from(this.#allFrames());     //todo I want to dispatch this on each frame. Not on the top frame only.
-      window.dispatchEvent(completeEvent);
+      if(this.#parent)
+        return;
+      for (let frame of this.#allFrames()) {
+        const completeEvent = new Event('construction-complete');
+        completeEvent.frame = frame;
+        window.dispatchEvent(completeEvent);
+      }
     }
 
     end() {
@@ -129,7 +135,7 @@
       const endEvent = new Event('construction-end');
       endEvent.ended = this;
       window.dispatchEvent(endEvent);
-      !this.#parent && this.complete();
+      this.complete();
     }
 
     //todo move this to the PredictiveConstructionFrame class
