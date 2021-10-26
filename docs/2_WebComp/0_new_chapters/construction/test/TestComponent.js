@@ -1,30 +1,15 @@
 //language=HTML
 const template = `
   <style>
-    :host([ok="true"]) {
-      border-left: 5px solid green;
-    }
-    :host([ok="false"]) {
-      border-left: 5px solid red;
-    }
-    :host {
-      display: block;
-      height: 1em;
-      overflow: hidden;
-    }
-    :host([active]) {
-      height: 60vh;
-      overflow: scroll;
-    }
-    pre {
-      border: 2px dashed grey;
-    }
+    :host { display: block; height: 1em; overflow: hidden; }
+    :host([ok="true"]) { border-left: 5px solid green; }
+    :host([ok="false"]) { border-left: 5px solid red; }
+    :host([active]) { height: 60vh; overflow: scroll; }
+    #diff { white-space: pre; }
   </style>
   <div></div>
   <pre id="code"></pre>
-  <pre id="expected"></pre>
-  <pre id="result"></pre>
-  <pre id="diff"></pre>
+  <div id="diff"></div>
   <iframe></iframe>
 `;
 
@@ -37,11 +22,9 @@ class TestHtml extends HTMLElement {
   #resultObj = [];
   #iframe;
   #id = TestHtml.#count++;
-  #result;
   #code;
   #expected;
   #diff;
-  #expectedShadow;
   #title;
 
   constructor() {
@@ -49,9 +32,7 @@ class TestHtml extends HTMLElement {
     this.attachShadow({mode: "open"});
     this.shadowRoot.innerHTML = template;
     this.#expected = this.children[0];
-    this.#expectedShadow = this.shadowRoot.querySelector("#expected");
     this.#title = this.shadowRoot.querySelector("div");
-    this.#result = this.shadowRoot.querySelector("#result");
     this.#code = this.shadowRoot.querySelector("#code");
     this.#diff = this.shadowRoot.querySelector("#diff");
     this.#iframe = this.shadowRoot.querySelector("iframe");
@@ -68,10 +49,9 @@ class TestHtml extends HTMLElement {
   }
 
   render() {
-    this.#result.textContent = JSON.stringify(this.#resultObj, null, 3);
-    const expect = JSON.stringify(JSON.parse(this.#expected.textContent), null, 3);
-    this.#expectedShadow.textContent = expect;
-    this.setAttribute('ok', expect === this.#result.textContent);
+    const result = JSON.stringify(this.#resultObj, null, 3);
+    const expected = JSON.stringify(JSON.parse(this.#expected.textContent), null, 3);
+    this.setAttribute('ok', expected === result);
   }
 
   onClick() {
@@ -90,9 +70,12 @@ class TestHtml extends HTMLElement {
       const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
       const data = encodeURI(txt);
       this.#iframe.src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
-    } else if (name === 'active' && (typeof newValue) === 'string' ) {
-      const diff = Diff.diffWords(this.#expectedShadow.textContent, this.#result.textContent);
-      this.#diff.textContent = JSON.stringify(diff, null, 2);
+    } else if (name === 'active' && (typeof newValue) === 'string') {
+      const result = JSON.stringify(this.#resultObj, null, 2);
+      const expected = JSON.stringify(JSON.parse(this.#expected.textContent), null, 2);
+      const diff = Diff.diffWords(expected, result);
+      const diffTxt = diff.map(p => `<span style="color: ${p.added ? 'green' : p.removed ? 'red' : 'grey'}">${p.value}</span>`).join('');
+      this.#diff.innerHTML = diffTxt;
     }
   }
 
