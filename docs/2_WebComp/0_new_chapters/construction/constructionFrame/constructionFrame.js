@@ -131,6 +131,11 @@
       !frame.#parent && ConstructionFrame.complete(frame);
     }
 
+    static endPredictiveContexts(endedContexts) {
+      for (let i = endedContexts.length - 1; i >= 0; i--)
+        ConstructionFrame.end(endedContexts[i].frame);
+    }
+
     static get now() {
       return now;
     }
@@ -174,10 +179,9 @@
   function onParseBreak(e) {
     now = undefined;
     const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.target));
-    if (endTagReadElement < 0) return;
-    const endedContexts = frames.splice(endTagReadElement);
-    for (let i = endedContexts.length - 1; i >= 0; i--)
-      ConstructionFrame.end(endedContexts[i].frame);
+    if (endTagReadElement < 0)
+      return;
+    ConstructionFrame.endPredictiveContexts(frames.splice(endTagReadElement));
     if (endTagReadElement)
       return;
     document.removeEventListener('beforescriptexecute', onParseBreak, true);
