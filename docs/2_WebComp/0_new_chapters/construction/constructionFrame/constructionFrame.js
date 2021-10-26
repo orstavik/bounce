@@ -117,7 +117,7 @@
       return frame;
     }
 
-    static complete(frame){
+    static complete(frame) {
       const completeEvent = new Event('construction-complete');
       completeEvent.completed = Array.from(frame.#allFrames());
       window.dispatchEvent(completeEvent);
@@ -169,10 +169,6 @@
     return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
   }
 
-  function dropParentPrototype(proto) {
-    Object.setPrototypeOf(proto, Object.getPrototypeOf(Object.getPrototypeOf(proto)));
-  }
-
   const frames = [];
 
   function onParseBreak(e) {
@@ -203,6 +199,10 @@
       !now && predictiveConstructionFrameStart(this);
     }
   } {
+  }
+
+  function dropParentPrototype(proto) {
+    Object.setPrototypeOf(proto, Object.getPrototypeOf(Object.getPrototypeOf(proto)));
   }
 
   HTMLElement = ConstructionFrameHTMLElement;
