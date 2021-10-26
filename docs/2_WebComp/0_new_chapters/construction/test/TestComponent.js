@@ -7,7 +7,8 @@ const template = `
     :host([active]) { height: 60vh; overflow: scroll; }
     #diff { white-space: pre; }
   </style>
-  <div></div>
+  <span id="title"></span>
+  <a id="link" target="_blank"> => run test in isolation </a>
   <pre id="code"></pre>
   <div id="diff"></div>
   <iframe></iframe>
@@ -26,13 +27,15 @@ class TestHtml extends HTMLElement {
   #expected;
   #diff;
   #title;
+  #link;
 
   constructor() {
     super();
     this.attachShadow({mode: "open"});
     this.shadowRoot.innerHTML = template;
     this.#expected = this.children[0];
-    this.#title = this.shadowRoot.querySelector("div");
+    this.#title = this.shadowRoot.querySelector("#title");
+    this.#link = this.shadowRoot.querySelector("#link");
     this.#code = this.shadowRoot.querySelector("#code");
     this.#diff = this.shadowRoot.querySelector("#diff");
     this.#iframe = this.shadowRoot.querySelector("iframe");
@@ -63,6 +66,7 @@ class TestHtml extends HTMLElement {
       //load the text content for the newValue of the test.
       this.#title.textContent = newValue.substr(newValue.lastIndexOf('/') + 1);
       const testUrl = new URL(newValue, document.location);
+      this.#link.setAttribute('href', testUrl);
       const logUrl = new URL('log.js', document.location);
       const response = await fetch(testUrl);
       const testTxt = await response.text();
