@@ -118,26 +118,27 @@
       return frame;
     }
 
-    static complete(frame) {
+    complete() {
       const completeEvent = new Event('construction-complete');
-      completeEvent.completed = Array.from(frame.#allFrames());
+      completeEvent.completed = Array.from(this.#allFrames());     //todo I want to dispatch this on each frame. Not on the top frame only.
       window.dispatchEvent(completeEvent);
     }
 
-    static end(frame) {
-      now = frame.#parent;
+    end() {
+      now = this.#parent;  //todo I want the now to be set after the end.
       const endEvent = new Event('construction-end');
-      endEvent.ended = frame;
+      endEvent.ended = this;
       window.dispatchEvent(endEvent);
-      !frame.#parent && ConstructionFrame.complete(frame);
+      !this.#parent && this.complete();
     }
 
+    //todo move this to the PredictiveConstructionFrame class
     static endPredictiveContexts(endedFrames) {
       const skips = endedFrames.map(({el}) => el);
       for (let i = endedFrames.length - 1; i >= 0; i--){
         const frame = endedFrames[i];
         frame.updateSkips(skips);
-        ConstructionFrame.end(frame);
+        frame.end();
       }
     }
 
@@ -247,7 +248,7 @@
     return function constructHtmlElement(...args) {
       const frame = ConstructionFrame.start(type, this, Type, ...args);
       const res = og.call(this, ...args);
-      ConstructionFrame.end(frame);
+      frame.end();
       //todo after this point, the .elements property is no longer safe.
       return res;
     };
