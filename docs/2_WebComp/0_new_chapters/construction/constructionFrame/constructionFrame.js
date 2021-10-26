@@ -89,7 +89,7 @@
    */
   let now;
 
-  window.ConstructionFrame = class ConstructionFrame {
+  class ConstructionFrame {
 
     #children = [];
     #parent;
@@ -141,6 +141,8 @@
       return now;
     }
   }
+
+  window.ConstructionFrame = ConstructionFrame;
 
   function wrapConstructionFunction(og, type) {
     return function constructHtmlElement(...args) {
