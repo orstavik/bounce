@@ -9,8 +9,9 @@
       console.log(id, type, frame?.toString());
     }
 
-    addEventListener('construction-start', _ => printFrame('start', ConstructionFrame.now));
-    addEventListener('construction-end', ({frame}) => (printFrame('end', frame), printFrame('after', frame.parent), console.warn(frame.nodes)));
+    addEventListener('construction-start', e => printFrame('start', e.frame));
+    addEventListener('construction-end', e => (printFrame('end', e.frame), console.warn(e.frame.nodes)));
+    addEventListener('construction-complete', e => (printFrame('complete', e.frame)));
 
     customElements.define('inner-comp', class InnerComp extends HTMLElement {
       constructor() {

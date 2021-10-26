@@ -9,8 +9,8 @@ const template = `
   </style>
   <span id="title"></span>
   <a id="link" target="_blank"> => run test in isolation </a>
-  <pre id="code"></pre>
   <div id="diff"></div>
+  <pre id="code"></pre>
   <iframe></iframe>
 `;
 
