@@ -89,7 +89,7 @@
    */
   let now;
 
-  class ConstructionFrame {
+  window.ConstructionFrame = class ConstructionFrame {
 
     #children = [];
     #parent;
@@ -143,8 +143,6 @@
       return now;
     }
   }
-
-  window.ConstructionFrame = ConstructionFrame;
 
   function* recursiveNodes(el) {
     yield el;
@@ -298,9 +296,7 @@
     frames.push(ConstructionFrame.start('predictive', el, PredictiveHTMLConstructionFrame));
   }
 
-  const HTMLElementOG = HTMLElement;
-
-  class PredictiveConstructionFrameHTMLElement extends HTMLElementOG {
+  class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
       !now && predictiveConstructionFrameStart(this);
