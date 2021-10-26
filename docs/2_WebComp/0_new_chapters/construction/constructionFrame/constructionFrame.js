@@ -95,6 +95,7 @@
 
     #children = [];
     #parent;
+    #state;
 
     static #observers = {'start': [], 'end': [], 'complete': []};
 
@@ -105,18 +106,22 @@
       this.#parent?.#children.push(this);
     }
 
-    #doEvent(type) {
+    #callObservers(type) {
+      this.#state = type;
       ConstructionFrame.#observers[type].forEach(cb => cb(this));
     }
 
     #complete() {
-      this.#doEvent('complete');
-      for (let frame of this.#children)
-        frame.#complete();
+      this.#callObservers('complete');
+      this.#children.forEach(frame => frame.#complete());
     }
 
     get parent() {
       return this.#parent;
+    }
+
+    get state() {
+      return this.#state;
     }
 
     toString() {
@@ -124,14 +129,14 @@
     }
 
     end() {
-      this.#doEvent('end');
+      this.#callObservers('end');
       !this.#parent && this.#complete();
       now = this.#parent;
     }
 
     static start(type, el, Type, ...args) {
       const frame = now = new Type(type, now, el, ...args);
-      frame.#doEvent('start');
+      frame.#callObservers('start');
       return frame;
     }
 
@@ -163,7 +168,7 @@
     yield el;
     if (el.childNodes)
       for (let c of el.childNodes)
-        if (skips.indexOf(c) >= 0)
+        if (skips.indexOf(c) < 0)
           for (let desc of recursiveNodes(c))
             yield desc;
   }
@@ -234,7 +239,7 @@
     }
   }
 
-  class PredictiveHTMLConstructionFrame extends ConstructionFrame {
+  class PredictiveConstructionFrame extends ConstructionFrame {
     #skips;
 
     end(skips) {
@@ -243,13 +248,13 @@
     }
 
     get nodes() {
-      return Array.from(recursiveNodesWithSkips(this.el, this.#skips));
+      return Array.from(recursiveNodesWithSkips(this.el, this.#skips)); //todo We shouldn't have to make an array here. It isn't safe anyways.
     }
 
     static endPredictiveContexts(endedFrames) {
       const skips = endedFrames.map(({el}) => el);
-      for (let i = endedFrames.length - 1; i >= 0; i--)
-        endedFrames[i].end(skips);
+      for (let frame of endedFrames.reverse())
+        frame.end(skips);
     }
   }
 
@@ -258,7 +263,6 @@
       const frame = ConstructionFrame.start(type, this, Type, ...args);
       const res = og.call(this, ...args);
       frame.end();
-      //todo after this point, the .elements property is no longer safe. .elements are never safe.. Need to work with that.
       return res;
     };
   }
@@ -285,13 +289,18 @@
   }
 
   const frames = [];
+  //todo make a class for the ObserveParseComplete(cb). Todo this should be split out as a separate unit. And replace beforescriptexecute.
+  // this runs in the reverse sequence.
 
   function onParseBreak(e) {
     now = undefined;
     const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.target));
     if (endTagReadElement < 0)
       return;
-    PredictiveHTMLConstructionFrame.endPredictiveContexts(frames.splice(endTagReadElement));
+    const endedFrames = frames.splice(endTagReadElement);
+    const skips = endedFrames.map(({el}) => el);
+    for (let frame of endedFrames.reverse())
+      frame.end(skips);
     if (endTagReadElement)
       return;
     document.removeEventListener('beforescriptexecute', onParseBreak, true);
@@ -303,7 +312,7 @@
       document.addEventListener('beforescriptexecute', onParseBreak, true);
       document.addEventListener('readystatechange', onParseBreak, true);
     }
-    frames.push(ConstructionFrame.start('predictive', el, PredictiveHTMLConstructionFrame));
+    frames.push(ConstructionFrame.start('predictive', el, PredictiveConstructionFrame));
   }
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
@@ -316,7 +325,7 @@
   class UpgradeConstructionFrameHTMLElement extends PredictiveConstructionFrameHTMLElement {
     constructor() {
       super();
-      now?.type === 'CustomElementRegistry.define' && this.tagName === now.tagName && now.pushElement(this);
+      now instanceof UpgradeConstructionFrame && now.tagName === this.tagName && now.pushElement(this);
     }
   }
 

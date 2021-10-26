@@ -8,9 +8,9 @@
       console.log(frame.__id ??= ++count, type, frame.toString());
     }
 
-    ConstructionFrame.observe('start', frame => printFrame('start', frame));
-    ConstructionFrame.observe('end', frame => printFrame('end', frame));
-    ConstructionFrame.observe('complete', frame => printFrame('complete', frame));
+    ConstructionFrame.observe('start', frame => printFrame(frame.state, frame));
+    ConstructionFrame.observe('end', frame => printFrame(frame.state, frame));
+    ConstructionFrame.observe('complete', frame => printFrame(frame.state, frame));
 
     customElements.define('inner-comp', class InnerComp extends HTMLElement {
       constructor() {
