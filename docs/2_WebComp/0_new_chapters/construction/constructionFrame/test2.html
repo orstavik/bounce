@@ -4,40 +4,39 @@
   (function () {
     let count = 0;
 
-    function printFrame(type, frame) {
-      const id = frame ? frame.__id || (frame.__id = ++count) : 0;
-      console.log(id, type, frame?.toString());
+    function printFrame({type, frame}) {
+      console.log(frame.__id ??= ++count, type.substr(13), frame.toString());
     }
 
-    addEventListener('construction-start', e => printFrame('start', e.frame));
-    addEventListener('construction-end', e => (printFrame('end', e.frame), console.warn(e.frame.nodes)));
-    addEventListener('construction-complete', e => (printFrame('complete', e.frame)));
+    addEventListener('construction-start', printFrame);
+    addEventListener('construction-end', printFrame);
+    addEventListener('construction-complete', printFrame);
 
     customElements.define('inner-comp', class InnerComp extends HTMLElement {
       constructor() {
         super();
-        printFrame('constructor', ConstructionFrame.now);
+        printFrame({type: 'construction-constructor', frame: ConstructionFrame.now});
       }
     });
     customElements.define('middle-comp', class MiddleComp extends HTMLElement {
       constructor() {
         super();
-        printFrame('constructor start', ConstructionFrame.now);
+        printFrame({type: 'construction-constructor start', frame: ConstructionFrame.now});
         this.attachShadow({mode: "open"});
         this.shadowRoot.innerHTML = '<inner-comp></inner-comp>';
         this.shadowRoot.children[0].insertAdjacentHTML('afterend', '<h1></h1>');
-        printFrame('constructor end', ConstructionFrame.now);
+        printFrame({type: 'construction-constructor end', frame: ConstructionFrame.now});
       }
     });
     customElements.define('outer-comp', class OuterComp extends HTMLElement {
       constructor() {
         super();
-        printFrame('constructor start', ConstructionFrame.now);
+        printFrame({type: 'construction-constructor start', frame: ConstructionFrame.now});
         const a = document.createElement('middle-comp');
         const b = a.cloneNode();
         this.attachShadow({mode: "open"});
         this.shadowRoot.append(b);
-        printFrame('constructor end', ConstructionFrame.now);
+        printFrame({type: 'construction-constructor end', frame: ConstructionFrame.now});
       }
     });
   })();
