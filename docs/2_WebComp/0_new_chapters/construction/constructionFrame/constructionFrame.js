@@ -121,7 +121,7 @@
     }
 
     complete() {
-      if(this.#parent)
+      if (this.#parent)
         return;
       for (let frame of this.#allFrames()) {
         const completeEvent = new Event('construction-complete');
@@ -136,13 +136,6 @@
       endEvent.ended = this;
       window.dispatchEvent(endEvent);
       this.complete();
-    }
-
-    //todo move this to the PredictiveConstructionFrame class
-    static endPredictiveContexts(endedFrames) {
-      const skips = endedFrames.map(({el}) => el);
-      for (let i = endedFrames.length - 1; i >= 0; i--)
-        endedFrames[i].end(skips);
     }
 
     static get now() {
@@ -244,6 +237,12 @@
     get nodes() {
       return Array.from(recursiveNodesWithSkips(this.el, this.#skips)).map(c => Array.from(recursiveNodes(c))).flat(2);
     }
+
+    static endPredictiveContexts(endedFrames) {
+      const skips = endedFrames.map(({el}) => el);
+      for (let i = endedFrames.length - 1; i >= 0; i--)
+        endedFrames[i].end(skips);
+    }
   }
 
   function wrapConstructionFunction(og, type, Type) {
@@ -251,7 +250,7 @@
       const frame = ConstructionFrame.start(type, this, Type, ...args);
       const res = og.call(this, ...args);
       frame.end();
-      //todo after this point, the .elements property is no longer safe.
+      //todo after this point, the .elements property is no longer safe. .elements are never safe.. Need to work with that.
       return res;
     };
   }
@@ -270,9 +269,6 @@
   monkeyPatch(Document.prototype, "createElement", 'value', ShallowConstructionFrame);
   monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
 
-  // if (document.readyState !== 'loading')
-  //   return;
-
   /*
    * PREDICTIVE PARSER
    */
@@ -287,7 +283,7 @@
     const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.target));
     if (endTagReadElement < 0)
       return;
-    ConstructionFrame.endPredictiveContexts(frames.splice(endTagReadElement));
+    PredictiveHTMLConstructionFrame.endPredictiveContexts(frames.splice(endTagReadElement));
     if (endTagReadElement)
       return;
     document.removeEventListener('beforescriptexecute', onParseBreak, true);
@@ -322,6 +318,9 @@
     Object.setPrototypeOf(proto, Object.getPrototypeOf(Object.getPrototypeOf(proto)));
   }
 
-  window.addEventListener('readystatechange',
-    () => dropParentPrototype(UpgradeConstructionFrameHTMLElement.prototype), {once: true, capture: true});
+  if (document.readyState !== 'loading')
+    dropParentPrototype(UpgradeConstructionFrameHTMLElement.prototype);
+  else
+    window.addEventListener('readystatechange',
+      () => dropParentPrototype(UpgradeConstructionFrameHTMLElement.prototype), {once: true, capture: true});
 })();
