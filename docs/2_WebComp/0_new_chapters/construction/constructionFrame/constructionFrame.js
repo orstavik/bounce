@@ -94,8 +94,9 @@
     #children = [];
     #parent;
 
-    constructor(type, parent) {
+    constructor(type, parent, el) {
       this.type = type;
+      this.el = el;
       this.#parent = parent;
       this.#parent?.#children.push(this);
     }
@@ -111,8 +112,8 @@
       return this.#parent ? this.#parent.toString() + ', ' + this.type : this.type;
     }
 
-    static start(type) {
-      const frame = now = new ConstructionFrame(type, now);
+    static start(type, el, ...args) {
+      const frame = now = new ConstructionFrame(type, now, el, ...args);
       window.dispatchEvent(new Event('construction-start'));
       return frame;
     }
@@ -133,7 +134,7 @@
 
     static endPredictiveContexts(endedContexts) {
       for (let i = endedContexts.length - 1; i >= 0; i--)
-        ConstructionFrame.end(endedContexts[i].frame);
+        ConstructionFrame.end(endedContexts[i]);
     }
 
     static get now() {
@@ -143,7 +144,7 @@
 
   function wrapConstructionFunction(og, type) {
     return function constructHtmlElement(...args) {
-      const frame = ConstructionFrame.start(type);
+      const frame = ConstructionFrame.start(type, this, ...args);
       const res = og.call(this, ...args);
       ConstructionFrame.end(frame);
       return res;
@@ -193,8 +194,7 @@
       document.addEventListener('beforescriptexecute', onParseBreak, true);
       document.addEventListener('readystatechange', onParseBreak, true);
     }
-    const frame = ConstructionFrame.start('predictive');
-    frames.push({el, frame});
+    frames.push(ConstructionFrame.start('predictive', el));
   }
 
   class ConstructionFrameHTMLElement extends class OnlyWhileLoadingHTMLElement extends HTMLElement {
