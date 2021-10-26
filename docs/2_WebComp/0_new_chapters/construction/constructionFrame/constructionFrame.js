@@ -135,11 +135,8 @@
     //todo move this to the PredictiveConstructionFrame class
     static endPredictiveContexts(endedFrames) {
       const skips = endedFrames.map(({el}) => el);
-      for (let i = endedFrames.length - 1; i >= 0; i--){
-        const frame = endedFrames[i];
-        frame.updateSkips(skips);
-        frame.end();
-      }
+      for (let i = endedFrames.length - 1; i >= 0; i--)
+        endedFrames[i].end(skips);
     }
 
     static get now() {
@@ -235,8 +232,9 @@
   class PredictiveHTMLConstructionFrame extends ConstructionFrame {
     #skips;
 
-    updateSkips(skips) {
+    end(skips) {
       this.#skips = skips;
+      super.end();
     }
 
     get nodes() {
