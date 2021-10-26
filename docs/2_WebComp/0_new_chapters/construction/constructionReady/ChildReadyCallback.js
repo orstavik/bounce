@@ -13,7 +13,7 @@
 //   3. This enables DOM creation that depends on childReady to be created asap.
 
 // ChildReadyCallback API depends on:
-//  1. ConstructionFrame API: construction-end
+//  1. ConstructionFrame API: construction-complete
 
 //todo Use the imperative Slotting API in a test case
 

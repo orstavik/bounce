@@ -51,5 +51,5 @@
   }
 
   //clean up any trailing readyCallbacks on the tail end of a closing constructionFrame
-  window.addEventListener('construction-end', ({ended:{ready}}) => ready && callAttributeReadyCallback(ready));
+  window.addEventListener('construction-end', ({frame:{ready}}) => ready && callAttributeReadyCallback(ready));
 })();

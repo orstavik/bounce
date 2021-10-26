@@ -110,13 +110,19 @@
           yield desc;
     }
 
+    get parent(){
+      return this.#parent;
+    }
+
     toString() {
       return this.#parent ? this.#parent.toString() + ', ' + this.type : this.type;
     }
 
     static start(type, el, Type, ...args) {
       const frame = now = new Type(type, now, el, ...args);
-      window.dispatchEvent(new Event('construction-start'));
+      const event = new Event('construction-start');
+      event.frame = frame;
+      window.dispatchEvent(event);
       return frame;
     }
 
@@ -131,11 +137,11 @@
     }
 
     end() {
-      now = this.#parent;  //todo I want the now to be set after the end.
       const endEvent = new Event('construction-end');
-      endEvent.ended = this;
+      endEvent.frame = this;
       window.dispatchEvent(endEvent);
       this.complete();
+      now = this.#parent;
     }
 
     static get now() {
@@ -196,7 +202,7 @@
 
   class DescendantConstructionFrame extends ConstructionFrame {
     get nodes() {
-      return Array.from(this.el.childNodes).map(n => Array.from(recursiveNodes(n))).flat(2);
+      return Array.from(recursiveNodes(this.el)).slice(1);
     }
   }
 
@@ -213,11 +219,11 @@
       super(type, parent, el);
       if (position === 'beforebegin')
         this.#start = el.previousSibling, this.#end = el;
-      else if (position === 'after#end')
+      else if (position === 'afterend')
         this.#start = el, this.#end = el.nextSibling;
       else if (position === 'afterbegin')
         this.#start = undefined, this.#end = el.firstChild;
-      else if (position === 'before#end')
+      else if (position === 'beforeend')
         this.#start = el.lastChild, this.#end = undefined;
     }
 
