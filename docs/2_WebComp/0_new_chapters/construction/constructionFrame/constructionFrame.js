@@ -250,12 +250,6 @@
     get nodes() {
       return Array.from(recursiveNodesWithSkips(this.el, this.#skips)); //todo We shouldn't have to make an array here. It isn't safe anyways.
     }
-
-    static endPredictiveContexts(endedFrames) {
-      const skips = endedFrames.map(({el}) => el);
-      for (let frame of endedFrames.reverse())
-        frame.end(skips);
-    }
   }
 
   function wrapConstructionFunction(og, type, Type) {
