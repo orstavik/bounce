@@ -103,11 +103,16 @@
       this.#parent?.#children.push(this);
     }
 
-    * #allFrames() {
-      yield this;
-      for (let child of this.#children)
-        for (let desc of child.#allFrames())
-          yield desc;
+    #doEvent(type) {
+      const completeEvent = new Event(type);
+      completeEvent.frame = this;
+      window.dispatchEvent(completeEvent);
+    }
+
+    #complete() {
+      this.#doEvent('construction-complete');
+      for (let frame of this.#children)
+        frame.#complete();
     }
 
     get parent(){
@@ -118,30 +123,16 @@
       return this.#parent ? this.#parent.toString() + ', ' + this.type : this.type;
     }
 
+    end() {
+      this.#doEvent('construction-end');
+      !this.#parent && this.#complete();
+      now = this.#parent;
+    }
+
     static start(type, el, Type, ...args) {
       const frame = now = new Type(type, now, el, ...args);
-      const event = new Event('construction-start');
-      event.frame = frame;
-      window.dispatchEvent(event);
+      frame.#doEvent('construction-start');
       return frame;
-    }
-
-    complete() {
-      if (this.#parent)
-        return;
-      for (let frame of this.#allFrames()) {
-        const completeEvent = new Event('construction-complete');
-        completeEvent.frame = frame;
-        window.dispatchEvent(completeEvent);
-      }
-    }
-
-    end() {
-      const endEvent = new Event('construction-end');
-      endEvent.frame = this;
-      window.dispatchEvent(endEvent);
-      this.complete();
-      now = this.#parent;
     }
 
     static get now() {
