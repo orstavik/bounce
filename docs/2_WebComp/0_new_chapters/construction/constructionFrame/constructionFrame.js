@@ -100,10 +100,10 @@
     static #observers = {'start': [], 'end': [], 'complete': []};
 
     constructor(el) {
-      this.el = el;
+      this.el = el; //todo #el
       this.#parent = now;
-      this.#parent?.#children.push(this);
       now = this;
+      this.#parent?.#children.push(this);
       this.#callObservers('start');
     }
 
@@ -129,9 +129,9 @@
       const type =
         this instanceof UpgradeConstructionFrame ? 'CustomElementRegistry.define' :
           this instanceof PredictiveConstructionFrame ? 'predictive' :
-            this instanceof DeepConstructionFrame ? 'Node.cloneNode' :
+            this instanceof CloneNodeConstructionFrame ? 'Node.cloneNode' :
               this instanceof DescendantConstructionFrame ? 'ShadowRoot.innerHTML' :
-                this instanceof ShallowConstructionFrame ? 'Document.createElement' :
+                this instanceof DocumentCreateElementConstructionFrame ? 'Document.createElement' :
                   this instanceof InsertAdjacentHTMLConstructionFrame ? 'Element.insertAdjacentHTML' : 'omg';
       const parent = this.#parent ? this.#parent.toString() + ', ' : '';
       return parent + type + '#' + this.#state;
@@ -177,7 +177,7 @@
   }
 
   function* siblingUntil(start, end) {
-    for (let next = start; next !== end; next = next.nextSibling)
+    for (let next = start.nextSibling; next !== end; next = next.nextSibling)
       yield next;
   }
 
@@ -203,15 +203,28 @@
     }
   }
 
-  class ShallowConstructionFrame extends ConstructionFrame {
+  class DocumentCreateElementConstructionFrame extends ConstructionFrame {
+
+    #res;
+
+    res(res) {
+      this.#res = res;
+    }
+
     get nodes() {
-      return [this.el];
+      return [this.#res];
     }
   }
 
-  class DeepConstructionFrame extends ConstructionFrame {
+  class CloneNodeConstructionFrame extends ConstructionFrame {
+    #res;
+
+    res(res) {
+      this.#res = res;
+    }
+
     get nodes() {
-      return Array.from(recursiveNodes(this.el));
+      return Array.from(recursiveNodes(this.#res));
     }
   }
 
@@ -233,13 +246,13 @@
     #start;
     #end;
 
-    constructor(parent, position, el) {
-      super(parent, el);
+    constructor(el, position) {
+      super(el);
       [this.#start, this.#end] = insertAdjacentPrePositions(position, el);
     }
 
     get nodes() {
-      return Array.from(siblingUntil(this.#start, this.#end)).map(c => Array.from(recursiveNodes(c))).flat(2);
+      return Array.from(siblingUntil(this.#start || this.firstChild, this.#end)).map(c => Array.from(recursiveNodes(c))).flat(2);
     }
   }
 
@@ -260,6 +273,7 @@
     return function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
+      (Type === DocumentCreateElementConstructionFrame || Type === CloneNodeConstructionFrame) && frame.res(res);
       frame.end();
       return res;
     };
@@ -271,12 +285,12 @@
     Object.defineProperty(proto, prop, descriptor);
   }
 
-  monkeyPatch(Element.prototype, "outerHTML", 'set', DeepConstructionFrame);
+  monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
   monkeyPatch(Element.prototype, "innerHTML", 'set', DescendantConstructionFrame);
   monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', DescendantConstructionFrame);
   monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
-  monkeyPatch(Node.prototype, "cloneNode", 'value', DeepConstructionFrame);
-  monkeyPatch(Document.prototype, "createElement", 'value', ShallowConstructionFrame);
+  monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
+  monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
   monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
 
   /*

@@ -20,9 +20,9 @@ import {} from "https://unpkg.com/diff@5.0.0/dist/diff.js";
 class TestHtml extends HTMLElement {
 
   static #count = 0;
+  #id = TestHtml.#count++;
 
   #resultObj = [];
-  #id = TestHtml.#count++;
   #expected;
 
   constructor() {
