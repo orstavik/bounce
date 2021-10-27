@@ -99,16 +99,17 @@
 
     static #observers = {'start': [], 'end': [], 'complete': []};
 
-    constructor(type, parent, el) {
-      this.type = type;
+    constructor(el) {
       this.el = el;
-      this.#parent = parent;
+      this.#parent = now;
       this.#parent?.#children.push(this);
+      now = this;
+      this.#callObservers('start');
     }
 
-    #callObservers(type) {
-      this.#state = type;
-      ConstructionFrame.#observers[type].forEach(cb => cb(this));
+    #callObservers(state) {
+      this.#state = state;
+      ConstructionFrame.#observers[state].forEach(cb => cb(this));
     }
 
     #complete() {
@@ -125,7 +126,14 @@
     }
 
     toString() {
-      return this.#parent ? this.#parent.toString() + ', ' + this.type : this.type;
+      const type =
+        this instanceof UpgradeConstructionFrame ? 'CustomElementRegistry.define' :
+          this instanceof PredictiveConstructionFrame ? 'predictive' :
+            this instanceof DeepConstructionFrame ? 'Node.cloneNode' :
+              this instanceof DescendantConstructionFrame ? 'ShadowRoot.innerHTML' :
+                this instanceof ShallowConstructionFrame ? 'Document.createElement' :
+                  this instanceof InsertAdjacentHTMLConstructionFrame ? 'Element.insertAdjacentHTML' : 'omg';
+      return this.#parent ? this.#parent.toString() + ', ' + type : type;
     }
 
     end() {
@@ -134,22 +142,16 @@
       now = this.#parent;
     }
 
-    static start(type, el, Type, ...args) {
-      const frame = now = new Type(type, now, el, ...args);
-      frame.#callObservers('start');
-      return frame;
-    }
-
     static get now() {
       return now;
     }
 
-    static observe(type, cb) {
-      this.#observers[type]?.push(cb);
+    static observe(state, cb) {
+      this.#observers[state]?.push(cb);
     }
 
-    static disconnect(type, cb) {
-      const ar = this.#observers[type];
+    static disconnect(state, cb) {
+      const ar = this.#observers[state];
       if (!ar) return;
       const pos = ar.indexOf(cb);
       pos >= 0 && ar.splice(pos, 1);
@@ -182,8 +184,8 @@
     #nodes = [];
     #tagName;
 
-    constructor(type, parent, el, tagName) {
-      super(type, parent, el);
+    constructor(parent, el, tagName) {
+      super(parent, el);
       this.#tagName = tagName;
     }
 
@@ -222,8 +224,8 @@
     #start;
     #end;
 
-    constructor(type, parent, el, position) {
-      super(type, parent, el);
+    constructor(parent, el, position) {
+      super(parent, el);
       if (position === 'beforebegin')
         this.#start = el.previousSibling, this.#end = el;
       else if (position === 'afterend')
@@ -252,9 +254,9 @@
     }
   }
 
-  function wrapConstructionFunction(og, type, Type) {
+  function wrapConstructionFunction(og, Type) {
     return function constructHtmlElement(...args) {
-      const frame = ConstructionFrame.start(type, this, Type, ...args);
+      const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
       frame.end();
       return res;
@@ -263,7 +265,7 @@
 
   function monkeyPatch(proto, prop, setOrValue, Type) {
     const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-    descriptor[setOrValue] = wrapConstructionFunction(descriptor[setOrValue], proto.constructor.name + '.' + prop, Type);
+    descriptor[setOrValue] = wrapConstructionFunction(descriptor[setOrValue], Type);
     Object.defineProperty(proto, prop, descriptor);
   }
 
@@ -278,12 +280,12 @@
   /*
    * PREDICTIVE PARSER
    */
-  let donePredictives = [];
+  let completedBranches = [];
 
   const op = new ParserObserver(
     function (el, frame) {
-      frame.end(donePredictives);  //todo how to keep track of done predictives??
-      donePredictives.push(el);
+      frame.end(completedBranches);
+      completedBranches.push(el);
     },
     function () {
       return now = undefined;
@@ -293,7 +295,7 @@
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !now && op.observe(this, ConstructionFrame.start('predictive', this, PredictiveConstructionFrame));
+      !now && op.observe(this, new PredictiveConstructionFrame(this));
     }
   }
 
