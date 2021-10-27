@@ -9,9 +9,10 @@ const template = `
   </style>
   <span id="title"></span>
   <a id="link" target="_blank"> => run test in isolation </a>
+  <div id="result"></div>
   <div id="diff"></div>
   <pre id="code"></pre>
-  <iframe></iframe>
+  <iframe id="iframe"></iframe>
 `;
 
 import {} from "https://unpkg.com/diff@5.0.0/dist/diff.js";
@@ -21,24 +22,14 @@ class TestHtml extends HTMLElement {
   static #count = 0;
 
   #resultObj = [];
-  #iframe;
   #id = TestHtml.#count++;
-  #code;
   #expected;
-  #diff;
-  #title;
-  #link;
 
   constructor() {
     super();
     this.attachShadow({mode: "open"});
     this.shadowRoot.innerHTML = template;
     this.#expected = this.children[0];
-    this.#title = this.shadowRoot.querySelector("#title");
-    this.#link = this.shadowRoot.querySelector("#link");
-    this.#code = this.shadowRoot.querySelector("#code");
-    this.#diff = this.shadowRoot.querySelector("#diff");
-    this.#iframe = this.shadowRoot.querySelector("iframe");
     window.addEventListener('message', e => this.onMessage(e));
     this.shadowRoot.addEventListener('click', e => this.onClick(e));
   }
@@ -64,22 +55,24 @@ class TestHtml extends HTMLElement {
   async attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'test') {
       //load the text content for the newValue of the test.
-      this.#title.textContent = newValue.substr(newValue.lastIndexOf('/') + 1);
+      this.shadowRoot.getElementById("title").textContent = newValue.substr(newValue.lastIndexOf('/') + 1);
       const testUrl = new URL(newValue, document.location);
-      this.#link.setAttribute('href', testUrl);
+      this.shadowRoot.getElementById("link").setAttribute('href', testUrl);
       const logUrl = new URL('log.js', document.location);
       const response = await fetch(testUrl);
       const testTxt = await response.text();
-      this.#code.textContent = testTxt;
+      this.shadowRoot.getElementById("code").textContent = testTxt;
       const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
       const data = encodeURI(txt);
-      this.#iframe.src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
+      this.shadowRoot.getElementById("iframe").src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
     } else if (name === 'active' && (typeof newValue) === 'string') {
       const result = JSON.stringify(this.#resultObj, null, 2);
+      this.shadowRoot.getElementById("result").innerHTML = JSON.stringify(this.#resultObj);
       const expected = JSON.stringify(JSON.parse(this.#expected.textContent), null, 2);
       const diff = Diff.diffWords(expected, result);
       const diffTxt = diff.map(p => `<span style="color: ${p.added ? 'green' : p.removed ? 'red' : 'grey'}">${p.value}</span>`).join('');
-      this.#diff.innerHTML = diffTxt;
+      this.shadowRoot.getElementById("diff").innerHTML = diffTxt;
+
     }
   }
 

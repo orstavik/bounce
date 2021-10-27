@@ -4,8 +4,9 @@
   (function () {
     let count = 0;
 
-    function printFrame(frame, type = frame.state) {
-      console.log(frame.__id ??= ++count, type, frame.toString());
+    function printFrame(frame, type = '') {
+      frame.state === 'end' && (type += ('[' + frame.nodes.map(n => n.nodeName).join(',')) + ']');
+      console.log(frame.__id ??= ++count, frame + type);
     }
 
     ConstructionFrame.observe('start', printFrame);

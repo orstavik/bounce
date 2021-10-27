@@ -4,8 +4,8 @@
   (function () {
     let count = 0;
 
-    function printFrame(frame, type = frame.state) {
-      console.log(frame.__id ??= ++count, type || frame.state, frame.toString());
+    function printFrame(frame, type = '') {
+      console.log(frame.__id ??= ++count, frame + type);
     }
 
     ConstructionFrame.observe('start', printFrame);
@@ -15,7 +15,7 @@
     customElements.define('web-comp', class WebComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, 'constructor');
+        printFrame(ConstructionFrame.now, '-constructor');
       }
     });
   })();

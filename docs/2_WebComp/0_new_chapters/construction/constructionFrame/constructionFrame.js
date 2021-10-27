@@ -133,7 +133,8 @@
               this instanceof DescendantConstructionFrame ? 'ShadowRoot.innerHTML' :
                 this instanceof ShallowConstructionFrame ? 'Document.createElement' :
                   this instanceof InsertAdjacentHTMLConstructionFrame ? 'Element.insertAdjacentHTML' : 'omg';
-      return this.#parent ? this.#parent.toString() + ', ' + type : type;
+      const parent = this.#parent ? this.#parent.toString() + ', ' : '';
+      return parent + type + '#' + this.#state;
     }
 
     end() {
