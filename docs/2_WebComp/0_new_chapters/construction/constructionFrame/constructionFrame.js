@@ -220,20 +220,21 @@
     }
   }
 
+  function insertAdjacentPrePositions(pos, el) {
+    return pos === 'beforebegin' ? [el.previousSibling, el] :
+      pos === 'afterend' ? [el, el.nextSibling] :
+        pos === 'afterbegin' ? [undefined, el.firstChild] :
+          pos === 'beforeend' ? [el.lastChild, undefined] :
+            null;
+  }
+
   class InsertAdjacentHTMLConstructionFrame extends ConstructionFrame {
     #start;
     #end;
 
-    constructor(parent, el, position) {
+    constructor(parent, position, el) {
       super(parent, el);
-      if (position === 'beforebegin')
-        this.#start = el.previousSibling, this.#end = el;
-      else if (position === 'afterend')
-        this.#start = el, this.#end = el.nextSibling;
-      else if (position === 'afterbegin')
-        this.#start = undefined, this.#end = el.firstChild;
-      else if (position === 'beforeend')
-        this.#start = el.lastChild, this.#end = undefined;
+      [this.#start, this.#end] = insertAdjacentPrePositions(position, el);
     }
 
     get nodes() {
