@@ -269,27 +269,33 @@
     }
   }
 
-  function wrapConstructionFunction(og, Type) {
-    return function constructHtmlElement(...args) {
+
+  function monkeyPatch(proto, prop, setOrValue, Type) {
+    const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
+    const og = descriptor[setOrValue];
+    descriptor[setOrValue] = function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
       (Type === DocumentCreateElementConstructionFrame || Type === CloneNodeConstructionFrame) && frame.res(res);
       frame.end();
       return res;
     };
-  }
-
-  function monkeyPatch(proto, prop, setOrValue, Type) {
-    const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-    descriptor[setOrValue] = wrapConstructionFunction(descriptor[setOrValue], Type);
     Object.defineProperty(proto, prop, descriptor);
   }
 
-  monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
-  monkeyPatch(Element.prototype, "innerHTML", 'set', DescendantConstructionFrame);
-  monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', DescendantConstructionFrame);
-  monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
-  monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
+  // monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
+  (function () {
+    monkeyPatch(Element.prototype, "innerHTML", 'set', DescendantConstructionFrame);
+  })();
+  (function () {
+    monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', DescendantConstructionFrame);
+  })();
+  (function () {
+    monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
+  })();
+  (function () {
+    monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
+  })();
   monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
   monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
 
