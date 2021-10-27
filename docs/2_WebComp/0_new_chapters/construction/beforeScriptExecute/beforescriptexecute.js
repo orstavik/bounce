@@ -101,11 +101,11 @@
     #breakCb;
     #endCb;
 
-    constructor(completedCallback, checkCallback) {
+    constructor(onEveryBreakCb, onObservedElementEndTagReachCb) {
       if (document.readyState !== 'loading')
         throw new Error('new ParserObserver(..) can only be created while document is loading');
-      this.#cb1 = checkCallback;
-      this.#cb2 = completedCallback;
+      this.#cb1 = onEveryBreakCb;
+      this.#cb2 = onObservedElementEndTagReachCb;
       document.addEventListener('beforescriptexecute', this.#breakCb = e => this.onBreak(e), true);
       document.addEventListener('readystatechange', this.#endCb = e => this.disconnect(e), true);
     }

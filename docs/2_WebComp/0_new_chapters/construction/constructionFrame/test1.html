@@ -4,18 +4,18 @@
   (function () {
     let count = 0;
 
-    function printFrame(type, frame) {
-      console.log(frame.__id ??= ++count, type, frame.toString());
+    function printFrame(frame, type = frame.state) {
+      console.log(frame.__id ??= ++count, type || frame.state, frame.toString());
     }
 
-    ConstructionFrame.observe('start', frame => printFrame(frame.state, frame));
-    ConstructionFrame.observe('end', frame => printFrame(frame.state, frame));
-    ConstructionFrame.observe('complete', frame => printFrame(frame.state, frame));
+    ConstructionFrame.observe('start', printFrame);
+    ConstructionFrame.observe('end', printFrame);
+    ConstructionFrame.observe('complete', printFrame);
 
     customElements.define('web-comp', class WebComp extends HTMLElement {
       constructor() {
         super();
-        printFrame('constructor', ConstructionFrame.now);
+        printFrame(ConstructionFrame.now, 'constructor');
       }
     });
   })();

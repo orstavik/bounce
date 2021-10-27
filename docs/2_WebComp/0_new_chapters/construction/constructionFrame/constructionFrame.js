@@ -283,15 +283,17 @@
    */
   let completedBranches = [];
 
-  const op = new ParserObserver(
-    function (el, frame) {
-      frame.end(completedBranches);
-      completedBranches.push(el);
-    },
-    function () {
-      return now = undefined;
-    }
-  );
+  function endPredictiveFrame(el, frame) {
+    frame.end(completedBranches);
+    completedBranches.push(el);
+  }
+
+  //todo avoid the use of now?
+  function resetNow() {
+    now = undefined;
+  }
+
+  const op = new ParserObserver(resetNow, endPredictiveFrame);
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
