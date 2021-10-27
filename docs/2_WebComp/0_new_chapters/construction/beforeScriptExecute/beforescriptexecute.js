@@ -104,9 +104,10 @@
       this.frames = [];
       this.cb1 = checkCallback;
       this.cb2 = completedCallback;
-      this.eventListener = e => this.onParseBreak(e);
-      document.addEventListener('beforescriptexecute', this.eventListener, true);
-      document.addEventListener('readystatechange', this.eventListener, true);
+      this.onBreak = e => this.onParseBreak(e);
+      this.onEnd = e => this.destructor(e);
+      document.addEventListener('beforescriptexecute', this.onBreak, true);
+      document.addEventListener('readystatechange', this.onEnd, true);
     }
 
     onParseBreak(e) {
@@ -124,12 +125,9 @@
     }
 
     destructor() {
-      document.removeEventListener('beforescriptexecute', this.eventListener, true);
-      document.removeEventListener('readystatechange', this.eventListener, true);
-      delete this.frames;
-      delete this.cb1;
-      delete this.cb2;
-      delete this.eventListener;
+      this.onParseBreak({target: document.documentElement});
+      document.removeEventListener('beforescriptexecute', this.onBreak, true);
+      document.removeEventListener('readystatechange', this.onEnd, true);
     }
   }
 })();
