@@ -99,8 +99,13 @@
 
     static #observers = {'start': [], 'end': [], 'complete': []};
 
-    res(res) {
-      this.el = res;
+    #nodes;
+    res(res2) {
+      this.#nodes = res2;
+    }
+
+    get nodes(){
+      return Array.from(recursiveNodes2(this.#nodes));
     }
 
     constructor(el) {
@@ -134,7 +139,7 @@
         this instanceof UpgradeConstructionFrame ? 'CustomElementRegistry.define' :
           this instanceof PredictiveConstructionFrame ? 'predictive' :
             this instanceof CloneNodeConstructionFrame ? 'Node.cloneNode' :
-              this instanceof DescendantConstructionFrame ? 'ShadowRoot.innerHTML' :
+              this instanceof InnerHTMLConstructionFrame ? 'ShadowRoot.innerHTML' :
                 this instanceof DocumentCreateElementConstructionFrame ? 'Document.createElement' :
                   this instanceof InsertAdjacentHTMLConstructionFrame ? 'Element.insertAdjacentHTML' : 'omg';
       const parent = this.#parent ? this.#parent.toString() + ', ' : '';
@@ -169,6 +174,16 @@
       for (let c of el.childNodes)
         for (let desc of recursiveNodes(c))
           yield desc;
+  }
+
+  function* recursiveNodes2(nodes) {
+    for (let el of nodes) {
+      yield el;
+      if (el.childNodes)
+        for (let c of el.childNodes)
+          for (let desc of recursiveNodes(c))
+            yield desc;
+    }
   }
 
   function* recursiveNodesWithSkips(el, skips) {
@@ -208,21 +223,12 @@
   }
 
   class DocumentCreateElementConstructionFrame extends ConstructionFrame {
-    get nodes() {
-      return [this.el];
-    }
   }
 
   class CloneNodeConstructionFrame extends ConstructionFrame {
-    get nodes() {
-      return Array.from(recursiveNodes(this.el));
-    }
   }
 
-  class DescendantConstructionFrame extends ConstructionFrame {
-    get nodes() {
-      return Array.from(recursiveNodes(this.el)).slice(1);
-    }
+  class InnerHTMLConstructionFrame extends ConstructionFrame {
   }
 
   function insertAdjacentPrePositions(pos, el) {
@@ -267,7 +273,8 @@
     descriptor[setOrValue] = function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
-      (Type === DocumentCreateElementConstructionFrame || Type === CloneNodeConstructionFrame) && frame.res(res);
+      (Type === DocumentCreateElementConstructionFrame || Type === CloneNodeConstructionFrame) && frame.res([res]);
+      (Type === InnerHTMLConstructionFrame) && frame.res(this.childNodes);
       frame.end();
       return res;
     };
@@ -276,10 +283,10 @@
 
   // monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
   (function () {
-    monkeyPatch(Element.prototype, "innerHTML", 'set', DescendantConstructionFrame);
+    monkeyPatch(Element.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
   })();
   (function () {
-    monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', DescendantConstructionFrame);
+    monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
   })();
   (function () {
     monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
@@ -296,7 +303,7 @@
   let completedBranches = [];
 
   function endPredictiveFrame(el, frame) {
-    frame.end(completedBranches);
+    frame.end(completedBranches); //todo use the root and complete branch to create a correct iterator.
     completedBranches.push(el);
   }
 
@@ -305,12 +312,12 @@
     now = undefined;
   }
 
-  const op = new ParserObserver(resetNow, endPredictiveFrame);
+  const po = new ParserObserver(resetNow, endPredictiveFrame);
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !now && op.observe(this, new PredictiveConstructionFrame(this));
+      !now && po.observe(this, new PredictiveConstructionFrame(this));
     }
   }
 
