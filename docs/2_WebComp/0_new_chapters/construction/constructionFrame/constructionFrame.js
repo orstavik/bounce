@@ -278,22 +278,22 @@
   /*
    * PREDICTIVE PARSER
    */
-  //todo how to keep track of done predictives??
   let donePredictives = [];
 
-  //todo rename to ParserObserver
-  const op = new ParserObserver(function (el, frame) {
-    frame.end(donePredictives);
-    donePredictives.push(el);
-  }, () => now = undefined);
+  const op = new ParserObserver(
+    function (el, frame) {
+      frame.end(donePredictives);  //todo how to keep track of done predictives??
+      donePredictives.push(el);
+    },
+    function () {
+      return now = undefined;
+    }
+  );
 
-    class PredictiveConstructionFrameHTMLElement extends HTMLElement {
+  class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      if (now)
-        return;
-      const frame = ConstructionFrame.start('predictive', this, PredictiveConstructionFrame);
-      op.predictiveConstructionFrameStart(this, frame);
+      !now && op.observe(this, ConstructionFrame.start('predictive', this, PredictiveConstructionFrame));
     }
   }
 

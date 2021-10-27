@@ -119,7 +119,7 @@
         this.cb2(el, frame);
     }
 
-    predictiveConstructionFrameStart(el, frame) {
+    observe(el, frame) {
       this.frames.push({el, frame});
     }
 
