@@ -99,6 +99,10 @@
 
     static #observers = {'start': [], 'end': [], 'complete': []};
 
+    res(res) {
+      this.el = res;
+    }
+
     constructor(el) {
       this.el = el; //todo #el
       this.#parent = now;
@@ -204,27 +208,14 @@
   }
 
   class DocumentCreateElementConstructionFrame extends ConstructionFrame {
-
-    #res;
-
-    res(res) {
-      this.#res = res;
-    }
-
     get nodes() {
-      return [this.#res];
+      return [this.el];
     }
   }
 
   class CloneNodeConstructionFrame extends ConstructionFrame {
-    #res;
-
-    res(res) {
-      this.#res = res;
-    }
-
     get nodes() {
-      return Array.from(recursiveNodes(this.#res));
+      return Array.from(recursiveNodes(this.el));
     }
   }
 
