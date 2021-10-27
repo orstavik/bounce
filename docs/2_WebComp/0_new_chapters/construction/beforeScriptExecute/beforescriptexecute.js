@@ -95,39 +95,41 @@
   window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
 
   window.ParserObserver = class ParserObserver {
-
-    static endTagRead(el, lastParsed) {
-      return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
-    }
+    #frames = [];
+    #cb1;
+    #cb2;
+    #breakCb;
+    #endCb;
 
     constructor(completedCallback, checkCallback) {
-      this.frames = [];
-      this.cb1 = checkCallback;
-      this.cb2 = completedCallback;
-      this.onBreak = e => this.onParseBreak(e);
-      this.onEnd = e => this.destructor(e);
-      document.addEventListener('beforescriptexecute', this.onBreak, true);
-      document.addEventListener('readystatechange', this.onEnd, true);
+      if (document.readyState !== 'loading')
+        throw new Error('new ParserObserver(..) can only be created while document is loading');
+      this.#cb1 = checkCallback;
+      this.#cb2 = completedCallback;
+      document.addEventListener('beforescriptexecute', this.#breakCb = e => this.onBreak(e), true);
+      document.addEventListener('readystatechange', this.#endCb = e => this.disconnect(e), true);
     }
 
-    onParseBreak(e) {
-      this.cb1();
-      const endTagReadElement = this.frames.findIndex(({el}) => ParserObserver.endTagRead(el, e.target));
-      if (endTagReadElement < 0)
-        return;
-      const endedFrames = this.frames.splice(endTagReadElement);
-      for (let {el, frame} of endedFrames.reverse())
-        this.cb2(el, frame);
+    onBreak(e) {
+      this.#cb1();
+      while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0].el, e.target)) {
+        const {el, frame} = this.#frames.shift();
+        this.#cb2(el, frame);
+      }
     }
 
     observe(el, frame) {
-      this.frames.push({el, frame});
+      this.#frames.unshift({el, frame});
     }
 
-    destructor() {
-      this.onParseBreak({target: document.documentElement});
-      document.removeEventListener('beforescriptexecute', this.onBreak, true);
-      document.removeEventListener('readystatechange', this.onEnd, true);
+    disconnect() {
+      this.onBreak({target: document.documentElement});
+      document.removeEventListener('beforescriptexecute', this.#breakCb, true);
+      document.removeEventListener('readystatechange', this.#endCb, true);
+    }
+
+    static endTagRead(el, lastParsed) {
+      return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
     }
   }
 })();
