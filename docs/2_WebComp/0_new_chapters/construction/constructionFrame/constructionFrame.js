@@ -100,16 +100,8 @@
     static #observers = {'start': [], 'end': [], 'complete': []};
 
     #nodes;
-    res(res2) {
-      this.#nodes = res2;
-    }
 
-    get nodes(){
-      return Array.from(recursiveNodes2(this.#nodes));
-    }
-
-    constructor(el) {
-      this.el = el; //todo #el
+    constructor() {
       this.#parent = now;
       now = this;
       this.#parent?.#children.push(this);
@@ -146,10 +138,15 @@
       return parent + type + '#' + this.#state;
     }
 
-    end() {
+    end(res2) {
+      this.#nodes = res2;
       this.#callObservers('end');
       !this.#parent && this.#complete();
       now = this.#parent;
+    }
+
+    get nodes() {
+      return Array.from(recursiveNodes2(this.#nodes));
     }
 
     static get now() {
@@ -204,8 +201,8 @@
     #nodes = [];
     #tagName;
 
-    constructor(parent, el, tagName) {
-      super(parent, el);
+    constructor(el, tagName) { //todo I need the element here because the insertAdjacentHTML needs it.
+      super();
       this.#tagName = tagName;
     }
 
@@ -244,7 +241,7 @@
     #end;
 
     constructor(el, position) {
-      super(el);
+      super();
       [this.#start, this.#end] = insertAdjacentPrePositions(position, el);
     }
 
@@ -254,15 +251,18 @@
   }
 
   class PredictiveConstructionFrame extends ConstructionFrame {
+
+    #el;
     #skips;
 
-    end(skips) {
+    end(el, skips) {
+      this.#el = el;
       this.#skips = skips;
       super.end();
     }
 
     get nodes() {
-      return Array.from(recursiveNodesWithSkips(this.el, this.#skips)); //todo We shouldn't have to make an array here. It isn't safe anyways.
+      return Array.from(recursiveNodesWithSkips(this.#el, this.#skips)); //todo We shouldn't have to make an array here. It isn't safe anyways.
     }
   }
 
@@ -273,9 +273,10 @@
     descriptor[setOrValue] = function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
-      (Type === DocumentCreateElementConstructionFrame || Type === CloneNodeConstructionFrame) && frame.res([res]);
-      (Type === InnerHTMLConstructionFrame) && frame.res(this.childNodes);
-      frame.end();
+      //todo it is only the og that i need here.
+      const resAr = Type === CloneNodeConstructionFrame? [res]:
+      Type === InnerHTMLConstructionFrame ? this.childNodes : undefined;
+      frame.end(resAr);
       return res;
     };
     Object.defineProperty(proto, prop, descriptor);
@@ -294,8 +295,23 @@
   (function () {
     monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
   })();
-  monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
-  monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
+  (function () {
+    const createElementDesc = Object.getOwnPropertyDescriptor(Document.prototype, "createElement");
+    const createElementOG = createElementDesc.value;
+
+    function createElement(tag) {
+      const frame = new DocumentCreateElementConstructionFrame(this, tag);        //todo remove this from the Frame??
+      const res = createElementOG.call(this, tag);
+      frame.end([res]);
+      return res;
+    }
+
+    createElementDesc.value = createElement;
+    Object.defineProperty(Document.prototype, "createElement", createElementDesc);
+  })();
+  (function () {
+    monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
+  })();
 
   /*
    * PREDICTIVE PARSER
@@ -303,7 +319,7 @@
   let completedBranches = [];
 
   function endPredictiveFrame(el, frame) {
-    frame.end(completedBranches); //todo use the root and complete branch to create a correct iterator.
+    frame.end(el, completedBranches); //todo use the root and complete branch to create a correct iterator.
     completedBranches.push(el);
   }
 
@@ -317,7 +333,7 @@
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !now && po.observe(this, new PredictiveConstructionFrame(this));
+      !now && po.observe(this, new PredictiveConstructionFrame());
     }
   }
 
