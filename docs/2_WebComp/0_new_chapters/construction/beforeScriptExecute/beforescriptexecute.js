@@ -93,6 +93,45 @@
   });
   mo.observe(document.documentElement, {childList: true, subtree: true});
   window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
+
+  window.ParserObserver = class ParserObserver {
+
+    static endTagRead(el, lastParsed) {
+      return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
+    }
+
+    constructor(completedCallback, checkCallback) {
+      this.frames = [];
+      this.cb1 = checkCallback;
+      this.cb2 = completedCallback;
+      this.eventListener = e => this.onParseBreak(e);
+      document.addEventListener('beforescriptexecute', this.eventListener, true);
+      document.addEventListener('readystatechange', this.eventListener, true);
+    }
+
+    onParseBreak(e) {
+      this.cb1();
+      const endTagReadElement = this.frames.findIndex(({el}) => ParserObserver.endTagRead(el, e.target));
+      if (endTagReadElement < 0)
+        return;
+      const endedFrames = this.frames.splice(endTagReadElement);
+      for (let {el, frame} of endedFrames.reverse())
+        this.cb2(el, frame);
+    }
+
+    predictiveConstructionFrameStart(el, frame) {
+      this.frames.push({el, frame});
+    }
+
+    destructor() {
+      document.removeEventListener('beforescriptexecute', this.eventListener, true);
+      document.removeEventListener('readystatechange', this.eventListener, true);
+      delete this.frames;
+      delete this.cb1;
+      delete this.cb2;
+      delete this.eventListener;
+    }
+  }
 })();
 
 //todo need to test how it behaves in Safari and Firefox,

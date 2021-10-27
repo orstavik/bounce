@@ -278,41 +278,22 @@
   /*
    * PREDICTIVE PARSER
    */
-  function endTagRead(el, lastParsed) {
-    return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
-  }
+  //todo how to keep track of done predictives??
+  let donePredictives = [];
 
-  const frames = [];
-  //todo make a class for the ObserveParseComplete(cb). Todo this should be split out as a separate unit. And replace beforescriptexecute.
-  // this runs in the reverse sequence.
+  //todo rename to ParserObserver
+  const op = new ParserObserver(function (el, frame) {
+    frame.end(donePredictives);
+    donePredictives.push(el);
+  }, () => now = undefined);
 
-  function onParseBreak(e) {
-    now = undefined;
-    const endTagReadElement = frames.findIndex(({el}) => endTagRead(el, e.target));
-    if (endTagReadElement < 0)
-      return;
-    const endedFrames = frames.splice(endTagReadElement);
-    const skips = endedFrames.map(({el}) => el);
-    for (let frame of endedFrames.reverse())
-      frame.end(skips);
-    if (endTagReadElement)
-      return;
-    document.removeEventListener('beforescriptexecute', onParseBreak, true);
-    document.removeEventListener('readystatechange', onParseBreak, true);
-  }
-
-  function predictiveConstructionFrameStart(el) {
-    if (!frames.length) {
-      document.addEventListener('beforescriptexecute', onParseBreak, true);
-      document.addEventListener('readystatechange', onParseBreak, true);
-    }
-    frames.push(ConstructionFrame.start('predictive', el, PredictiveConstructionFrame));
-  }
-
-  class PredictiveConstructionFrameHTMLElement extends HTMLElement {
+    class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !now && predictiveConstructionFrameStart(this);
+      if (now)
+        return;
+      const frame = ConstructionFrame.start('predictive', this, PredictiveConstructionFrame);
+      op.predictiveConstructionFrameStart(this, frame);
     }
   }
 
