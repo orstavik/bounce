@@ -5,7 +5,7 @@
     let count = 0;
 
     function printFrame(frame, type = '') {
-      frame.state === 'end' && (type += ('[' + frame.nodes.map(n => n.nodeName).join(',')) + ']');
+      frame.state === 'end' && (type += ('[' + Array.from(frame.nodes()).map(n => n.nodeName).join(',')) + ']');
       console.log(frame.__id ??= ++count, frame + type);
     }
 

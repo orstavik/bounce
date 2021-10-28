@@ -91,7 +91,7 @@
    */
   let now;
 
-  window.ConstructionFrame = class ConstructionFrame {
+  class ConstructionFrame {
 
     #children = [];
     #parent;
@@ -99,9 +99,9 @@
 
     static #observers = {'start': [], 'end': [], 'complete': []};
 
-    #nodes;
-
-    constructor() {
+    constructor(el, args) {
+      this.el = el;
+      this.args = args;
       this.#parent = now;
       now = this;
       this.#parent?.#children.push(this);
@@ -138,17 +138,6 @@
       return parent + type + '#' + this.#state;
     }
 
-    end(res2) {
-      this.#nodes = res2;
-      this.#callObservers('end');
-      !this.#parent && this.#complete();
-      now = this.#parent;
-    }
-
-    get nodes() {
-      return Array.from(recursiveNodes2(this.#nodes));
-    }
-
     static get now() {
       return now;
     }
@@ -162,6 +151,41 @@
       if (!ar) return;
       const pos = ar.indexOf(cb);
       pos >= 0 && ar.splice(pos, 1);
+    }
+
+    end() {
+      this.#callObservers('end');
+      !this.#parent && this.#complete();
+      now = this.#parent;
+    }
+  }
+
+  window.ConstructionFrame = ConstructionFrame;
+
+  class SingleConstructionFrame extends ConstructionFrame {
+    #el;
+
+    end(node) {
+      this.#el = node;
+      super.end();
+    }
+
+    * nodes() {
+      yield this.#el;
+    }
+  }
+
+  class ListConstructionFrame extends ConstructionFrame {
+    #nodes;
+
+    end(nodes) {
+      this.#nodes = nodes;
+      super.end();
+    }
+
+    * nodes() {
+      for (let n of recursiveNodes2(this.#nodes))
+        yield n;
     }
   }
 
@@ -214,18 +238,25 @@
       this.#nodes.push(el);
     }
 
-    get nodes() {
-      return Array.from(this.#nodes);
+    * nodes() {
+      for (let n of this.#nodes)
+        yield n;
     }
   }
 
-  class DocumentCreateElementConstructionFrame extends ConstructionFrame {
+  class DocumentCreateElementConstructionFrame extends SingleConstructionFrame {
   }
 
-  class CloneNodeConstructionFrame extends ConstructionFrame {
+  class CloneNodeConstructionFrame extends ListConstructionFrame {
+    end(res){
+      super.end([res]);
+    }
   }
 
-  class InnerHTMLConstructionFrame extends ConstructionFrame {
+  class InnerHTMLConstructionFrame extends ListConstructionFrame {
+    end(res){
+      super.end(this.el.childNodes);
+    }
   }
 
   function insertAdjacentPrePositions(pos, el) {
@@ -245,24 +276,23 @@
       [this.#start, this.#end] = insertAdjacentPrePositions(position, el);
     }
 
-    get nodes() {
-      return Array.from(siblingUntil(this.#start || this.firstChild, this.#end)).map(c => Array.from(recursiveNodes(c))).flat(2);
+    * nodes() {
+      for (let n of recursiveNodes2(siblingUntil(this.#start || this.firstChild, this.#end)))
+        yield n;
     }
   }
 
   class PredictiveConstructionFrame extends ConstructionFrame {
 
-    #el;
     #skips;
-
-    end(el, skips) {
-      this.#el = el;
+    end(skips) {
       this.#skips = skips;
       super.end();
     }
 
-    get nodes() {
-      return Array.from(recursiveNodesWithSkips(this.#el, this.#skips)); //todo We shouldn't have to make an array here. It isn't safe anyways.
+    * nodes() {
+      for (let n of recursiveNodesWithSkips(this.el, this.#skips))
+        yield n;
     }
   }
 
@@ -273,53 +303,39 @@
     descriptor[setOrValue] = function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
-      //todo it is only the og that i need here.
-      const resAr = Type === CloneNodeConstructionFrame? [res]:
-      Type === InnerHTMLConstructionFrame ? this.childNodes : undefined;
-      frame.end(resAr);
+      frame.end(res, this, ...args);
       return res;
     };
     Object.defineProperty(proto, prop, descriptor);
   }
 
+
+  //innerHTML => deep from childNodes                                        res
+  //insertAdjacent => custom made list.                               start  res
+  //cloneNode(deep) => deep from a single point                              res   deep = false? documentCreateElement  : CloneNode
+  //cloneNode(false) => flat from a single point                             res
+  //createElement() => flat from a single point                              res
+  //predictive => deep from childNodes but without skips         con               (not for attributes? because they might overlap?)
+  //upgrade => flat from a list                                  con               (not for attributes? because they might overlap?)
+
+  //todo To make it as efficient as possible, we should have a different method for setting the origins and reading the nodes.
+  //todo they are almost completely independent. It would be most efficient to have an individual class.
+  //todo but do we need a different monkeyPatch? or do we just need to pass in the this and args into the constructor?
+
   // monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
-  (function () {
     monkeyPatch(Element.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
-  })();
-  (function () {
     monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
-  })();
-  (function () {
     monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
-  })();
-  (function () {
     monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
-  })();
-  (function () {
-    const createElementDesc = Object.getOwnPropertyDescriptor(Document.prototype, "createElement");
-    const createElementOG = createElementDesc.value;
-
-    function createElement(tag) {
-      const frame = new DocumentCreateElementConstructionFrame(this, tag);        //todo remove this from the Frame??
-      const res = createElementOG.call(this, tag);
-      frame.end([res]);
-      return res;
-    }
-
-    createElementDesc.value = createElement;
-    Object.defineProperty(Document.prototype, "createElement", createElementDesc);
-  })();
-  (function () {
+    monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
     monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
-  })();
-
   /*
    * PREDICTIVE PARSER
    */
   let completedBranches = [];
 
   function endPredictiveFrame(el, frame) {
-    frame.end(el, completedBranches); //todo use the root and complete branch to create a correct iterator.
+    frame.end(completedBranches); //todo use the root and complete branch to create a correct iterator.
     completedBranches.push(el);
   }
 
@@ -333,7 +349,7 @@
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !now && po.observe(this, new PredictiveConstructionFrame());
+      !now && po.observe(this, new PredictiveConstructionFrame(this));
     }
   }
 
