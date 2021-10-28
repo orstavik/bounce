@@ -1,10 +1,12 @@
+<script src="beforescriptexecute.js"></script>
 <script>
   function check(x) {
+    x instanceof Node && (x = x === document.documentElement ? '7' : x.textContent[0]);
     console.log(x)
     Promise.resolve().then(() => Promise.resolve().then(() => console.log("mm" + x)));
   }
 
-  document.addEventListener('beforescriptexecute', e => check(e.target.textContent[0]), true);
+  const po = new ParserObserver(check);
   document.addEventListener('readystatechange', () => console.log(document.readyState), {once: true});
 
   const tests = ["4", "2"];
@@ -15,8 +17,6 @@
     }
   });
 </script>
-
-<script src="beforescriptexecute.js"></script>
 
 <body>
 <h3>Test of beforescriptexecute with macro</h3>
