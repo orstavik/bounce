@@ -1,0 +1,54 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="ChildChangedCallback.js"></script>
+<script>
+  function print(type, el, rec) {
+    console.log(
+      type,
+      el.tagName,
+      el.shadowRoot.querySelector('slot').assignedNodes({flatten: true}).map(n=>n.nodeName),
+      el.shadowRoot.querySelector('slot').assignedNodes().map(n=>n.nodeName),
+      rec?.newNodes.map(n=>n.nodeName)
+    );
+  }
+
+  const templates = {
+    'INNER-COMP': '<slot></slot>',
+    'MIDDLE-COMP': '<inner-comp><slot></slot></inner-comp>',
+    'OUTER-COMP': '<middle-comp><slot></slot></middle-comp>'
+  }
+
+  class InnerComp extends HTMLElement {
+
+    constructor() {
+      super();
+      this.attachShadow({mode: "open", slotAssignment: "manual"});
+      this.shadowRoot.innerHTML = templates[this.tagName];
+      print('constructor', this);
+    }
+
+    connectedCallback() {
+      this.shadowRoot.querySelector('slot').assign(...this.childNodes);
+      print('connected', this);
+    }
+
+    childChangedCallback(rec) {
+      print("childChanged before", this, rec);
+      this.shadowRoot.querySelector('slot').assign(...this.childNodes);
+      print("childChanged after", this, rec);
+    }
+  }
+
+  class MiddleComp extends InnerComp {
+  }
+
+  class OuterComp extends InnerComp {
+  }
+
+  customElements.define('inner-comp', InnerComp);
+  customElements.define('middle-comp', MiddleComp);
+  customElements.define('outer-comp', OuterComp);
+</script>
+
+<h3>Test of assignNodes</h3>
+<outer-comp><h1>hello sunshine</h1></outer-comp>

@@ -3,7 +3,7 @@
 <script src="ChildChangedCallback.js"></script>
 <script>
   function print(type, el, rec) {
-    console.log(type, el.tagName, el.childNodes?.length, rec?.newNodes.length);
+    console.log(type, el.tagName, el.shadowRoot.children[0].assignedNodes().length, rec?.newNodes.length);
   }
 
   class CompA extends HTMLElement {
