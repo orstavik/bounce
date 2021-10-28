@@ -1,4 +1,15 @@
 <script>
+  (function () {
+    //monkeypatch to fix the slot.assign destructor destruction.
+    const desc = Object.getOwnPropertyDescriptor(HTMLSlotElement.prototype, "assign");
+    const og = desc.value;
+    desc.value = function assign(...args) {
+      typeof args[0][Symbol.iterator] === 'function' && (args = args[0]);
+      return og.call(this, ...args);
+    }
+    Object.defineProperty(HTMLSlotElement.prototype, 'assign', desc);
+  })();
+
   class InnerComp extends HTMLElement {
     constructor() {
       super();
@@ -11,6 +22,11 @@
 </ol>`;
       const bob = this.shadowRoot.querySelector('slot');
       setTimeout(() => {
+        //1. check the single node
+        bob.assign(this.lastChild);
+        //2. check the Im too clever destruction
+        bob.assign(...this.childNodes);
+        //3. check the monkeypatch works
         bob.assign(this.childNodes);
         // bob.assign([this.previousSibling]);
         // bob.assign(this.querySelectorAll('li'));
@@ -30,4 +46,6 @@
   customElements.define('middle-comp', MiddleComp);
 </script>
 
-<middle-comp><li>hello sunshine</li></middle-comp>
+<middle-comp>
+  <li>hello sunshine</li>
+</middle-comp>
