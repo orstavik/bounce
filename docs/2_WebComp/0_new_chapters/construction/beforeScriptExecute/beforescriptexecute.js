@@ -106,13 +106,13 @@
         throw new Error('new ParserObserver(..) can only be created while document is loading');
       this.#cb1 = onEveryBreakCb;
       this.#cb2 = onObservedElementEndTagReachCb;
-      document.addEventListener('beforescriptexecute', this.#breakCb = e => this.onBreak(e), true);
+      document.addEventListener('beforescriptexecute', this.#breakCb = e => this.onBreak(e.target), true);
       document.addEventListener('readystatechange', this.#endCb = e => this.disconnect(e), true);
     }
 
-    onBreak(e) {
+    onBreak(target) {
       this.#cb1();
-      while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0].el, e.target)) {
+      while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0].el, target)) {
         const {el, frame} = this.#frames.shift();
         this.#cb2(el, frame);
       }
@@ -123,7 +123,7 @@
     }
 
     disconnect() {
-      this.onBreak({target: document.documentElement});
+      this.onBreak(document.documentElement);
       document.removeEventListener('beforescriptexecute', this.#breakCb, true);
       document.removeEventListener('readystatechange', this.#endCb, true);
     }
