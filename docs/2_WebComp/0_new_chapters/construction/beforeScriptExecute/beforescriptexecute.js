@@ -79,20 +79,20 @@
 (function () {
   if (document.readyState !== "loading")
     return;
-  //todo How to avoid conflict with native FF event??? replaces the native Firefox event with our custom beforescriptexecute event.
-  document.addEventListener('beforescriptexecute', e => e.isTrusted && e.stopImmediatePropagation(), true);
-  let lastTarget;
-  const mo = new MutationObserver(mrs => {
-    //todo break this one with <script async></script><script>take a long time</script> which might trigger an empty mrs[]?? can there be an empty mrs[]??
-    //todo trigger the MutationObserver using dynamic changes?? So that this runs during either a custom Element constructor or a script??
-    //todo yes, we can probably break this calling .append(...), .remove() etc on the main document during loading or maybe with an async script.
-    const nodes = mrs[mrs.length - 1].addedNodes;
-    const target = nodes[nodes.length - 1];
-    if (target !== lastTarget && !((lastTarget = target).connectedCallback))
-      target.dispatchEvent(new Event('beforescriptexecute'));
-  });
-  mo.observe(document.documentElement, {childList: true, subtree: true});
-  window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
+  // //todo How to avoid conflict with native FF event??? replaces the native Firefox event with our custom beforescriptexecute event.
+  // document.addEventListener('beforescriptexecute', e => e.isTrusted && e.stopImmediatePropagation(), true);
+  // let lastTarget;
+  // const mo = new MutationObserver(mrs => {
+  //   //todo break this one with <script async></script><script>take a long time</script> which might trigger an empty mrs[]?? can there be an empty mrs[]??
+  //   //todo trigger the MutationObserver using dynamic changes?? So that this runs during either a custom Element constructor or a script??
+  //   //todo yes, we can probably break this calling .append(...), .remove() etc on the main document during loading or maybe with an async script.
+  //   const nodes = mrs[mrs.length - 1].addedNodes;
+  //   const target = nodes[nodes.length - 1];
+  //   if (target !== lastTarget && !((lastTarget = target).connectedCallback))
+  //     target.dispatchEvent(new Event('beforescriptexecute'));
+  // });
+  // mo.observe(document.documentElement, {childList: true, subtree: true});
+  // window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
 
   window.ParserObserver = class ParserObserver {
     #frames = [];

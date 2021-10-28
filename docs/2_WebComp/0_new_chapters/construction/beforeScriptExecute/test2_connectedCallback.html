@@ -6,7 +6,6 @@
     Promise.resolve().then(() => Promise.resolve().then(() => console.log('mm' + x)));
   }
 
-  // document.addEventListener('beforescriptexecute', e => check(e.target.textContent[0]), true);
   const po = new ParserObserver(last => check(last));
   document.addEventListener('readystatechange', () => console.log(document.readyState), {once: true});
 
