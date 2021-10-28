@@ -1,0 +1,44 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="ChildChangedCallback.js"></script>
+<script>
+  function print(type, el, rec) {
+    console.log(type, el.tagName, el.childNodes?.length, rec?.newNodes.length);
+  }
+
+  class CompA extends HTMLElement {
+
+    constructor() {
+      super();
+      this.attachShadow({mode: "open", slotAssignment: "manual"});
+      this.shadowRoot.innerHTML = '<slot></slot>';
+      print('constructor', this);
+    }
+
+    connectedCallback() {
+      this.shadowRoot.children[0].assign(...this.childNodes);
+      print('connected', this);
+    }
+
+    childChangedCallback(rec) {
+      this.shadowRoot.children[0].assign(...this.childNodes);
+      print("childChanged", this, rec);
+    }
+  }
+
+  customElements.define('comp-a', CompA);
+  customElements.define('comp-b', class CompB extends CompA {
+  });
+  customElements.define('comp-c', class CompC extends CompA {
+  });
+</script>
+<h3>Test of assignNodes 2</h3>
+<comp-a>
+  <comp-b>
+    <comp-c>
+      <h3>hello sunshine</h3>
+    </comp-c>
+    <h2>hello sunshine</h2>
+  </comp-b>
+  <h1>hello sunshine</h1>
+</comp-a>
