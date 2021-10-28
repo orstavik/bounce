@@ -1,5 +1,6 @@
+<script src="beforescriptexecute.js"></script>
 <script>
-  window.addEventListener('beforescriptexecute', e => console.log(e.target.textContent[0]), true);
+  const po = new ParserObserver(last => console.log(last === document.documentElement ? "html" : last.textContent[0]));
   document.addEventListener('readystatechange', _ => console.log(document.readyState), {once: true});
 
   const tests = ["4", "2"];
@@ -10,8 +11,6 @@
     }
   });
 </script>
-
-<script src="beforescriptexecute.js"></script>
 
 <body>
 <h3>Test of beforescriptexecute</h3>

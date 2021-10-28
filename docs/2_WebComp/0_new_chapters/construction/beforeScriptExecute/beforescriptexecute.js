@@ -98,24 +98,46 @@
     #frames = [];
     #cb1;
     #cb2;
-    #breakCb;
-    #endCb;
+    #lastTarget;
+    #mo;
+    #ending;
 
     constructor(onEveryBreakCb, onObservedElementEndTagReachCb) {
       if (document.readyState !== 'loading')
         throw new Error('new ParserObserver(..) can only be created while document is loading');
       this.#cb1 = onEveryBreakCb;
       this.#cb2 = onObservedElementEndTagReachCb;
-      document.addEventListener('beforescriptexecute', this.#breakCb = e => this.onBreak(e.target), true);
-      document.addEventListener('readystatechange', this.#endCb = e => this.disconnect(e), true);
+      this.#ending = () => this.#onEnd();
+
+      this.#mo = new MutationObserver(mrs => {
+        if (document.readyState !== 'loading')
+          return this.#onEnd();
+        const mr = mrs[mrs.length - 1];
+        const nodes = mr.addedNodes;
+        const target = nodes[nodes.length - 1];
+        if (target !== this.#lastTarget && !((this.#lastTarget = target).connectedCallback))
+          this.onBreak(target);
+      });
+      this.#mo.observe(document.documentElement, {childList: true, subtree: true});
+      document.addEventListener('readystatechange', this.#ending, {capture: true, once: true});
     }
 
     onBreak(target) {
-      this.#cb1();
+      this.#cb1(target);
       while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0].el, target)) {
         const {el, frame} = this.#frames.shift();
         this.#cb2(el, frame);
       }
+    }
+
+    #onEnd() {
+      this.#cb1(document.documentElement);
+      while (this.#frames[0]) {
+        const {el, frame} = this.#frames.shift();
+        this.#cb2(el, frame);
+      }
+      this.disconnect();
+      document.removeEventListener('readystatechange', this.#ending, {capture: true});
     }
 
     observe(el, frame) {
@@ -123,9 +145,7 @@
     }
 
     disconnect() {
-      this.onBreak(document.documentElement);
-      document.removeEventListener('beforescriptexecute', this.#breakCb, true);
-      document.removeEventListener('readystatechange', this.#endCb, true);
+      this.#mo.disconnect();
     }
 
     static endTagRead(el, lastParsed) {
@@ -133,6 +153,3 @@
     }
   }
 })();
-
-//todo need to test how it behaves in Safari and Firefox,
-//todo test the end of the parsing sequence.
