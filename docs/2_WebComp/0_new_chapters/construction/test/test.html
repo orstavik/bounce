@@ -12,7 +12,12 @@
 </test-html>
 <test-html test="../beforeScriptExecute/test2_connectedCallback.html">
   <script expected>
-    ["1", "mm1", "2", "mm2", "3", "mm3", "4", "mm4", "5", "mm5", "6", "mm6", "7", "mm7", "8", "mm8","9", "mm9", "interactive"]
+    ["1", "mm1", "2", "mm2", "3", "mm3", "4", "mm4", "5", "mm5", "6", "mm6", "7", "mm7", "8", "mm8", "9", "mm9", "interactive"]
+  </script>
+</test-html>
+<test-html test="../beforeScriptExecute/test3_connectedCallback.html">
+  <script expected>
+    ["break", "connected", "connected", "the end", "interactive"]
   </script>
 </test-html>
 <h3>ConstructionFrame</h3>
@@ -70,63 +75,63 @@
 <test-html test="../constructionFrame/test2.html">
   <script expected>
     [
-      [1,"Upgrade#start"],
-      [1,"Upgrade#end[]"],
-      [1,"Upgrade#complete"],
-      [2,"Upgrade#start"],
-      [2,"Upgrade#end[]"],
-      [2,"Upgrade#complete"],
-      [3,"Upgrade#start"],
-      [3,"Upgrade#end[]"],
-      [3,"Upgrade#complete"],
+      [1, "Upgrade#start"],
+      [1, "Upgrade#end[]"],
+      [1, "Upgrade#complete"],
+      [2, "Upgrade#start"],
+      [2, "Upgrade#end[]"],
+      [2, "Upgrade#complete"],
+      [3, "Upgrade#start"],
+      [3, "Upgrade#end[]"],
+      [3, "Upgrade#complete"],
 
-      [4,"Predictive#start"],
-      [4,"Predictive#startconstructor"],
-      [4,"Predictive#end[INNER-COMP]"],
-      [4,"Predictive#complete"],
+      [4, "Predictive#start"],
+      [4, "Predictive#startconstructor"],
+      [4, "Predictive#end[INNER-COMP]"],
+      [4, "Predictive#complete"],
 
-      [5,"Predictive#start"],
-      [5,"Predictive#startconstructor start"],
-      [6,"Predictive#start, InnerHTML#start"],
-      [6,"Predictive#start, InnerHTML#startconstructor"],
-      [6,"Predictive#start, InnerHTML#end[INNER-COMP]"],
-      [7,"Predictive#start, InsertAdjacentHTML#start"],
-      [7,"Predictive#start, InsertAdjacentHTML#end[H1]"],
-      [5,"Predictive#startconstructor end"],
-      [5,"Predictive#end[MIDDLE-COMP]"],
-      [5,"Predictive#complete"],
-      [6,"Predictive#complete, InnerHTML#complete"],
-      [7,"Predictive#complete, InsertAdjacentHTML#complete"],
-      
-      [8,"Predictive#start"],
-      [8,"Predictive#startconstructor start"],
-      [9,"Predictive#start, DocumentCreateElement#start"],
-      [9,"Predictive#start, DocumentCreateElement#startconstructor start"],
-      [10,"Predictive#start, DocumentCreateElement#start, InnerHTML#start"],
-      [10,"Predictive#start, DocumentCreateElement#start, InnerHTML#startconstructor"],
-      [10,"Predictive#start, DocumentCreateElement#start, InnerHTML#end[INNER-COMP]"],
-      [11,"Predictive#start, DocumentCreateElement#start, InsertAdjacentHTML#start"],
-      [11,"Predictive#start, DocumentCreateElement#start, InsertAdjacentHTML#end[H1]"],
-      [9,"Predictive#start, DocumentCreateElement#startconstructor end"],
-      [9,"Predictive#start, DocumentCreateElement#end[MIDDLE-COMP]"],
-      [12,"Predictive#start, CloneNode#start"],
-      [12,"Predictive#start, CloneNode#startconstructor start"],
-      [13,"Predictive#start, CloneNode#start, InnerHTML#start"],
-      [13,"Predictive#start, CloneNode#start, InnerHTML#startconstructor"],
-      [13,"Predictive#start, CloneNode#start, InnerHTML#end[INNER-COMP]"],
-      [14,"Predictive#start, CloneNode#start, InsertAdjacentHTML#start"],
-      [14,"Predictive#start, CloneNode#start, InsertAdjacentHTML#end[H1]"],
-      [12,"Predictive#start, CloneNode#startconstructor end"],
-      [12,"Predictive#start, CloneNode#end[MIDDLE-COMP]"],
-      [8,"Predictive#startconstructor end"],
-      [8,"Predictive#end[OUTER-COMP]"],
-      [8,"Predictive#complete"],
-      [9,"Predictive#complete, DocumentCreateElement#complete"],
-      [10,"Predictive#complete, DocumentCreateElement#complete, InnerHTML#complete"],
-      [11,"Predictive#complete, DocumentCreateElement#complete, InsertAdjacentHTML#complete"],
-      [12,"Predictive#complete, CloneNode#complete"],
-      [13,"Predictive#complete, CloneNode#complete, InnerHTML#complete"],
-      [14,"Predictive#complete, CloneNode#complete, InsertAdjacentHTML#complete"]
+      [5, "Predictive#start"],
+      [5, "Predictive#startconstructor start"],
+      [6, "Predictive#start, InnerHTML#start"],
+      [6, "Predictive#start, InnerHTML#startconstructor"],
+      [6, "Predictive#start, InnerHTML#end[INNER-COMP]"],
+      [7, "Predictive#start, InsertAdjacentHTML#start"],
+      [7, "Predictive#start, InsertAdjacentHTML#end[H1]"],
+      [5, "Predictive#startconstructor end"],
+      [5, "Predictive#end[MIDDLE-COMP]"],
+      [5, "Predictive#complete"],
+      [6, "Predictive#complete, InnerHTML#complete"],
+      [7, "Predictive#complete, InsertAdjacentHTML#complete"],
+
+      [8, "Predictive#start"],
+      [8, "Predictive#startconstructor start"],
+      [9, "Predictive#start, DocumentCreateElement#start"],
+      [9, "Predictive#start, DocumentCreateElement#startconstructor start"],
+      [10, "Predictive#start, DocumentCreateElement#start, InnerHTML#start"],
+      [10, "Predictive#start, DocumentCreateElement#start, InnerHTML#startconstructor"],
+      [10, "Predictive#start, DocumentCreateElement#start, InnerHTML#end[INNER-COMP]"],
+      [11, "Predictive#start, DocumentCreateElement#start, InsertAdjacentHTML#start"],
+      [11, "Predictive#start, DocumentCreateElement#start, InsertAdjacentHTML#end[H1]"],
+      [9, "Predictive#start, DocumentCreateElement#startconstructor end"],
+      [9, "Predictive#start, DocumentCreateElement#end[MIDDLE-COMP]"],
+      [12, "Predictive#start, CloneNode#start"],
+      [12, "Predictive#start, CloneNode#startconstructor start"],
+      [13, "Predictive#start, CloneNode#start, InnerHTML#start"],
+      [13, "Predictive#start, CloneNode#start, InnerHTML#startconstructor"],
+      [13, "Predictive#start, CloneNode#start, InnerHTML#end[INNER-COMP]"],
+      [14, "Predictive#start, CloneNode#start, InsertAdjacentHTML#start"],
+      [14, "Predictive#start, CloneNode#start, InsertAdjacentHTML#end[H1]"],
+      [12, "Predictive#start, CloneNode#startconstructor end"],
+      [12, "Predictive#start, CloneNode#end[MIDDLE-COMP]"],
+      [8, "Predictive#startconstructor end"],
+      [8, "Predictive#end[OUTER-COMP]"],
+      [8, "Predictive#complete"],
+      [9, "Predictive#complete, DocumentCreateElement#complete"],
+      [10, "Predictive#complete, DocumentCreateElement#complete, InnerHTML#complete"],
+      [11, "Predictive#complete, DocumentCreateElement#complete, InsertAdjacentHTML#complete"],
+      [12, "Predictive#complete, CloneNode#complete"],
+      [13, "Predictive#complete, CloneNode#complete, InnerHTML#complete"],
+      [14, "Predictive#complete, CloneNode#complete, InsertAdjacentHTML#complete"]
     ]
   </script>
 </test-html>
