@@ -127,15 +127,8 @@
     }
 
     toString() {
-      const type =
-        this instanceof UpgradeConstructionFrame ? 'CustomElementRegistry.define' :
-          this instanceof PredictiveConstructionFrame ? 'predictive' :
-            this instanceof CloneNodeConstructionFrame ? 'Node.cloneNode' :
-              this instanceof InnerHTMLConstructionFrame ? 'ShadowRoot.innerHTML' :
-                this instanceof DocumentCreateElementConstructionFrame ? 'Document.createElement' :
-                  this instanceof InsertAdjacentHTMLConstructionFrame ? 'Element.insertAdjacentHTML' : 'omg';
       const parent = this.#parent ? this.#parent.toString() + ', ' : '';
-      return parent + type + '#' + this.#state;
+      return parent + this.constructor.name.slice(0, -17) + '#' + this.#state;
     }
 
     static get now() {
