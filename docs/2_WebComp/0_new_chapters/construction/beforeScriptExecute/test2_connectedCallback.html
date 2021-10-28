@@ -1,10 +1,13 @@
+<script src="beforescriptexecute.js"></script>
 <script>
   function check(x) {
+    x instanceof Node && (x = x === document.documentElement ? '9' : x.textContent[0]);
     console.log(x);
     Promise.resolve().then(() => Promise.resolve().then(() => console.log('mm' + x)));
   }
 
-  document.addEventListener('beforescriptexecute', e => check(e.target.textContent[0]), true);
+  // document.addEventListener('beforescriptexecute', e => check(e.target.textContent[0]), true);
+  const po = new ParserObserver(last => check(last));
   document.addEventListener('readystatechange', () => console.log(document.readyState), {once: true});
 
   const tests = ["8", "7", "6", "5", "3", "2"];
@@ -20,7 +23,6 @@
   });
 </script>
 
-<script src="beforescriptexecute.js"></script>
 <h3>Test of beforescriptexecute with connectedCallback</h3>
 <!--1--><web-comp></web-comp>
 <!--4--><web-comp></web-comp><web-comp></web-comp>
