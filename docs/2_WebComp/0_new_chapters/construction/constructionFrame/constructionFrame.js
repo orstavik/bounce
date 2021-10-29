@@ -282,28 +282,23 @@
 })();
 
 /*
- * UPGRADE, depends on the ConstructionFrame
+ * UPGRADE, depends on ConstructionFrame
  */
 (function () {
   class UpgradeConstructionFrame extends ConstructionFrame {
     #tagName;
     #el;
 
-    constructor(el, tagName) { //todo I need the element here because the insertAdjacentHTML needs it.
+    constructor(el, tagName) {
       super();
       this.#el = el;
       this.#tagName = tagName;
     }
 
-    end(el) {
-      if (!el) {
-        super.end();
-      } else if (this.#el instanceof HTMLElement) {
-        super.end();
-        new UpgradeConstructionFrame(el, this.#tagName);
-      } else {
-        this.#el = el;
-      }
+    chain(el) {
+      if (!this.#el) return this.#el = el; //if this is the first upgraded element, then just update the element in the frame
+      super.end();                                       //otherwise, end the previous element frame,
+      new UpgradeConstructionFrame(el, this.#tagName);   //and start a new frame
     }
 
     * nodes() {
@@ -312,24 +307,20 @@
   }
 
   const descriptor = Object.getOwnPropertyDescriptor(CustomElementRegistry.prototype, "define");
-  const og = descriptor['value'];
-  descriptor['value'] = function constructHtmlElement(...args) {
-    const frame = new UpgradeConstructionFrame(this, ...args);
-    const res = og.call(this, ...args);
+  const og = descriptor.value;
+  descriptor.value = function createElement_constructionFrame(...args) {
+    new UpgradeConstructionFrame(undefined, args[0]);
+    og.call(this, ...args);
     ConstructionFrame.now.end();
-    return res;
   };
   Object.defineProperty(CustomElementRegistry.prototype, "define", descriptor);
 
-  class UpgradeConstructionFrameHTMLElement extends HTMLElement {
+  window.HTMLElement = class UpgradeConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      ConstructionFrame.now instanceof UpgradeConstructionFrame && ConstructionFrame.now.end(this);
+      ConstructionFrame.now instanceof UpgradeConstructionFrame && ConstructionFrame.now.chain(this);
     }
   }
-
-  window.HTMLElement = UpgradeConstructionFrameHTMLElement;
-
 })();
 /*
  * PREDICTIVE PARSER, depends on UPGRADE
@@ -360,6 +351,7 @@
     }
 
     * nodes() {
+      //todo use the root and complete branch to create a correct iterator.
       for (let n of recursiveNodesWithSkips(this.el, this.#skips))
         yield n;
     }
@@ -368,7 +360,7 @@
   let completedBranches = [];
 
   function endPredictiveFrame(el, frame) {
-    frame.end(completedBranches); //todo use the root and complete branch to create a correct iterator.
+    frame.end(completedBranches);
     completedBranches.push(el);
   }
 
