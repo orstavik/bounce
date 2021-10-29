@@ -221,6 +221,48 @@
       "script"]
   </script>
 </test-html>
+<test-html test="../constructionFrame/error_upgrade_inner_adjacent_clone.html">
+  <script expected>
+    [
+      "script",
+      "Upgrade#start",
+      "Upgrade#end",
+      "Upgrade#complete",
+      "Upgrade#start",
+      "Upgrade#end",
+      "Upgrade#complete",
+      "Upgrade#start",
+      "Upgrade#start-outer-constructor",
+      "Upgrade#start, DocumentCreateElement#start",
+      "Upgrade#start, DocumentCreateElement#start-constructor-inner",
+      "Upgrade#start, DocumentCreateElement#end",
+      "Upgrade#start, CloneNode#start",
+      "Upgrade#start, CloneNode#start-constructor-inner",
+      "test error",
+      "test error",
+      "Upgrade#start, CloneNode#end",
+      "Upgrade#start, InnerHTML#start",
+      "Upgrade#start, InnerHTML#start-constructor-inner",
+      "Upgrade#start, InnerHTML#start-attribute-inner",
+      "test error",
+      "test error",
+      "Upgrade#start, InnerHTML#end",
+      "Upgrade#start, InsertAdjacentHTML#start",
+      "Upgrade#start, InsertAdjacentHTML#start-constructor-inner",
+      "Upgrade#start, InsertAdjacentHTML#start-attribute-inner",
+      "test error",
+      "test error",
+      "Upgrade#start, InsertAdjacentHTML#end",
+      "Upgrade#start-outer-constructor-end",
+      "Upgrade#end",
+      "Upgrade#complete",
+      "Upgrade#complete, DocumentCreateElement#complete",
+      "Upgrade#complete, CloneNode#complete",
+      "Upgrade#complete, InnerHTML#complete",
+      "Upgrade#complete, InsertAdjacentHTML#complete"
+    ]
+  </script>
+</test-html>
 <h3>attributeReadyCallback and childReadyCallback</h3>
 <test-html test="../constructionReady/test1.html">
   <script expected>
