@@ -214,8 +214,8 @@
     }
 
     * nodes() {
-      for (let el of InsertAdjacentHTMLConstructionFrame.siblingUntil(this.#start || this.firstChild, this.#end))
-        yield* recursiveNodes(el);
+      for (let n = this.#start?.nextSibling || this.firstChild; n !== this.#end; n = n.nextSibling)
+        yield* recursiveNodes(n);
     }
 
     static adjacentElements(pos, el) {
@@ -224,11 +224,6 @@
           pos === 'afterbegin' ? [undefined, el.firstChild] :
             pos === 'beforeend' ? [el.lastChild, undefined] :
               null;
-    }
-
-    static* siblingUntil(start, end) {
-      for (let next = start.nextSibling; next !== end; next = next.nextSibling)
-        yield next;
     }
   }
 
