@@ -135,6 +135,10 @@
       return now;
     }
 
+    static dropNow(){
+      now = undefined;
+    }
+
     static observe(state, cb) {
       this.#observers[state]?.push(cb);
     }
@@ -340,12 +344,7 @@
     completedBranches.push(el);
   }
 
-  //todo avoid the use of now?
-  function resetNow() {
-    now = undefined;
-  }
-
-  const po = new ParserObserver(resetNow, endPredictiveFrame);
+  const po = new ParserObserver(ConstructionFrame.dropNow, endPredictiveFrame);
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
