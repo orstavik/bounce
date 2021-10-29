@@ -221,11 +221,34 @@
       "script"]
   </script>
 </test-html>
+<test-html test="../constructionFrame/error_upgrade.html">
+  <script expected>
+    [
+      "script",
+      "Upgrade#start",
+      "Upgrade#start-constructor-inner",
+      "test error",
+      "test error",
+      "Upgrade#end",
+      "Upgrade#complete",
+      "Upgrade#start",
+      "Upgrade#start-constructor-inner",
+      "test error",
+      "test error",
+      "Upgrade#end",
+      "Upgrade#complete"
+    ]
+  </script>
+</test-html>
 <test-html test="../constructionFrame/error_upgrade_inner_adjacent_clone.html">
   <script expected>
     [
       "script",
       "Upgrade#start",
+      "Upgrade#start-constructor-inner",
+      "Upgrade#start-attribute-inner",
+      "test error",
+      "test error",
       "Upgrade#end",
       "Upgrade#complete",
       "Upgrade#start",

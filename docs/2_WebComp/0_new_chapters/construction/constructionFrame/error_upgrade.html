@@ -1,0 +1,31 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="constructionFrame.js"></script>
+
+<web-comp></web-comp>
+<web-comp></web-comp>
+<script>console.log("script")</script>
+
+<script>
+  (function () {
+
+    window.addEventListener('error', e => (console.log(e.message.substr(e.message.indexOf(':') + 2)), e.preventDefault()));
+
+    function printFrame(frame, type = '') {
+      console.log(frame + type);
+    }
+
+    ConstructionFrame.observe('start', printFrame);
+    ConstructionFrame.observe('end', printFrame);
+    ConstructionFrame.observe('complete', printFrame);
+
+    class WebComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame(ConstructionFrame.now, '-constructor-inner');
+        throw new Error('test error');
+      }
+    }
+
+    customElements.define('web-comp', WebComp);
+  })();
+</script>
