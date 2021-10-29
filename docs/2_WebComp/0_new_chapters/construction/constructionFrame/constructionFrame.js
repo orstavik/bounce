@@ -201,29 +201,6 @@
     }
   }
 
-  class InsertAdjacentHTMLConstructionFrame extends ConstructionFrame {
-    #start;
-    #end;
-
-    constructor(el, position) {
-      super();
-      [this.#start, this.#end] = InsertAdjacentHTMLConstructionFrame.adjacentElements(position, el);
-    }
-
-    * nodes() {
-      for (let n = this.#start?.nextSibling || this.firstChild; /*n && */n !== this.#end; n = n.nextSibling)
-        yield* recursiveNodes(n);
-    }
-
-    static adjacentElements(pos, el) {
-      return pos === 'beforebegin' ? [el.previousSibling, el] :
-        pos === 'afterend' ? [el, el.nextSibling] :
-          pos === 'afterbegin' ? [undefined, el.firstChild] :
-            pos === 'beforeend' ? [el.lastChild, undefined] :
-              [];
-    }
-  }
-
   function monkeyPatch(proto, prop, setOrValue, Type) {
     const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
     const og = descriptor[setOrValue];
@@ -241,7 +218,41 @@
   monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
   monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
   monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
-  monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
+
+  class InsertAdjacentHTMLConstructionFrame extends ConstructionFrame {
+    #d;
+
+    end({position, element, previousSibling, lastChild, firstChild, nextSibling}) {
+      this.#d = {position, element, previousSibling, lastChild, firstChild, nextSibling};
+      super.end();
+    }
+
+    * nodes() {
+      if (this.#d.position === 'beforebegin') {
+        for (let n = this.#d.previousSibling?.nextSibling || this.#d.element.parentNode?.firstChild; n && n !== this.#d.element; n = n.nextSibling)
+          yield* recursiveNodes(n);
+      } else if (this.#d.position === 'afterend') {
+        for (let n = this.#d.element.nextSibling; n && n !== this.#d.nextSibling; n = n.nextSibling)
+          yield* recursiveNodes(n);
+      } else if (this.#d.position === 'afterbegin') {
+        for (let n = this.#d.element.firstChild; n && n !== this.#d.firstChild; n = n.nextSibling)
+          yield* recursiveNodes(n);
+      } else if (this.#d.position === 'beforeend') {
+        for (let n = this.#d.lastChild || this.#d.element.firstChild; n; n = n.nextSibling)
+          yield* recursiveNodes(n);
+      }
+    }
+  }
+
+  const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, "insertAdjacentHTML");
+  const og = descriptor.value;
+  descriptor.value = function insertAdjacentHTML_constructHtmlElement(position, ...args) {
+    const {previousSibling, lastChild, firstChild, nextSibling} = this;
+    const frame = new InsertAdjacentHTMLConstructionFrame();
+    og.call(this, position, ...args);
+    frame.end({position, element: this, previousSibling, lastChild, firstChild, nextSibling});
+  };
+  Object.defineProperty(Element.prototype, "insertAdjacentHTML", descriptor);
 })();
 /*
  * UPGRADE, depends on ConstructionFrame
