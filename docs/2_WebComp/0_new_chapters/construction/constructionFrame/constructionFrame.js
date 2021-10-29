@@ -99,9 +99,8 @@
 
     static #observers = {'start': [], 'end': [], 'complete': []};
 
-    constructor(el, args) {
+    constructor(el) {
       this.el = el;
-      this.args = args;
       this.#parent = now;
       now = this;
       this.#parent?.#children.push(this);
@@ -159,19 +158,6 @@
 
   window.ConstructionFrame = ConstructionFrame;
 
-  class SingleConstructionFrame extends ConstructionFrame {
-    #el;
-
-    end(node) {
-      this.#el = node;
-      super.end();
-    }
-
-    * nodes() {
-      yield this.#el;
-    }
-  }
-
   class ListConstructionFrame extends ConstructionFrame {
     #nodes;
 
@@ -209,7 +195,17 @@
       yield next;
   }
 
-  class DocumentCreateElementConstructionFrame extends SingleConstructionFrame {
+  class DocumentCreateElementConstructionFrame extends ConstructionFrame {
+    #el;
+
+    end(created) {
+      this.#el = created;
+      super.end();
+    }
+
+    * nodes() {
+      yield this.#el;
+    }
   }
 
   class CloneNodeConstructionFrame extends ListConstructionFrame {
@@ -219,8 +215,8 @@
   }
 
   class InnerHTMLConstructionFrame extends ListConstructionFrame {
-    end(res) {
-      super.end(this.el.childNodes);
+    end(res, el) {
+      super.end(el.childNodes);
     }
   }
 
@@ -327,7 +323,6 @@
  */
 (function () {
 
-  //PREDICTIVE
   if (document.readyState !== 'loading')
     return;
 
