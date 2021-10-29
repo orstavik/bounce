@@ -157,22 +157,11 @@
 
   window.ConstructionFrame = ConstructionFrame;
 
-  function* recursiveNodes(el) {
-    yield el;
-    if (el.childNodes)
-      for (let c of el.childNodes)
-        for (let desc of recursiveNodes(c))
-          yield desc;
-  }
-
-  function* recursiveNodes2(nodes) {
-    for (let el of nodes) {
-      yield el;
-      if (el.childNodes)
-        for (let c of el.childNodes)
-          for (let desc of recursiveNodes(c))
-            yield desc;
-    }
+  function* recursiveNodes(n) {
+    yield n;
+    if (n.childNodes)
+      for (let c of n.childNodes)
+        yield* recursiveNodes(c);
   }
 
   function* siblingUntil(start, end) {
@@ -215,16 +204,9 @@
     }
 
     * nodes() {
-      yield* recursiveNodes2(this.#nodes);
+      for (let n of this.#nodes)
+        yield* recursiveNodes(n);
     }
-  }
-
-  function insertAdjacentPrePositions(pos, el) {
-    return pos === 'beforebegin' ? [el.previousSibling, el] :
-      pos === 'afterend' ? [el, el.nextSibling] :
-        pos === 'afterbegin' ? [undefined, el.firstChild] :
-          pos === 'beforeend' ? [el.lastChild, undefined] :
-            null;
   }
 
   class InsertAdjacentHTMLConstructionFrame extends ConstructionFrame {
@@ -233,12 +215,20 @@
 
     constructor(el, position) {
       super();
-      [this.#start, this.#end] = insertAdjacentPrePositions(position, el);
+      [this.#start, this.#end] = InsertAdjacentHTMLConstructionFrame.adjacentElements(position, el);
     }
 
     * nodes() {
-      for (let n of recursiveNodes2(siblingUntil(this.#start || this.firstChild, this.#end)))
-        yield n;
+      for (let el of siblingUntil(this.#start || this.firstChild, this.#end))
+        yield* recursiveNodes(el);
+    }
+
+    static adjacentElements(pos, el){
+      return pos === 'beforebegin' ? [el.previousSibling, el] :
+        pos === 'afterend' ? [el, el.nextSibling] :
+          pos === 'afterbegin' ? [undefined, el.firstChild] :
+            pos === 'beforeend' ? [el.lastChild, undefined] :
+              null;
     }
   }
 
@@ -254,28 +244,13 @@
     Object.defineProperty(proto, prop, descriptor);
   }
 
-
-  //innerHTML => deep from childNodes                                        res
-  //insertAdjacent => custom made list.                               start  res
-  //cloneNode(deep) => deep from a single point                              res   deep = false? documentCreateElement  : CloneNode
-  //cloneNode(false) => flat from a single point                             res
-  //createElement() => flat from a single point                              res
-  //predictive => deep from childNodes but without skips         con               (not for attributes? because they might overlap?)
-  //upgrade => flat from a list                                  con               (not for attributes? because they might overlap?)
-
-  //todo To make it as efficient as possible, we should have a different method for setting the origins and reading the nodes.
-  //todo they are almost completely independent. It would be most efficient to have an individual class.
-  //todo but do we need a different monkeyPatch? or do we just need to pass in the this and args into the constructor?
-
   // monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
   monkeyPatch(Element.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
   monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
   monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
   monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
   monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
-
 })();
-
 /*
  * UPGRADE, depends on ConstructionFrame
  */
