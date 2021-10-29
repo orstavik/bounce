@@ -286,38 +286,6 @@
    * PREDICTIVE & UPGRADE PARSER, depends on the ConstructionFrame
    */
 
-  function* recursiveNodes(el) {
-    yield el;
-    if (el.childNodes)
-      for (let c of el.childNodes)
-        for (let desc of recursiveNodes(c))
-          yield desc;
-  }
-
-  //todo this is untested..
-  function* recursiveNodesWithSkips(el, skips) {
-    yield el;
-    if (el.childNodes)
-      for (let c of el.childNodes)
-        if (skips.indexOf(c) < 0)
-          for (let desc of recursiveNodes(c))
-            yield desc;
-  }
-
-  class PredictiveConstructionFrame extends ConstructionFrame {
-
-    #skips;
-
-    end(skips) {
-      this.#skips = skips;
-      super.end();
-    }
-
-    * nodes() {
-      for (let n of recursiveNodesWithSkips(this.el, this.#skips))
-        yield n;
-    }
-  }
 
   class UpgradeConstructionFrame extends ConstructionFrame {
     #tagName;
@@ -354,6 +322,41 @@
     return res;
   };
   Object.defineProperty(CustomElementRegistry.prototype, "define", descriptor);
+
+  //PREDICTIVE
+
+  function* recursiveNodes(el) {
+    yield el;
+    if (el.childNodes)
+      for (let c of el.childNodes)
+        for (let desc of recursiveNodes(c))
+          yield desc;
+  }
+
+  //todo this is untested..
+  function* recursiveNodesWithSkips(el, skips) {
+    yield el;
+    if (el.childNodes)
+      for (let c of el.childNodes)
+        if (skips.indexOf(c) < 0)
+          for (let desc of recursiveNodes(c))
+            yield desc;
+  }
+
+  class PredictiveConstructionFrame extends ConstructionFrame {
+
+    #skips;
+
+    end(skips) {
+      this.#skips = skips;
+      super.end();
+    }
+
+    * nodes() {
+      for (let n of recursiveNodesWithSkips(this.el, this.#skips))
+        yield n;
+    }
+  }
 
   let completedBranches = [];
 
