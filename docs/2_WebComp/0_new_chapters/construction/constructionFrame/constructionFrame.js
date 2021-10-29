@@ -323,7 +323,21 @@
   };
   Object.defineProperty(CustomElementRegistry.prototype, "define", descriptor);
 
+  class UpgradeConstructionFrameHTMLElement extends HTMLElement {
+    constructor() {
+      super();
+      ConstructionFrame.now instanceof UpgradeConstructionFrame && ConstructionFrame.now.end(this);
+    }
+  }
+
+  window.HTMLElement = UpgradeConstructionFrameHTMLElement;
+
+})();
+(function () {
+
   //PREDICTIVE
+  if (document.readyState !== 'loading')
+    return;
 
   function* recursiveNodes(el) {
     yield el;
@@ -367,33 +381,26 @@
 
   const po = new ParserObserver(ConstructionFrame.dropNow, endPredictiveFrame);
 
-  class UpgradeConstructionFrameHTMLElement extends HTMLElement {
-    constructor() {
-      super();
-      ConstructionFrame.now instanceof UpgradeConstructionFrame && ConstructionFrame.now.end(this);
-    }
-  }
-
-  function dropClass(cnstr){
-    Object.setPrototypeOf(cnstr, Object.getPrototypeOf(Object.getPrototypeOf(cnstr)));
-    Object.setPrototypeOf(cnstr.prototype, Object.getPrototypeOf(Object.getPrototypeOf(cnstr.prototype)));
-  }
-
-  function injectClass(bottomCnstr, injectCnstr, bottomProto = bottomCnstr.prototype, injectProto = injectCnstr.prototype){
-    Object.setPrototypeOf(injectCnstr, Object.getPrototypeOf(bottomCnstr));
-    Object.setPrototypeOf(injectProto, Object.getPrototypeOf(bottomProto));
-    Object.setPrototypeOf(bottomCnstr, injectCnstr);
-    Object.setPrototypeOf(bottomProto, injectProto);
-  }
-
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
       !ConstructionFrame.now && po.observe(this, new PredictiveConstructionFrame(this));
     }
   }
-  injectClass(UpgradeConstructionFrameHTMLElement, PredictiveConstructionFrameHTMLElement);
 
-  const OG = window.HTMLElement = UpgradeConstructionFrameHTMLElement;
+  function dropClass(cnstr) {
+    Object.setPrototypeOf(cnstr, Object.getPrototypeOf(Object.getPrototypeOf(cnstr)));
+    Object.setPrototypeOf(cnstr.prototype, Object.getPrototypeOf(Object.getPrototypeOf(cnstr.prototype)));
+  }
+
+  function injectClass(bottomCnstr, injectCnstr, bottomProto = bottomCnstr.prototype, injectProto = injectCnstr.prototype) {
+    Object.setPrototypeOf(injectCnstr, Object.getPrototypeOf(bottomCnstr));
+    Object.setPrototypeOf(injectProto, Object.getPrototypeOf(bottomProto));
+    Object.setPrototypeOf(bottomCnstr, injectCnstr);
+    Object.setPrototypeOf(bottomProto, injectProto);
+  }
+
+  const OG = window.HTMLElement;
+  injectClass(OG, PredictiveConstructionFrameHTMLElement);
   window.addEventListener('readystatechange', () => dropClass(OG), {once: true, capture: true});
 })();
