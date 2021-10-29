@@ -107,8 +107,7 @@
     }
 
     #callObservers(state) {
-      this.#state = state;
-      ConstructionFrame.#observers[state].forEach(cb => cb(this));
+      ConstructionFrame.#observers[this.#state = state].forEach(cb => cb(this));
     }
 
     #complete() {
@@ -138,14 +137,12 @@
     }
 
     static observe(state, cb) {
-      this.#observers[state]?.push(cb);
+      this.#observers[state].push(cb);
     }
 
     static disconnect(state, cb) {
-      const ar = this.#observers[state];
-      if (!ar) return;
-      const pos = ar.indexOf(cb);
-      pos >= 0 && ar.splice(pos, 1);
+      const pos = this.#observers[state].indexOf(cb);
+      pos >= 0 && this.#observers[state].splice(pos, 1);
     }
 
     end() {
@@ -180,8 +177,8 @@
   class CloneNodeConstructionFrame extends ConstructionFrame {
     #el;
 
-    end(nodes) {
-      this.#el = nodes;
+    end(res) {
+      this.#el = res;
       super.end();
     }
 
@@ -191,15 +188,15 @@
   }
 
   class InnerHTMLConstructionFrame extends ConstructionFrame {
-    #nodes;
+    #newChildNodes;
 
-    end(nodes, el) {
-      this.#nodes = el.childNodes;
+    end(_, el) {
+      this.#newChildNodes = el.childNodes;
       super.end();
     }
 
     * nodes() {
-      for (let n of this.#nodes)
+      for (let n of this.#newChildNodes)
         yield* recursiveNodes(n);
     }
   }
@@ -214,7 +211,7 @@
     }
 
     * nodes() {
-      for (let n = this.#start?.nextSibling || this.firstChild; n !== this.#end; n = n.nextSibling)
+      for (let n = this.#start?.nextSibling || this.firstChild; /*n && */n !== this.#end; n = n.nextSibling)
         yield* recursiveNodes(n);
     }
 
@@ -223,7 +220,7 @@
         pos === 'afterend' ? [el, el.nextSibling] :
           pos === 'afterbegin' ? [undefined, el.firstChild] :
             pos === 'beforeend' ? [el.lastChild, undefined] :
-              null;
+              [];
     }
   }
 
