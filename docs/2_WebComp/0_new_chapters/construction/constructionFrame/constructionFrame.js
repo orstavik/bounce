@@ -164,11 +164,6 @@
         yield* recursiveNodes(c);
   }
 
-  function* siblingUntil(start, end) {
-    for (let next = start.nextSibling; next !== end; next = next.nextSibling)
-      yield next;
-  }
-
   class DocumentCreateElementConstructionFrame extends ConstructionFrame {
     #el;
 
@@ -219,16 +214,21 @@
     }
 
     * nodes() {
-      for (let el of siblingUntil(this.#start || this.firstChild, this.#end))
+      for (let el of InsertAdjacentHTMLConstructionFrame.siblingUntil(this.#start || this.firstChild, this.#end))
         yield* recursiveNodes(el);
     }
 
-    static adjacentElements(pos, el){
+    static adjacentElements(pos, el) {
       return pos === 'beforebegin' ? [el.previousSibling, el] :
         pos === 'afterend' ? [el, el.nextSibling] :
           pos === 'afterbegin' ? [undefined, el.firstChild] :
             pos === 'beforeend' ? [el.lastChild, undefined] :
               null;
+    }
+
+    static* siblingUntil(start, end) {
+      for (let next = start.nextSibling; next !== end; next = next.nextSibling)
+        yield next;
     }
   }
 
