@@ -135,7 +135,7 @@
       return now;
     }
 
-    static dropNow(){
+    static dropNow() {
       now = undefined;
     }
 
@@ -218,33 +218,6 @@
       yield next;
   }
 
-  class UpgradeConstructionFrame extends ConstructionFrame {
-    #tagName;
-    #el;
-
-    constructor(el, tagName) { //todo I need the element here because the insertAdjacentHTML needs it.
-      super();
-      this.#el = el;
-      this.#tagName = tagName;
-    }
-
-    end(el) {
-      if(!el){
-        super.end();
-      }
-      else if(this.#el instanceof HTMLElement){
-        super.end();
-        new UpgradeConstructionFrame(el, this.#tagName);
-      } else {
-        this.#el = el;
-      }
-    }
-
-    * nodes() {
-      if (this.#el) yield this.#el;
-    }
-  }
-
   class DocumentCreateElementConstructionFrame extends SingleConstructionFrame {
   }
 
@@ -283,28 +256,13 @@
     }
   }
 
-  class PredictiveConstructionFrame extends ConstructionFrame {
-
-    #skips;
-    end(skips) {
-      this.#skips = skips;
-      super.end();
-    }
-
-    * nodes() {
-      for (let n of recursiveNodesWithSkips(this.el, this.#skips))
-        yield n;
-    }
-  }
-
-
   function monkeyPatch(proto, prop, setOrValue, Type) {
     const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
     const og = descriptor[setOrValue];
     descriptor[setOrValue] = function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
-      if(Type === UpgradeConstructionFrame)
+      if (Type === UpgradeConstructionFrame)
         now.end();
       else
         frame.end(res, this, ...args);
@@ -333,10 +291,54 @@
   monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
   monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
 
-  monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
   /*
-   * PREDICTIVE PARSER
+   * PREDICTIVE & UPGRADE PARSER
    */
+
+
+  class PredictiveConstructionFrame extends ConstructionFrame {
+
+    #skips;
+
+    end(skips) {
+      this.#skips = skips;
+      super.end();
+    }
+
+    * nodes() {
+      for (let n of recursiveNodesWithSkips(this.el, this.#skips))
+        yield n;
+    }
+  }
+
+  class UpgradeConstructionFrame extends ConstructionFrame {
+    #tagName;
+    #el;
+
+    constructor(el, tagName) { //todo I need the element here because the insertAdjacentHTML needs it.
+      super();
+      this.#el = el;
+      this.#tagName = tagName;
+    }
+
+    end(el) {
+      if (!el) {
+        super.end();
+      } else if (this.#el instanceof HTMLElement) {
+        super.end();
+        new UpgradeConstructionFrame(el, this.#tagName);
+      } else {
+        this.#el = el;
+      }
+    }
+
+    * nodes() {
+      if (this.#el) yield this.#el;
+    }
+  }
+
+  monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
+
   let completedBranches = [];
 
   function endPredictiveFrame(el, frame) {
