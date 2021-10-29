@@ -350,14 +350,14 @@
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !now && po.observe(this, new PredictiveConstructionFrame(this));
+      !ConstructionFrame.now && po.observe(this, new PredictiveConstructionFrame(this));
     }
   }
 
   class UpgradeConstructionFrameHTMLElement extends PredictiveConstructionFrameHTMLElement {
     constructor() {
       super();
-      now instanceof UpgradeConstructionFrame && now.end(this);
+      ConstructionFrame.now instanceof UpgradeConstructionFrame && ConstructionFrame.now.end(this);
     }
   }
 
