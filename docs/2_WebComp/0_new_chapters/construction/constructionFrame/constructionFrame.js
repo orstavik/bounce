@@ -367,26 +367,33 @@
 
   const po = new ParserObserver(ConstructionFrame.dropNow, endPredictiveFrame);
 
-  class PredictiveConstructionFrameHTMLElement extends HTMLElement {
-    constructor() {
-      super();
-      !ConstructionFrame.now && po.observe(this, new PredictiveConstructionFrame(this));
-    }
-  }
-
-  class UpgradeConstructionFrameHTMLElement extends PredictiveConstructionFrameHTMLElement {
+  class UpgradeConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
       ConstructionFrame.now instanceof UpgradeConstructionFrame && ConstructionFrame.now.end(this);
     }
   }
 
-  window.HTMLElement = UpgradeConstructionFrameHTMLElement;
-  const OG = HTMLElement.prototype;
-
-  function dropParentPrototype(proto) {
-    Object.setPrototypeOf(proto, Object.getPrototypeOf(Object.getPrototypeOf(proto)));
+  function dropClass(cnstr){
+    Object.setPrototypeOf(cnstr, Object.getPrototypeOf(Object.getPrototypeOf(cnstr)));
+    Object.setPrototypeOf(cnstr.prototype, Object.getPrototypeOf(Object.getPrototypeOf(cnstr.prototype)));
   }
 
-  window.addEventListener('readystatechange', () => dropParentPrototype(OG), {once: true, capture: true});
+  function injectClass(bottomCnstr, injectCnstr, bottomProto = bottomCnstr.prototype, injectProto = injectCnstr.prototype){
+    Object.setPrototypeOf(injectCnstr, Object.getPrototypeOf(bottomCnstr));
+    Object.setPrototypeOf(injectProto, Object.getPrototypeOf(bottomProto));
+    Object.setPrototypeOf(bottomCnstr, injectCnstr);
+    Object.setPrototypeOf(bottomProto, injectProto);
+  }
+
+  class PredictiveConstructionFrameHTMLElement extends HTMLElement {
+    constructor() {
+      super();
+      !ConstructionFrame.now && po.observe(this, new PredictiveConstructionFrame(this));
+    }
+  }
+  injectClass(UpgradeConstructionFrameHTMLElement, PredictiveConstructionFrameHTMLElement);
+
+  const OG = window.HTMLElement = UpgradeConstructionFrameHTMLElement;
+  window.addEventListener('readystatechange', () => dropClass(OG), {once: true, capture: true});
 })();
