@@ -158,20 +158,6 @@
 
   window.ConstructionFrame = ConstructionFrame;
 
-  class ListConstructionFrame extends ConstructionFrame {
-    #nodes;
-
-    end(nodes) {
-      this.#nodes = nodes;
-      super.end();
-    }
-
-    * nodes() {
-      for (let n of recursiveNodes2(this.#nodes))
-        yield n;
-    }
-  }
-
   function* recursiveNodes(el) {
     yield el;
     if (el.childNodes)
@@ -208,15 +194,29 @@
     }
   }
 
-  class CloneNodeConstructionFrame extends ListConstructionFrame {
-    end(res) {
-      super.end([res]);
+  class CloneNodeConstructionFrame extends ConstructionFrame {
+    #el;
+
+    end(nodes) {
+      this.#el = nodes;
+      super.end();
+    }
+
+    * nodes() {
+      yield* recursiveNodes(this.#el);
     }
   }
 
-  class InnerHTMLConstructionFrame extends ListConstructionFrame {
-    end(res, el) {
-      super.end(el.childNodes);
+  class InnerHTMLConstructionFrame extends ConstructionFrame {
+    #nodes;
+
+    end(nodes, el) {
+      this.#nodes = el.childNodes;
+      super.end();
+    }
+
+    * nodes() {
+      yield* recursiveNodes2(this.#nodes);
     }
   }
 
