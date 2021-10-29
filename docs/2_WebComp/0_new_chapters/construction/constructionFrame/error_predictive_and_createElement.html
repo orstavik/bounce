@@ -3,7 +3,7 @@
 <script>
   (function () {
 
-    window.addEventListener('error', e => console.log(e.message));
+    window.addEventListener('error', e => (console.log(e.message), e.preventDefault()));
 
     function printFrame(frame, type = '') {
       console.log(frame + type);
