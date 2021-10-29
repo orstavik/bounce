@@ -281,12 +281,10 @@
 
 })();
 
+/*
+ * UPGRADE, depends on the ConstructionFrame
+ */
 (function () {
-  /*
-   * PREDICTIVE & UPGRADE PARSER, depends on the ConstructionFrame
-   */
-
-
   class UpgradeConstructionFrame extends ConstructionFrame {
     #tagName;
     #el;
@@ -333,19 +331,14 @@
   window.HTMLElement = UpgradeConstructionFrameHTMLElement;
 
 })();
+/*
+ * PREDICTIVE PARSER, depends on UPGRADE
+ */
 (function () {
 
   //PREDICTIVE
   if (document.readyState !== 'loading')
     return;
-
-  function* recursiveNodes(el) {
-    yield el;
-    if (el.childNodes)
-      for (let c of el.childNodes)
-        for (let desc of recursiveNodes(c))
-          yield desc;
-  }
 
   //todo this is untested..
   function* recursiveNodesWithSkips(el, skips) {
@@ -353,7 +346,7 @@
     if (el.childNodes)
       for (let c of el.childNodes)
         if (skips.indexOf(c) < 0)
-          for (let desc of recursiveNodes(c))
+          for (let desc of recursiveNodesWithSkips(c, skips))
             yield desc;
   }
 
@@ -393,11 +386,11 @@
     Object.setPrototypeOf(cnstr.prototype, Object.getPrototypeOf(Object.getPrototypeOf(cnstr.prototype)));
   }
 
-  function injectClass(bottomCnstr, injectCnstr, bottomProto = bottomCnstr.prototype, injectProto = injectCnstr.prototype) {
-    Object.setPrototypeOf(injectCnstr, Object.getPrototypeOf(bottomCnstr));
-    Object.setPrototypeOf(injectProto, Object.getPrototypeOf(bottomProto));
-    Object.setPrototypeOf(bottomCnstr, injectCnstr);
-    Object.setPrototypeOf(bottomProto, injectProto);
+  function injectClass(cnstr, superCnstr) {
+    Object.setPrototypeOf(superCnstr, Object.getPrototypeOf(cnstr));
+    Object.setPrototypeOf(superCnstr.prototype, Object.getPrototypeOf(cnstr.prototype));
+    Object.setPrototypeOf(cnstr, superCnstr);
+    Object.setPrototypeOf(cnstr.prototype, superCnstr.prototype);
   }
 
   const OG = window.HTMLElement;
