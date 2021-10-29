@@ -204,15 +204,6 @@
     }
   }
 
-  function* recursiveNodesWithSkips(el, skips) {
-    yield el;
-    if (el.childNodes)
-      for (let c of el.childNodes)
-        if (skips.indexOf(c) < 0)
-          for (let desc of recursiveNodes(c))
-            yield desc;
-  }
-
   function* siblingUntil(start, end) {
     for (let next = start.nextSibling; next !== end; next = next.nextSibling)
       yield next;
@@ -262,10 +253,7 @@
     descriptor[setOrValue] = function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
-      if (Type === UpgradeConstructionFrame)
-        now.end();
-      else
-        frame.end(res, this, ...args);
+      frame.end(res, this, ...args);
       return res;
     };
     Object.defineProperty(proto, prop, descriptor);
@@ -291,10 +279,30 @@
   monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
   monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
 
+})();
+
+(function () {
   /*
-   * PREDICTIVE & UPGRADE PARSER
+   * PREDICTIVE & UPGRADE PARSER, depends on the ConstructionFrame
    */
 
+  function* recursiveNodes(el) {
+    yield el;
+    if (el.childNodes)
+      for (let c of el.childNodes)
+        for (let desc of recursiveNodes(c))
+          yield desc;
+  }
+
+  //todo this is untested..
+  function* recursiveNodesWithSkips(el, skips) {
+    yield el;
+    if (el.childNodes)
+      for (let c of el.childNodes)
+        if (skips.indexOf(c) < 0)
+          for (let desc of recursiveNodes(c))
+            yield desc;
+  }
 
   class PredictiveConstructionFrame extends ConstructionFrame {
 
@@ -337,7 +345,15 @@
     }
   }
 
-  monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
+  const descriptor = Object.getOwnPropertyDescriptor(CustomElementRegistry.prototype, "define");
+  const og = descriptor['value'];
+  descriptor['value'] = function constructHtmlElement(...args) {
+    const frame = new UpgradeConstructionFrame(this, ...args);
+    const res = og.call(this, ...args);
+    ConstructionFrame.now.end();
+    return res;
+  };
+  Object.defineProperty(CustomElementRegistry.prototype, "define", descriptor);
 
   let completedBranches = [];
 
