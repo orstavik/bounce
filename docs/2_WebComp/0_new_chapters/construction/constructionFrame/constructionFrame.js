@@ -99,8 +99,7 @@
 
     static #observers = {'start': [], 'end': [], 'complete': []};
 
-    constructor(el) {
-      this.el = el;
+    constructor() {
       this.#parent = now;
       now = this;
       this.#parent?.#children.push(this);
@@ -338,16 +337,18 @@
 
   class PredictiveConstructionFrame extends ConstructionFrame {
 
+    #el;
     #skips;
 
-    end(skips) {
+    end(el, skips) {
+      this.#el = el;
       this.#skips = skips;
       super.end();
     }
 
     * nodes() {
       //todo use the root and complete branch to create a correct iterator.
-      for (let n of recursiveNodesWithSkips(this.el, this.#skips))
+      for (let n of recursiveNodesWithSkips(this.#el, this.#skips))
         yield n;
     }
   }
@@ -355,7 +356,7 @@
   let completedBranches = [];
 
   function endPredictiveFrame(el, frame) {
-    frame.end(completedBranches);
+    frame.end(el, completedBranches);
     completedBranches.push(el);
   }
 
