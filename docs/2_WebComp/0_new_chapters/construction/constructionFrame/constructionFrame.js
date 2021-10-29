@@ -175,15 +175,15 @@
   }
 
   class CloneNodeConstructionFrame extends ConstructionFrame {
-    #el;
+    #clone;
 
-    end(res) {
-      this.#el = res;
+    end(clone) {
+      this.#clone = clone;
       super.end();
     }
 
     * nodes() {
-      yield* recursiveNodes(this.#el);
+      yield* recursiveNodes(this.#clone);
     }
   }
 
@@ -298,8 +298,7 @@
     if (el.childNodes)
       for (let c of el.childNodes)
         if (skips.indexOf(c) < 0)
-          for (let desc of recursiveNodesWithSkips(c, skips))
-            yield desc;
+          yield* recursiveNodesWithSkips(c, skips);
   }
 
   class PredictiveConstructionFrame extends ConstructionFrame {
