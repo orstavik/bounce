@@ -183,6 +183,45 @@
     ]
   </script>
 </test-html>
+<test-html test="../constructionFrame/error_predictive_simple.html">
+  <script expected>
+    [
+      "Upgrade#start",
+      "Upgrade#end",
+      "Upgrade#complete",
+      "Predictive#start",
+      "Predictive#start-constructor",
+      "Uncaught Error: test error",
+      "Uncaught Error: test error",
+      "Predictive#end",
+      "Predictive#complete",
+      "script"
+    ]
+  </script>
+</test-html>
+<test-html test="../constructionFrame/error_predictive_and_createElement.html">
+  <script expected>
+    [
+      "Upgrade#start",
+      "Upgrade#end",
+      "Upgrade#complete",
+      "Upgrade#start",
+      "Upgrade#end",
+      "Upgrade#complete",
+      "Predictive#start",
+      "Predictive#start-constructor-outer",
+      "Predictive#start, DocumentCreateElement#start",
+      "Predictive#start, DocumentCreateElement#start-constructor-inner",
+      "Uncaught Error: test error",
+      "Uncaught Error: test error",
+      "Predictive#start, DocumentCreateElement#end",
+      "Predictive#end",
+      "Predictive#complete",
+      "Predictive#complete, DocumentCreateElement#complete",
+      "script"
+    ]
+  </script>
+</test-html>
 <h3>attributeReadyCallback and childReadyCallback</h3>
 <test-html test="../constructionReady/test1.html">
   <script expected>

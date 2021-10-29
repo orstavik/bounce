@@ -1,0 +1,28 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="constructionFrame.js"></script>
+<script>
+  (function () {
+
+    window.addEventListener('error', e => console.log(e.message));
+
+    function printFrame(frame, type = '') {
+      console.log(frame + type);
+    }
+
+    ConstructionFrame.observe('start', printFrame);
+    ConstructionFrame.observe('end', printFrame);
+    ConstructionFrame.observe('complete', printFrame);
+
+    customElements.define('web-comp', class WebComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame(ConstructionFrame.now, '-constructor');
+        throw new Error('test error');
+      }
+    });
+  })();
+</script>
+
+<web-comp></web-comp>
+
+<script>console.log("script")</script>

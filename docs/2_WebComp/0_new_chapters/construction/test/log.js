@@ -4,7 +4,7 @@ function customLog(...args) {
   args.length === 1 && (args = args[0]);
   parent.postMessage(JSON.stringify(
     [location.hash.substr(1), args],
-    (key, value) => value instanceof HTMLElement ? value.__id ??= count++ : value,
+    (key, value) => value instanceof HTMLElement ? value.__id ??= count++ : value instanceof ErrorEvent? value.message:  value,
     2
   ), '*');
 }

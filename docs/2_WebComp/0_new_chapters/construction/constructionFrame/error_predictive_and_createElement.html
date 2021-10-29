@@ -1,0 +1,42 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="constructionFrame.js"></script>
+<script>
+  (function () {
+
+    window.addEventListener('error', e => console.log(e.message));
+
+    function printFrame(frame, type = '') {
+      console.log(frame + type);
+    }
+
+    ConstructionFrame.observe('start', printFrame);
+    ConstructionFrame.observe('end', printFrame);
+    ConstructionFrame.observe('complete', printFrame);
+
+    class InnerComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame(ConstructionFrame.now, '-constructor-inner');
+        throw new Error('test error');
+      }
+    }
+
+    customElements.define('inner-comp', InnerComp);
+
+    class OuterComp extends HTMLElement {
+      constructor() {
+        super();
+        printFrame(ConstructionFrame.now, '-constructor-outer');
+        this.attachShadow({mode: "open"});
+        document.createElement('inner-comp');
+        /*this.shadowRoot.innerHTML= '<inner-comp></inner-comp>';*/
+      }
+    }
+
+    customElements.define('outer-comp', OuterComp);
+  })();
+</script>
+
+<outer-comp></outer-comp>
+
+<script>console.log("script")</script>
