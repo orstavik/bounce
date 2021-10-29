@@ -382,14 +382,11 @@
   }
 
   window.HTMLElement = UpgradeConstructionFrameHTMLElement;
+  const OG = HTMLElement.prototype;
 
   function dropParentPrototype(proto) {
     Object.setPrototypeOf(proto, Object.getPrototypeOf(Object.getPrototypeOf(proto)));
   }
 
-  if (document.readyState !== 'loading')
-    dropParentPrototype(UpgradeConstructionFrameHTMLElement.prototype);
-  else
-    window.addEventListener('readystatechange',
-      () => dropParentPrototype(UpgradeConstructionFrameHTMLElement.prototype), {once: true, capture: true});
+  window.addEventListener('readystatechange', () => dropParentPrototype(OG), {once: true, capture: true});
 })();
