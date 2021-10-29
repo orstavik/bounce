@@ -215,25 +215,29 @@
   }
 
   class UpgradeConstructionFrame extends ConstructionFrame {
-    #nodes = [];
     #tagName;
+    #el;
 
     constructor(el, tagName) { //todo I need the element here because the insertAdjacentHTML needs it.
       super();
+      this.#el = el;
       this.#tagName = tagName;
     }
 
-    get tagName() {
-      return this.#tagName;
-    }
-
-    pushElement(el) {
-      this.#nodes.push(el);
+    end(el) {
+      if(!el){
+        super.end();
+      }
+      else if(this.#el instanceof HTMLElement){
+        super.end();
+        new UpgradeConstructionFrame(el, this.#tagName);
+      } else {
+        this.#el = el;
+      }
     }
 
     * nodes() {
-      for (let n of this.#nodes)
-        yield n;
+      if (this.#el) yield this.#el;
     }
   }
 
@@ -241,13 +245,13 @@
   }
 
   class CloneNodeConstructionFrame extends ListConstructionFrame {
-    end(res){
+    end(res) {
       super.end([res]);
     }
   }
 
   class InnerHTMLConstructionFrame extends ListConstructionFrame {
-    end(res){
+    end(res) {
       super.end(this.el.childNodes);
     }
   }
@@ -296,7 +300,10 @@
     descriptor[setOrValue] = function constructHtmlElement(...args) {
       const frame = new Type(this, ...args);
       const res = og.call(this, ...args);
-      frame.end(res, this, ...args);
+      if(Type === UpgradeConstructionFrame)
+        now.end();
+      else
+        frame.end(res, this, ...args);
       return res;
     };
     Object.defineProperty(proto, prop, descriptor);
@@ -316,12 +323,13 @@
   //todo but do we need a different monkeyPatch? or do we just need to pass in the this and args into the constructor?
 
   // monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
-    monkeyPatch(Element.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
-    monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
-    monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
-    monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
-    monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
-    monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
+  monkeyPatch(Element.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
+  monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
+  monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
+  monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
+  monkeyPatch(Element.prototype, "insertAdjacentHTML", 'value', InsertAdjacentHTMLConstructionFrame);
+
+  monkeyPatch(CustomElementRegistry.prototype, "define", 'value', UpgradeConstructionFrame);
   /*
    * PREDICTIVE PARSER
    */
@@ -349,7 +357,7 @@
   class UpgradeConstructionFrameHTMLElement extends PredictiveConstructionFrameHTMLElement {
     constructor() {
       super();
-      now instanceof UpgradeConstructionFrame && now.tagName === this.tagName && now.pushElement(this);
+      now instanceof UpgradeConstructionFrame && now.end(this);
     }
   }
 
