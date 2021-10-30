@@ -1,3 +1,4 @@
+//todo 2. make a better view per element.  Make the link on the iframe? then, make the diff something you see when you click on it.
 //language=HTML
 const template = `
   <style>
@@ -5,13 +6,13 @@ const template = `
     :host([ok="true"]) { border-left: 5px solid green; }
     :host([ok="false"]) { border-left: 5px solid red; }
     :host([active]) { height: 60vh; overflow: scroll; }
-    #diff { white-space: pre; }
+    #diff, #code { white-space: pre; border: 4px double lightblue }
+    .added {color: green}
+    .removed {color: red}
   </style>
-  <span id="title"></span>
-  <a id="link" target="_blank"> => run test in isolation </a>
-  <div id="result"></div>
+  <span id="title"></span><a id="link" target="_blank">(=> new tab)</a>
   <div id="diff"></div>
-  <pre id="code"></pre>
+  <div id="code"></div>
   <iframe id="iframe"></iframe>
 `;
 
@@ -31,7 +32,7 @@ class TestHtml extends HTMLElement {
     this.shadowRoot.innerHTML = template;
     this.#expected = this.children[0];
     window.addEventListener('message', e => this.onMessage(e));
-    this.shadowRoot.addEventListener('click', e => this.onClick(e));
+    this.shadowRoot.addEventListener('dblclick', e => this.onDblclick(e));
   }
 
   onMessage(e) {
@@ -48,7 +49,7 @@ class TestHtml extends HTMLElement {
     this.setAttribute('ok', expected === result);
   }
 
-  onClick() {
+  onDblclick() {
     this.hasAttribute('active') ? this.removeAttribute('active') : this.setAttribute('active', '');
   }
 
@@ -66,13 +67,10 @@ class TestHtml extends HTMLElement {
       const data = encodeURI(txt);
       this.shadowRoot.getElementById("iframe").src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
     } else if (name === 'active' && (typeof newValue) === 'string') {
-      const result = JSON.stringify(this.#resultObj, null, 2);
-      this.shadowRoot.getElementById("result").innerHTML = JSON.stringify(this.#resultObj);
-      const expected = JSON.stringify(JSON.parse(this.#expected.textContent), null, 2);
-      const diff = Diff.diffWords(expected, result);
-      const diffTxt = diff.map(p => `<span style="color: ${p.added ? 'green' : p.removed ? 'red' : 'grey'}">${p.value}</span>`).join('');
-      this.shadowRoot.getElementById("diff").innerHTML = diffTxt;
-
+      const r = JSON.stringify(this.#resultObj, null, 2);
+      const e = JSON.stringify(JSON.parse(this.#expected.textContent), null, 2);
+      this.shadowRoot.getElementById("diff").innerHTML =
+        Diff.diffWords(e, r).map(p => `<span class="${Object.keys(p).join(' ')}">${p.value}</span>`).join('');
     }
   }
 
