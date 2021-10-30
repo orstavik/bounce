@@ -53,25 +53,32 @@ class TestHtml extends HTMLElement {
     this.hasAttribute('active') ? this.removeAttribute('active') : this.setAttribute('active', '');
   }
 
-  async attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'test') {
-      //load the text content for the newValue of the test.
-      this.shadowRoot.getElementById("title").textContent = newValue.substr(newValue.lastIndexOf('/') + 1);
-      const testUrl = new URL(newValue, document.location);
-      this.shadowRoot.getElementById("link").setAttribute('href', testUrl);
-      const logUrl = new URL('log.js', document.location);
-      const response = await fetch(testUrl);
-      const testTxt = await response.text();
-      this.shadowRoot.getElementById("code").textContent = testTxt;
-      const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
-      const data = encodeURI(txt);
-      this.shadowRoot.getElementById("iframe").src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
-    } else if (name === 'active' && (typeof newValue) === 'string') {
-      const r = JSON.stringify(this.#resultObj, null, 2);
-      const e = JSON.stringify(JSON.parse(this.#expected.textContent), null, 2);
-      this.shadowRoot.getElementById("diff").innerHTML =
-        Diff.diffWords(e, r).map(p => `<span class="${Object.keys(p).join(' ')}">${p.value}</span>`).join('');
-    }
+  onActive() {
+    const r = JSON.stringify(this.#resultObj, null, 2);
+    const e = JSON.stringify(JSON.parse(this.#expected.textContent), null, 2);
+    this.shadowRoot.getElementById("diff").innerHTML =
+      Diff.diffWords(e, r).map(p => `<span class="${Object.keys(p).join(' ')}">${p.value}</span>`).join('');
+  }
+
+  async onTest(newValue) {
+    //load the text content for the newValue of the test.
+    this.shadowRoot.getElementById("title").textContent = newValue.substr(newValue.lastIndexOf('/') + 1);
+    const testUrl = new URL(newValue, document.location);
+    this.shadowRoot.getElementById("link").setAttribute('href', testUrl);
+    const logUrl = new URL('log.js', document.location);
+    const response = await fetch(testUrl);
+    const testTxt = await response.text();
+    this.shadowRoot.getElementById("code").textContent = testTxt;
+    const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
+    const data = encodeURI(txt);
+    this.shadowRoot.getElementById("iframe").src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'test')
+      this.onTest(newValue);
+    else if (name === 'active' && newValue)
+      this.onActive();
   }
 
   static get observedAttributes() {
