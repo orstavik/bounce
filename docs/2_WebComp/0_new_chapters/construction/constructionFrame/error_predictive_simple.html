@@ -3,7 +3,7 @@
 <script>
   (function () {
 
-    window.addEventListener('error', e => (console.log(e.message.substr(e.message.indexOf(':') + 2)), e.preventDefault()));
+    window.addEventListener('error', e => (console.log('error') & e.preventDefault()));
 
     function printFrame(frame, type = '') {
       console.log(frame + type);
@@ -17,7 +17,7 @@
       constructor() {
         super();
         printFrame(ConstructionFrame.now, '-constructor');
-        throw new Error('test error');
+        throw new Error();
       }
     });
   })();

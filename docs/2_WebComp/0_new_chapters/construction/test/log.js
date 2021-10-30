@@ -1,17 +1,8 @@
-let count = 0;
+let i = 0;
 
-function replacer(k, v) {
-  if (v instanceof HTMLElement)
-    return v.__id ??= count++;
-  if (v instanceof ErrorEvent)
-    return v.message.substr(v.message.indexOf(':') + 2);
-  return v;
-}
+const replacer = (k, v) => v instanceof HTMLElement ? (v.__id ??= i++) : v;
 
-function customLog(...args) {
+console.log = function customLog(...args) {
   args.length === 1 && (args = args[0]);
   parent.postMessage(JSON.stringify([location.hash.substr(1), args], replacer, 2), '*');
 }
-
-console.log = customLog;
-window.addEventListener('error', customLog);
