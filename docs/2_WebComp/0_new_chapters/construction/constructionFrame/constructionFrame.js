@@ -161,6 +161,13 @@
         yield* recursiveNodes(c);
   }
 
+  function* recursiveElements(n) {
+    yield n;
+    if (n.children)
+      for (let c of n.children)
+        yield* recursiveElements(c);
+  }
+
   class DocumentCreateElementConstructionFrame extends ConstructionFrame {
     #el;
 
@@ -171,6 +178,10 @@
     }
 
     * nodes() {
+      yield this.#el;
+    }
+
+    * elements() {
       yield this.#el;
     }
   }
