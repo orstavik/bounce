@@ -167,6 +167,7 @@
     end(created) {
       this.#el = created;
       super.end();
+      return created;
     }
 
     * nodes() {
@@ -180,6 +181,7 @@
     end(clone) {
       this.#clone = clone;
       super.end();
+      return clone;
     }
 
     * nodes() {
@@ -188,36 +190,35 @@
   }
 
   class InnerHTMLConstructionFrame extends ConstructionFrame {
-    #newChildNodes;
+    #nodes;
 
-    end(_, el) {
-      this.#newChildNodes = el.childNodes;
+    end(nodes) {
+      this.#nodes = nodes;
       super.end();
     }
 
     * nodes() {
-      for (let n of this.#newChildNodes)
+      for (let n of this.#nodes)
         yield* recursiveNodes(n);
     }
   }
 
-  function monkeyPatch(proto, prop, setOrValue, Type) {
-    const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-    const og = descriptor[setOrValue];
-    descriptor[setOrValue] = function constructHtmlElement(...args) {
-      const frame = new Type(this, ...args);
-      const res = og.call(this, ...args);
-      frame.end(res, this, ...args);
-      return res;
-    };
-    Object.defineProperty(proto, prop, descriptor);
+  function innerHTML_constructionFrame(og, val) {
+    const frame = new InnerHTMLConstructionFrame();
+    og.call(this, val);
+    frame.end(this.childNodes);
   }
 
-  // monkeyPatch(Element.prototype, "outerHTML", 'set', CloneNodeConstructionFrame);  //todo make a separate function here. Or. Should we simply outlaw this function?
-  monkeyPatch(Element.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
-  monkeyPatch(ShadowRoot.prototype, "innerHTML", 'set', InnerHTMLConstructionFrame);
-  monkeyPatch(Node.prototype, "cloneNode", 'value', CloneNodeConstructionFrame);
-  monkeyPatch(Document.prototype, "createElement", 'value', DocumentCreateElementConstructionFrame);
+  MonkeyPatch.monkeyPatchSetter(Element.prototype, "innerHTML", innerHTML_constructionFrame);
+  MonkeyPatch.monkeyPatchSetter(ShadowRoot.prototype, "innerHTML", innerHTML_constructionFrame);
+
+  MonkeyPatch.monkeyPatch(Node.prototype, "cloneNode", function cloneNode_constructionFrame(og, ...args) {
+    return new CloneNodeConstructionFrame().end(og.call(this, ...args));
+  });
+
+  MonkeyPatch.monkeyPatch(Document.prototype, "createElement", function createElement_constructionFrame(og, ...args) {
+    return new DocumentCreateElementConstructionFrame().end(og.call(this, ...args));
+  });
 
   class InsertAdjacentHTMLConstructionFrame extends ConstructionFrame {
     #d;
@@ -243,16 +244,12 @@
       }
     }
   }
-
-  const descriptor = Object.getOwnPropertyDescriptor(Element.prototype, "insertAdjacentHTML");
-  const og = descriptor.value;
-  descriptor.value = function insertAdjacentHTML_constructHtmlElement(position, ...args) {
+  MonkeyPatch.monkeyPatch(Element.prototype, "insertAdjacentHTML", function insertAdjacentHTML_constructHtmlElement(og, position, ...args) {
     const {previousSibling, lastChild, firstChild, nextSibling} = this;
     const frame = new InsertAdjacentHTMLConstructionFrame();
     og.call(this, position, ...args);
     frame.end({position, element: this, previousSibling, lastChild, firstChild, nextSibling});
-  };
-  Object.defineProperty(Element.prototype, "insertAdjacentHTML", descriptor);
+  });
 })();
 /*
  * UPGRADE, depends on ConstructionFrame
@@ -262,7 +259,7 @@
     #tagName;
     #el;
 
-    constructor(el, tagName) {
+    constructor(tagName, el) {
       super();
       this.#el = el;
       this.#tagName = tagName;
@@ -271,7 +268,7 @@
     chain(el) {
       if (!this.#el) return this.#el = el; //if this is the first upgraded element, then just update the element in the frame
       super.end();                                       //otherwise, end the previous element frame,
-      new UpgradeConstructionFrame(el, this.#tagName);   //and start a new frame
+      new UpgradeConstructionFrame(this.#tagName, el);   //and start a new frame
     }
 
     * nodes() {
@@ -279,14 +276,11 @@
     }
   }
 
-  const descriptor = Object.getOwnPropertyDescriptor(CustomElementRegistry.prototype, "define");
-  const og = descriptor.value;
-  descriptor.value = function createElement_constructionFrame(...args) {
-    new UpgradeConstructionFrame(undefined, args[0]);
+  MonkeyPatch.monkeyPatch(CustomElementRegistry.prototype, "define", function createElement_constructionFrame(og, ...args) {
+    new UpgradeConstructionFrame(args[0]);
     og.call(this, ...args);
     ConstructionFrame.now.end();
-  };
-  Object.defineProperty(CustomElementRegistry.prototype, "define", descriptor);
+  });
 
   window.HTMLElement = class UpgradeConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
@@ -346,19 +340,5 @@
     }
   }
 
-  function dropClass(cnstr) {
-    Object.setPrototypeOf(cnstr, Object.getPrototypeOf(Object.getPrototypeOf(cnstr)));
-    Object.setPrototypeOf(cnstr.prototype, Object.getPrototypeOf(Object.getPrototypeOf(cnstr.prototype)));
-  }
-
-  function injectClass(cnstr, superCnstr) {
-    Object.setPrototypeOf(superCnstr, Object.getPrototypeOf(cnstr));
-    Object.setPrototypeOf(superCnstr.prototype, Object.getPrototypeOf(cnstr.prototype));
-    Object.setPrototypeOf(cnstr, superCnstr);
-    Object.setPrototypeOf(cnstr.prototype, superCnstr.prototype);
-  }
-
-  const OG = window.HTMLElement;
-  injectClass(OG, PredictiveConstructionFrameHTMLElement);
-  window.addEventListener('readystatechange', () => dropClass(OG), {once: true, capture: true});
+  MonkeyPatch.injectClassWhileLoading(HTMLElement, PredictiveConstructionFrameHTMLElement);
 })();
