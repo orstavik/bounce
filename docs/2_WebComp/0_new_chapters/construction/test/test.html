@@ -280,14 +280,14 @@
 </test-html>
 
 <test-html test="../constructionFrame/test_insertAdjacentHTML_context.html">
-   <script expected>
+  <script expected>
     [
       ["#text"],
       ["H5", "#text"],
       ["#text"],
       ["H6", "#text"]
     ]
-    </script>
+  </script>
 </test-html>
 
 <test-html test="../constructionFrame/test_insertAdjacentHTML_emptyContext.html">
@@ -301,7 +301,6 @@
   </script>
 </test-html>
 
-<h5>todo insertAdjacentHTML, listing .nodes() in frame-end</h5>
 <h5>todo add .elements() readable from frame-end</h5>
 
 <h3>attributeReadyCallback and childReadyCallback</h3>
@@ -472,6 +471,21 @@
       ["childChanged", "COMP-C", 3, 3],
       ["childChanged", "COMP-B", 5, 5],
       ["childChanged", "COMP-A", 5, 5]
+    ]
+  </script>
+</test-html>
+
+<h3>customAttributes </h3>
+<test-html test="../customAttributes/test1_basic_use_protection.html">
+  <script expected>
+    [
+      [":bob", ""],
+      [":dblclick 300", ":hello sunshine"],
+      "Element.setAttribute",
+      "Element.setAttributeNode",
+      "Attr.value",
+      "Element.setAttributeNS",
+      "Element.setAttributeNodeNS"
     ]
   </script>
 </test-html>

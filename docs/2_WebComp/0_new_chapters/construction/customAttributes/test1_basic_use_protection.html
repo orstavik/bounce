@@ -1,0 +1,33 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :dblclick="300"></div>
+
+<script>
+  (function () {
+
+    function assertError(closure, msg) {
+      try {
+        closure();
+      } catch (err) {
+        console.log(msg);
+      }
+    }
+
+    const div = document.querySelector("div");
+    const dblclick = div.getAttributeNode(":dblclick");
+    div.setAttribute(":hello", "sunshine");
+    const bob = document.createAttribute(":bob", "bob");
+    console.log(bob.name, bob.value);
+    console.log(...Array.from(div.attributes).map(({name, value}) => name + ' ' + value));
+
+    assertError(() => div.setAttribute(":dblclick", "5"), "Element.setAttribute");
+    assertError(() => body.setAttributeNode(dblclick), "Element.setAttributeNode");
+    assertError(() => dblclick.value = 42, "Attr.value");
+
+    assertError(() => div.setAttributeNS("bob", "dblclick", "5"), "Element.setAttributeNS");
+    assertError(() => body.setAttributeNodeNS(dblclick), "Element.setAttributeNodeNS");
+  })();
+</script>
