@@ -279,26 +279,53 @@
   </script>
 </test-html>
 
-<test-html test="../constructionFrame/test_insertAdjacentHTML_context.html">
-   <script expected>
-    [
-      ["#text"],
-      ["H5", "#text"],
-      ["#text"],
-      ["H6", "#text"]
-    ]
+
+<test-html test="../constructionFrame/test_insertAdjacentHTML_emptyContext.html">
+    <script expected>
+      [
+        ["#comment"],
+        ["#text"],
+        ["H5", "#text"],
+        ["#text"],
+        ["H6", "#text"]
+      ]
     </script>
 </test-html>
 
-<test-html test="../constructionFrame/test_insertAdjacentHTML_emptyContext.html">
-  <script expected>
-    [
-      ["#text"],
-      ["H5", "#text"],
-      ["#text"],
-      ["H6", "#text"]
-    ]
-  </script>
+<test-html test="../constructionFrame/test_insertAdjacentHTML_context.html">
+    <script expected>
+      [
+        ["#text", "#comment"],
+        ["#text"],
+        ["H5", "#text"],
+        ["#text", "#text"],
+        ["H6", "#text"]
+      ]
+    </script>
+</test-html>
+
+<test-html test="../constructionFrame/test_insertAdjacentHTML_context_elements.html">
+    <script expected>
+      [
+        [],
+        [],
+        ["H5"],
+        [],
+        ["H6"]
+      ]
+    </script>
+</test-html>
+
+<test-html test="../constructionFrame/test_insertAdjacentHTML_emptyContext_elements.html">
+    <script expected>
+      [
+        [],
+        [],
+        ["H5"],
+        [],
+        ["H6"]
+      ]
+    </script>
 </test-html>
 
 <h5>todo insertAdjacentHTML, listing .nodes() in frame-end</h5>
