@@ -1,0 +1,30 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="constructionFrame.js"></script>
+
+<script>
+  (function () {
+    function printFrame(frame, type = '') {
+      console.log([...frame.nodes()].map(n => n.nodeName))
+    }
+    
+    ConstructionFrame.observe('end', printFrame);
+  })();
+</script>
+
+<h2></h2>
+<div><h1></h1><span></span></div>
+<h3></h3>
+
+<script>
+  document.querySelector('span').insertAdjacentHTML('afterend', 'hello sunshine');
+
+  document.querySelector('h1').insertAdjacentHTML('beforebegin', '<h5>hello h5</h5>');
+
+  document.querySelector('h5').insertAdjacentHTML('beforeend', 'inserted text');
+
+  setTimeout(() => {
+    document.querySelector('h5').insertAdjacentHTML('beforeend', '<h6>hello h6</h6>');
+    document.querySelector('h6').insertAdjacentHTML('afterend', '<span id="a">hello span</span>');
+  });
+
+</script>
