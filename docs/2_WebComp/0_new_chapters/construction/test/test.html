@@ -279,31 +279,15 @@
   </script>
 </test-html>
 
-<test-html test="../constructionFrame/insertAdjacentHtml.html">
-    <script expected>
-      [
-        [
-        "#text"
-        ],
-        [
-          "H5",
-          "#text"
-        ],
-        [
-          "#text",
-          "#text"
-        ],
-        [
-          "#text",
-          "H6",
-          "#text"
-        ],
-        [
-          "SPAN",
-          "#text"
-        ]
-      ]
-    </script>
+<test-html test="../constructionFrame/test_insertAdjacentHTML_emptyContext.html">
+  <script expected>
+    [
+      ["#text"],
+      ["H5", "#text"],
+      ["#text"],
+      ["H6", "#text"]
+    ]
+  </script>
 </test-html>
 
 <h5>todo insertAdjacentHTML, listing .nodes() in frame-end</h5>

@@ -77,7 +77,7 @@ class TestHtml extends HTMLElement {
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'test')
       this.onTest(newValue);
-    else if (name === 'active' && newValue)
+    else if (name === 'active' && newValue !== null)
       this.onActive();
   }
 
