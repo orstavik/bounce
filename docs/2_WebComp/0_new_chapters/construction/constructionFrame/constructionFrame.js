@@ -198,26 +198,35 @@
     * nodes() {
       yield* recursiveNodes(this.#clone);
     }
+
+    * elements() {
+      yield* recursiveElements(this.#clone);
+    }
   }
 
   class InnerHTMLConstructionFrame extends ConstructionFrame {
-    #nodes;
+    #el;
 
-    end(nodes) {
-      this.#nodes = nodes;
+    end(el) {
+      this.#el = el;
       super.end();
     }
 
     * nodes() {
-      for (let n of this.#nodes)
+      for (let n of this.#el.childNodes)
         yield* recursiveNodes(n);
+    }
+
+    * elements() {
+      for (let n of this.#el.children)
+        yield* recursiveElements(n);
     }
   }
 
   function innerHTML_constructionFrame(og, val) {
     const frame = new InnerHTMLConstructionFrame();
     og.call(this, val);
-    frame.end(this.childNodes);
+    frame.end(this);
   }
 
   MonkeyPatch.monkeyPatchSetter(Element.prototype, "innerHTML", innerHTML_constructionFrame);
@@ -254,7 +263,24 @@
           yield* recursiveNodes(n);
       }
     }
+
+    * elements() {
+      if (this.#d.position === 'beforebegin') {
+        for (let n = this.#d.previousSibling?.nextSibling || this.#d.element.parentNode?.firstChild; n && n !== this.#d.element; n = n.nextSibling)
+          if (n instanceof Element) yield* recursiveElements(n);
+      } else if (this.#d.position === 'afterend') {
+        for (let n = this.#d.element.nextSibling; n && n !== this.#d.nextSibling; n = n.nextSibling)
+          if (n instanceof Element) yield* recursiveElements(n);
+      } else if (this.#d.position === 'afterbegin') {
+        for (let n = this.#d.element.firstChild; n && n !== this.#d.firstChild; n = n.nextSibling)
+          if (n instanceof Element) yield* recursiveElements(n);
+      } else if (this.#d.position === 'beforeend') {
+        for (let n = this.#d.lastChild || this.#d.element.firstChild; n; n = n.nextSibling)
+          if (n instanceof Element) yield* recursiveElements(n);
+      }
+    }
   }
+
   MonkeyPatch.monkeyPatch(Element.prototype, "insertAdjacentHTML", function insertAdjacentHTML_constructHtmlElement(og, position, ...args) {
     const {previousSibling, lastChild, firstChild, nextSibling} = this;
     const frame = new InsertAdjacentHTMLConstructionFrame();
@@ -283,6 +309,10 @@
     }
 
     * nodes() {
+      if (this.#el) yield this.#el;
+    }
+
+    * elements() {
       if (this.#el) yield this.#el;
     }
   }
@@ -317,6 +347,13 @@
           yield* recursiveNodesWithSkips(c, skips);
   }
 
+  function* recursiveElementsWithSkips(el, skips) {
+    yield el;
+    for (let c of el.children)
+      if (skips.indexOf(c) < 0)
+        yield* recursiveElementsWithSkips(c, skips);
+  }
+
   class PredictiveConstructionFrame extends ConstructionFrame {
 
     #el;
@@ -331,6 +368,11 @@
     * nodes() {
       //todo use the root and complete branch to create a correct iterator.
       for (let n of recursiveNodesWithSkips(this.#el, this.#skips))
+        yield n;
+    }
+
+    * elements() {        //todo use the root and complete branch to create a correct iterator.
+      for (let n of recursiveElementsWithSkips(this.#el, this.#skips))
         yield n;
     }
   }
