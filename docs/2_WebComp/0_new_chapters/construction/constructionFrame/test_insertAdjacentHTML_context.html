@@ -6,7 +6,7 @@
   ConstructionFrame.observe('end', frame => console.log([...frame.nodes()].map(n => n.nodeName)));
 </script>
 
-<div><h1></h1><span></span></div>
+<div>a<h1>b</h1>c<span>d</span>e</div>
 
 <script>
   document.querySelector('span').insertAdjacentHTML('afterend', 'hello sunshine');
