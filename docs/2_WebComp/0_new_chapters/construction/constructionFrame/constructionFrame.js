@@ -259,7 +259,7 @@
         for (let n = this.#d.element.firstChild; n && n !== this.#d.firstChild; n = n.nextSibling)
           yield* recursiveNodes(n);
       } else if (this.#d.position === 'beforeend') {
-        for (let n = this.#d.lastChild || this.#d.element.firstChild; n; n = n.nextSibling)
+        for (let n = this.#d.lastChild?.nextSibling || this.#d.element.firstChild; n; n = n.nextSibling)
           yield* recursiveNodes(n);
       }
     }
@@ -275,7 +275,7 @@
         for (let n = this.#d.element.firstChild; n && n !== this.#d.firstChild; n = n.nextSibling)
           if (n instanceof Element) yield* recursiveElements(n);
       } else if (this.#d.position === 'beforeend') {
-        for (let n = this.#d.lastChild || this.#d.element.firstChild; n; n = n.nextSibling)
+        for (let n = this.#d.lastChild?.nextSibling || this.#d.element.firstChild; n; n = n.nextSibling)
           if (n instanceof Element) yield* recursiveElements(n);
       }
     }
