@@ -57,7 +57,7 @@ class TestHtml extends HTMLElement {
     const r = JSON.stringify(this.#resultObj, null, 2);
     const e = JSON.stringify(JSON.parse(this.#expected.textContent), null, 2);
     this.shadowRoot.getElementById("diff").innerHTML =
-      Diff.diffWords(e, r).map(p => `<span class="${Object.keys(p).join(' ')}">${p.value}</span>`).join('');
+      Diff.diffWords(e, r).map(p => `<span class="${p.added ? 'added' : p.removed ? 'removed' : ''}">${p.value}</span>`).join('');
   }
 
   async onTest(newValue) {
