@@ -359,10 +359,19 @@
     #el;
     #skips;
 
+    constructor(el) {
+      super();
+      this.#el = el;
+    }
+
     end(el, skips) {
       this.#el = el;
       this.#skips = skips;
       super.end();
+    }
+
+    get el() {
+      return this.#el;
     }
 
     * nodes() {
@@ -378,39 +387,23 @@
   }
 
   let completedBranches = [];
-  //
-  // const elToFrame = new WeakMap(); //todo this shouldn't be a weakMap, but a regular map??
-  //
-  // function endPredictiveFrame(el) {
-  //   elToFrame.get(el).end(el, completedBranches);
-  //   completedBranches.push(el);
-  // }
-  //
-  const elFrames = [];
+  const frames = [];
 
-  function endPredictiveFrame2(last/*, endedNodes*/) {
-    const firstReady = elFrames.findIndex(({el}) => ParserObserver.endTagRead(el, last));// endedNodes.indexOf(el) >= 0);
-    if (firstReady >= 0) {
-      for (let {el, frame} of elFrames.splice(firstReady).reverse()) {
-        frame.end(el, completedBranches);
-        completedBranches.push(el);
-      }
+  function tryToEndPredictiveFrames(last) {
+    while (frames[0] && ParserObserver.endTagRead(frames[0].el, last)) {
+      const frame = frames.shift();
+      frame.end(frame.el, completedBranches);
+      completedBranches.push(frame.el);
     }
     ConstructionFrame.dropNow();
   }
 
-  // const po = new ParserObserver(ConstructionFrame.dropNow, endPredictiveFrame);
-  /*const po2 = */new ParserObserver(endPredictiveFrame2);
+  new ParserObserver(tryToEndPredictiveFrames); //todo turn parserObserver here into a parser-break event.
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      if (ConstructionFrame.now)
-        return;
-      const frame = new PredictiveConstructionFrame(this)
-      elFrames.push({el: this, frame});
-      // po.observe(this);
-      // elToFrame.set(this, frame);
+      !ConstructionFrame.now && frames.unshift(new PredictiveConstructionFrame(this));
     }
   }
 

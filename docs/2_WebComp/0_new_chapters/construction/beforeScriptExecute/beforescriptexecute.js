@@ -151,7 +151,7 @@
         this.#cb2(this.#observedElements.shift());
     }
 
-    disconnect(target, mrs) {
+    disconnect(mrs) {
       this.#cb1(document.documentElement, [...this.#stillOpen, ...addedNodes(mrs)]);
       for (let el of this.#observedElements)
         this.#cb2(el);
