@@ -106,10 +106,10 @@
       this.#cb2 = onObservedElementEndTagReachCb;
 
       this.#mo = new MutationObserver(mrs => {
-        if (document.readyState !== 'loading') //1. The last MO is the end, not a break.
-          return this.disconnect();
-        if (document.currentScript)            //2. DOM mutation inside <script>
+        if (document.currentScript)            //1. skip DOM mutation inside <script>
           return;
+        if (document.readyState !== 'loading') //2. The last MO is the end, not a break.
+          return this.disconnect();
         const node = lastAddedNode(mrs);
         if (node.connectedCallback)            //3. .connectedCallback() macro-task mixup
           return;
