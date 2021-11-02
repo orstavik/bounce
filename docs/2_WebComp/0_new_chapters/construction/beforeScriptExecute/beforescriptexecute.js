@@ -98,11 +98,26 @@
     return nodes[nodes.length - 1];
   }
 
+  function* addedNodes(mrs) {
+    for (let {addedNodes} of mrs)
+      if (addedNodes)
+        for (let n of addedNodes)
+          yield n;
+  }
+
+  function endTagUnknown(n) {
+    const res = [];
+    for (; n; n = n.parentNode)
+      n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && res.unshift(n);
+    return res;
+  }
+
   window.ParserObserver = class ParserObserver {
     #observedElements = [];
     #cb1;
     #cb2;
     #mo;
+    #stillOpen = [];
 
     constructor(onEveryBreakCb, onObservedElementEndTagReachCb) {
       if (document.readyState !== 'loading')
@@ -114,11 +129,11 @@
         if (document.currentScript)            //1. skip DOM mutation inside <script>
           return;
         if (document.readyState !== 'loading') //2. The last MO is the end, not a break.
-          return this.disconnect();
+          return this.disconnect(mrs);
         const node = lastAddedNode(mrs);
         if (node.connectedCallback)            //3. .connectedCallback() macro-task mixup
           return;
-        this.#onBreak(node);
+        this.#onBreak(node, mrs);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
       //chrome and firefox runs 'readystatechange:interactive' before the last MO trigger.
@@ -126,14 +141,18 @@
       document.addEventListener('readystatechange', touchDom, {capture: true, once: true});
     }
 
-    #onBreak(target) {
-      this.#cb1(target);
+    #onBreak(target, mrs) {
+      const stillOpen = endTagUnknown(target);
+      const ended1 = this.#stillOpen.filter(n => stillOpen.indexOf(n) === -1);
+      this.#stillOpen = stillOpen;
+      const ended2 = [...addedNodes(mrs)].filter(n => stillOpen.indexOf(n) === -1);
+      this.#cb1(target, [...ended1, ...ended2]);
       while (this.#observedElements[0] && ParserObserver.endTagRead(this.#observedElements[0], target))
         this.#cb2(this.#observedElements.shift());
     }
 
-    disconnect() {
-      this.#cb1(document.documentElement);
+    disconnect(target, mrs) {
+      this.#cb1(document.documentElement, [...this.#stillOpen, ...addedNodes(mrs)]);
       for (let el of this.#observedElements)
         this.#cb2(el);
       document.removeEventListener('readystatechange', touchDom, {capture: true});

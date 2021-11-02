@@ -378,20 +378,39 @@
   }
 
   let completedBranches = [];
+  //
+  // const elToFrame = new WeakMap(); //todo this shouldn't be a weakMap, but a regular map??
+  //
+  // function endPredictiveFrame(el) {
+  //   elToFrame.get(el).end(el, completedBranches);
+  //   completedBranches.push(el);
+  // }
+  //
+  const elFrames = [];
 
-  const elToFrame = new WeakMap();
-
-  function endPredictiveFrame(el) {
-    elToFrame.get(el).end(el, completedBranches);
-    completedBranches.push(el);
+  function endPredictiveFrame2(last/*, endedNodes*/) {
+    const firstReady = elFrames.findIndex(({el}) => ParserObserver.endTagRead(el, last));// endedNodes.indexOf(el) >= 0);
+    if (firstReady >= 0) {
+      for (let {el, frame} of elFrames.splice(firstReady).reverse()) {
+        frame.end(el, completedBranches);
+        completedBranches.push(el);
+      }
+    }
+    ConstructionFrame.dropNow();
   }
 
-  const po = new ParserObserver(ConstructionFrame.dropNow, endPredictiveFrame);
+  // const po = new ParserObserver(ConstructionFrame.dropNow, endPredictiveFrame);
+  /*const po2 = */new ParserObserver(endPredictiveFrame2);
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !ConstructionFrame.now && (po.observe(this), elToFrame.set(this, new PredictiveConstructionFrame(this)));
+      if (ConstructionFrame.now)
+        return;
+      const frame = new PredictiveConstructionFrame(this)
+      elFrames.push({el: this, frame});
+      // po.observe(this);
+      // elToFrame.set(this, frame);
     }
   }
 
