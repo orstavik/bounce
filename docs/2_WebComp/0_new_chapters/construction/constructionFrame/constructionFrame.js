@@ -379,8 +379,10 @@
 
   let completedBranches = [];
 
-  function endPredictiveFrame(el, frame) {
-    frame.end(el, completedBranches);
+  const elToFrame = new WeakMap();
+
+  function endPredictiveFrame(el) {
+    elToFrame.get(el).end(el, completedBranches);
     completedBranches.push(el);
   }
 
@@ -389,7 +391,7 @@
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !ConstructionFrame.now && po.observe(this, new PredictiveConstructionFrame(this));
+      !ConstructionFrame.now && (po.observe(this), elToFrame.set(this, new PredictiveConstructionFrame(this)));
     }
   }
 

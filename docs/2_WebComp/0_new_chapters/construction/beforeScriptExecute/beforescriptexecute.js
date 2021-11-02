@@ -124,24 +124,20 @@
 
     onBreak(target) {
       this.#cb1(target);
-      while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0].el, target)) {
-        const {el, frame} = this.#frames.shift();
-        this.#cb2(el, frame);
-      }
+      while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0], target))
+        this.#cb2(this.#frames.shift());
     }
 
     #onEnd() {
       this.#cb1(document.documentElement);
-      while (this.#frames[0]) {
-        const {el, frame} = this.#frames.shift();
-        this.#cb2(el, frame);
-      }
+      while (this.#frames[0])
+        this.#cb2(this.#frames.shift());
       this.disconnect();
       document.removeEventListener('readystatechange', this.#ending, {capture: true});
     }
 
-    observe(el, frame) {
-      this.#frames.unshift({el, frame});
+    observe(el) {
+      this.#frames.unshift(el);
     }
 
     disconnect() {
