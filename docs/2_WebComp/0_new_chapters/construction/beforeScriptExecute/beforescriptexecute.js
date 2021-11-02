@@ -100,7 +100,7 @@
   }
 
   window.ParserObserver = class ParserObserver {
-    #frames = [];
+    #observedElements = [];
     #cb1;
     #cb2;
     #lastBreakNode;
@@ -131,21 +131,21 @@
 
     #onBreak(target) {
       this.#cb1(target);
-      while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0], target))
-        this.#cb2(this.#frames.shift());
+      while (this.#observedElements[0] && ParserObserver.endTagRead(this.#observedElements[0], target))
+        this.#cb2(this.#observedElements.shift());
     }
 
     disconnect() {
-      if (!this.#frames) return;
+      if (!this.#observedElements) return;
       this.#cb1(document.documentElement);
-      for (let el of this.#frames)
+      for (let el of this.#observedElements)
         this.#cb2(el);
-      this.#frames = undefined;
+      this.#observedElements = undefined;
       this.#mo.disconnect();
     }
 
     observe(el) {
-      this.#frames.unshift(el);
+      this.#observedElements.unshift(el);
     }
 
     static endTagRead(el, lastParsed) {
