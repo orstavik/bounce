@@ -88,6 +88,11 @@
 
 (function () {
 
+  function touchDom(c) {
+    document.head.append(c = new Comment());
+    c.remove();
+  }
+
   function lastAddedNode(mrs) {
     const nodes = mrs[mrs.length - 1].addedNodes;
     return nodes[nodes.length - 1];
@@ -116,7 +121,9 @@
         this.#onBreak(node);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
-      document.addEventListener('readystatechange', () => this.disconnect(), {capture: true, once: true});
+      //chrome and firefox runs 'readystatechange:interactive' before the last MO trigger.
+      //thus, to force the last MO trigger in the same macrotask, we do a mutation on the body
+      document.addEventListener('readystatechange', touchDom, {capture: true, once: true});
     }
 
     #onBreak(target) {
@@ -126,11 +133,10 @@
     }
 
     disconnect() {
-      if (!this.#observedElements) return;
       this.#cb1(document.documentElement);
       for (let el of this.#observedElements)
         this.#cb2(el);
-      this.#observedElements = undefined;
+      document.removeEventListener('readystatechange', touchDom, {capture: true});
       this.#mo.disconnect();
     }
 
