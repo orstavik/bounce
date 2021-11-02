@@ -76,23 +76,17 @@
  *    or after the first 'readystatechange' event that marks the start of document.readyState === 'interactive'
  */
 
+//connectedCallback macro-task mixup
+//
+// When the predictive parser creates an already defined web-comp that:
+// 1) has NO constructor() definition,
+// 2) triggers NO attributeChangedCallback(), and
+// 3) triggers only a .connectedCallback(), then
+// !!BAD!! the MO callback will run inside the same macro-task as the web-comp.connectedCallback().
+// This is bad because we want all parser-breaks to have their own macrotask.
+// Therefore, the ParserObserver will not call a break in these instances.
+
 (function () {
-  if (document.readyState !== "loading")
-    return;
-  // //todo How to avoid conflict with native FF event??? replaces the native Firefox event with our custom beforescriptexecute event.
-  // document.addEventListener('beforescriptexecute', e => e.isTrusted && e.stopImmediatePropagation(), true);
-  // let lastTarget;
-  // const mo = new MutationObserver(mrs => {
-  //   //todo break this one with <script async></script><script>take a long time</script> which might trigger an empty mrs[]?? can there be an empty mrs[]??
-  //   //todo trigger the MutationObserver using dynamic changes?? So that this runs during either a custom Element constructor or a script??
-  //   //todo yes, we can probably break this calling .append(...), .remove() etc on the main document during loading or maybe with an async script.
-  //   const nodes = mrs[mrs.length - 1].addedNodes;
-  //   const target = nodes[nodes.length - 1];
-  //   if (target !== lastTarget && !((lastTarget = target).connectedCallback))
-  //     target.dispatchEvent(new Event('beforescriptexecute'));
-  // });
-  // mo.observe(document.documentElement, {childList: true, subtree: true});
-  // window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
 
   function lastAddedNode(mrs) {
     const nodes = mrs[mrs.length - 1].addedNodes;
@@ -112,13 +106,13 @@
       this.#cb2 = onObservedElementEndTagReachCb;
 
       this.#mo = new MutationObserver(mrs => {
-        if (document.readyState !== 'loading')  //1. The last MO is the end, not a break.
+        if (document.readyState !== 'loading') //1. The last MO is the end, not a break.
           return this.disconnect();
-        if (document.currentScript)              //2. any MO that has a currentScript is triggered by a dom mutation inside a script
+        if (document.currentScript)            //2. DOM mutation inside <script>
           return;
         const node = lastAddedNode(mrs);
-        if (node.connectedCallback)           //3. web-comp.connectedCallback(). with no constructor or attributeChangedCallback called before.
-          return;                             // This is a bad MO break, because it is inside the macro task of the connectedCallback.
+        if (node.connectedCallback)            //3. .connectedCallback() macro-task mixup
+          return;
         this.#onBreak(node);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
