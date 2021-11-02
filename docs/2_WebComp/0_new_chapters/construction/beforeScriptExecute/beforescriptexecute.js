@@ -94,11 +94,16 @@
   // mo.observe(document.documentElement, {childList: true, subtree: true});
   // window.addEventListener('readystatechange', () => mo.disconnect(), {capture: true, once: true});
 
+  function lastAddedNode(mrs) {
+    const nodes = mrs[mrs.length - 1].addedNodes;
+    return nodes[nodes.length - 1];
+  }
+
   window.ParserObserver = class ParserObserver {
     #frames = [];
     #cb1;
     #cb2;
-    #lastTarget;
+    #lastBreakNode;
     #mo;
     #ending;
 
@@ -110,15 +115,17 @@
       this.#ending = () => this.#onEnd();
 
       this.#mo = new MutationObserver(mrs => {
-        if (document.readyState !== 'loading')
+        if (document.readyState !== 'loading')  //1. The last MO is the end, not a break.
           return this.#onEnd();
-        if(document.currentScript)   //this filters out any dom nodes added from script.
+        if(document.currentScript)              //2. any MO that has a currentScript is triggered by a dom mutation inside a script
           return;
-        const mr = mrs[mrs.length - 1];
-        const nodes = mr.addedNodes;
-        const target = nodes[nodes.length - 1];
-        if (target !== this.#lastTarget && !((this.#lastTarget = target).connectedCallback))
-          this.onBreak(target);
+        const node = lastAddedNode(mrs);
+        if (node === this.#lastBreakNode)        //3. this is a web-comp constructor straight after a script
+          return;
+        this.#lastBreakNode = node;
+        if (node.connectedCallback)           //4. this is the connectedCallback of a web-comp. This is a bad MO break.
+          return;
+        this.onBreak(node);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
       document.addEventListener('readystatechange', this.#ending, {capture: true, once: true});
