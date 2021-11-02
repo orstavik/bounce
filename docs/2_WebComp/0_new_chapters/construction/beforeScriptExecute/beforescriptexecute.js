@@ -113,17 +113,14 @@
   }
 
   window.ParserObserver = class ParserObserver {
-    #observedElements = [];
     #cb1;
-    #cb2;
     #mo;
     #stillOpen = [];
 
-    constructor(onEveryBreakCb, onObservedElementEndTagReachCb) {
+    constructor(onEveryBreakCb) {
       if (document.readyState !== 'loading')
         throw new Error('new ParserObserver(..) can only be created while document is loading');
       this.#cb1 = onEveryBreakCb;
-      this.#cb2 = onObservedElementEndTagReachCb;
 
       this.#mo = new MutationObserver(mrs => {
         if (document.currentScript)            //1. skip DOM mutation inside <script>
@@ -147,24 +144,12 @@
       this.#stillOpen = stillOpen;
       const ended2 = [...addedNodes(mrs)].filter(n => stillOpen.indexOf(n) === -1);
       this.#cb1(target, [...ended1, ...ended2]);
-      while (this.#observedElements[0] && ParserObserver.endTagRead(this.#observedElements[0], target))
-        this.#cb2(this.#observedElements.shift());
     }
 
     disconnect(mrs) {
       this.#cb1(document.documentElement, [...this.#stillOpen, ...addedNodes(mrs)]);
-      for (let el of this.#observedElements)
-        this.#cb2(el);
       document.removeEventListener('readystatechange', touchDom, {capture: true});
       this.#mo.disconnect();
-    }
-
-    observe(el) {
-      this.#observedElements.unshift(el);
-    }
-
-    static endTagRead(el, lastParsed) {
-      return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
     }
   }
 })();

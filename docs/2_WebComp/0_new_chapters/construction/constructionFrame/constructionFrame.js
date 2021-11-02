@@ -389,8 +389,12 @@
   let completedBranches = [];
   const frames = [];
 
+  function endTagRead(el, lastParsed) {
+    return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
+  }
+
   function tryToEndPredictiveFrames(last) {
-    while (frames[0] && ParserObserver.endTagRead(frames[0].el, last)) {
+    while (frames[0] && endTagRead(frames[0].el, last)) {
       const frame = frames.shift();
       frame.end(frame.el, completedBranches);
       completedBranches.push(frame.el);
