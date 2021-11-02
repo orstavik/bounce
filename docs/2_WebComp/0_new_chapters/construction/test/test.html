@@ -25,6 +25,11 @@
     ["1", "2", "3", "4", "5", "6", "html", "interactive"]
   </script>
 </test-html>
+<test-html test="../beforeScriptExecute/test5_skip_connectedCallbackBreaks.html">
+  <script expected>
+    ["1", "m1", "x1", "x2", "2", "m2", "y", "3", "m3", "x1", "x2", "4", "m4", "y", "5", "m5", "y", "6", "m6", "x1", "x2", "7", "m7", "y", "y", "html", "mhtml", "interactive"]
+  </script>
+</test-html>
 
 <h3>ConstructionFrame</h3>
 <test-html test="../constructionFrame/test1.html">
