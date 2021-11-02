@@ -105,19 +105,17 @@
     #cb2;
     #lastBreakNode;
     #mo;
-    #ending;
 
     constructor(onEveryBreakCb, onObservedElementEndTagReachCb) {
       if (document.readyState !== 'loading')
         throw new Error('new ParserObserver(..) can only be created while document is loading');
       this.#cb1 = onEveryBreakCb;
       this.#cb2 = onObservedElementEndTagReachCb;
-      this.#ending = () => this.#onEnd();
 
       this.#mo = new MutationObserver(mrs => {
         if (document.readyState !== 'loading')  //1. The last MO is the end, not a break.
           return this.#onEnd();
-        if(document.currentScript)              //2. any MO that has a currentScript is triggered by a dom mutation inside a script
+        if (document.currentScript)              //2. any MO that has a currentScript is triggered by a dom mutation inside a script
           return;
         const node = lastAddedNode(mrs);
         if (node === this.#lastBreakNode)        //3. this is a web-comp constructor straight after a script
@@ -128,7 +126,7 @@
         this.onBreak(node);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
-      document.addEventListener('readystatechange', this.#ending, {capture: true, once: true});
+      document.addEventListener('readystatechange', () => this.#onEnd(), {capture: true, once: true});
     }
 
     onBreak(target) {
@@ -138,19 +136,16 @@
     }
 
     #onEnd() {
+      if (!this.#frames) return;
       this.#cb1(document.documentElement);
-      while (this.#frames[0])
-        this.#cb2(this.#frames.shift());
-      this.disconnect();
-      document.removeEventListener('readystatechange', this.#ending, {capture: true});
+      for (let el of this.#frames)
+        this.#cb2(el);
+      this.#frames = undefined;
+      this.#mo.disconnect();
     }
 
     observe(el) {
       this.#frames.unshift(el);
-    }
-
-    disconnect() {
-      this.#mo.disconnect();
     }
 
     static endTagRead(el, lastParsed) {
