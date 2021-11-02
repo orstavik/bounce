@@ -103,7 +103,6 @@
     #observedElements = [];
     #cb1;
     #cb2;
-    #lastBreakNode;
     #mo;
 
     constructor(onEveryBreakCb, onObservedElementEndTagReachCb) {
@@ -118,11 +117,8 @@
         if (document.currentScript)              //2. any MO that has a currentScript is triggered by a dom mutation inside a script
           return;
         const node = lastAddedNode(mrs);
-        if (node === this.#lastBreakNode)        //3. this is a web-comp constructor straight after a script
-          return;
-        this.#lastBreakNode = node;
-        if (node.connectedCallback)           //4. this is the connectedCallback of a web-comp. This is a bad MO break.
-          return;
+        if (node.connectedCallback)           //3. web-comp.connectedCallback(). with no constructor or attributeChangedCallback called before.
+          return;                             // This is a bad MO break, because it is inside the macro task of the connectedCallback.
         this.#onBreak(node);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
