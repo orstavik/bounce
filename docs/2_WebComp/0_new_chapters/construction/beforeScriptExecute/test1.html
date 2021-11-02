@@ -1,7 +1,8 @@
 <script src="beforescriptexecute.js"></script>
+<script defer src="data:text/html;charset=utf-8,console.log(%22defer%22)"></script>
 <script>
   const po = new ParserObserver(last => console.log(last === document.documentElement ? "html" : last.textContent[0]));
-  document.addEventListener('readystatechange', _ => console.log(document.readyState), {once: true});
+  document.addEventListener('readystatechange', _ => console.log(document.readyState));
 
   const tests = ["4", "2"];
   customElements.define('web-comp', class WebComp extends HTMLElement {
