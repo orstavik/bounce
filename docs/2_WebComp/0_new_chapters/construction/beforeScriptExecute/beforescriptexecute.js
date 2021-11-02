@@ -114,7 +114,7 @@
 
       this.#mo = new MutationObserver(mrs => {
         if (document.readyState !== 'loading')  //1. The last MO is the end, not a break.
-          return this.#onEnd();
+          return this.disconnect();
         if (document.currentScript)              //2. any MO that has a currentScript is triggered by a dom mutation inside a script
           return;
         const node = lastAddedNode(mrs);
@@ -123,19 +123,19 @@
         this.#lastBreakNode = node;
         if (node.connectedCallback)           //4. this is the connectedCallback of a web-comp. This is a bad MO break.
           return;
-        this.onBreak(node);
+        this.#onBreak(node);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
-      document.addEventListener('readystatechange', () => this.#onEnd(), {capture: true, once: true});
+      document.addEventListener('readystatechange', () => this.disconnect(), {capture: true, once: true});
     }
 
-    onBreak(target) {
+    #onBreak(target) {
       this.#cb1(target);
       while (this.#frames[0] && ParserObserver.endTagRead(this.#frames[0], target))
         this.#cb2(this.#frames.shift());
     }
 
-    #onEnd() {
+    disconnect() {
       if (!this.#frames) return;
       this.#cb1(document.documentElement);
       for (let el of this.#frames)
