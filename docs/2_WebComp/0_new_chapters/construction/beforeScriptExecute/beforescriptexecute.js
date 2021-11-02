@@ -112,6 +112,8 @@
       this.#mo = new MutationObserver(mrs => {
         if (document.readyState !== 'loading')
           return this.#onEnd();
+        if(document.currentScript)   //this filters out any dom nodes added from script.
+          return;
         const mr = mrs[mrs.length - 1];
         const nodes = mr.addedNodes;
         const target = nodes[nodes.length - 1];

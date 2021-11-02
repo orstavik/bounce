@@ -20,6 +20,12 @@
     ["break", "connected", "connected", "the end", "interactive"]
   </script>
 </test-html>
+<test-html test="../beforeScriptExecute/test4_MO_inside_script.html">
+  <script expected>
+    ["1", "2", "3", "4", "5", "6", "html", "interactive"]
+  </script>
+</test-html>
+
 <h3>ConstructionFrame</h3>
 <test-html test="../constructionFrame/test1.html">
   <script expected>
@@ -302,8 +308,6 @@
     ]
   </script>
 </test-html>
-
-<h5>todo add .elements() readable from frame-end</h5>
 
 <h3>attributeReadyCallback and childReadyCallback</h3>
 <test-html test="../constructionReady/test1.html">
