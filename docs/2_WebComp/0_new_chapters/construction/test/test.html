@@ -30,6 +30,22 @@
     ["1", "m1", "x1", "x2", "2", "m2", "y", "3", "m3", "x1", "x2", "4", "m4", "y", "5", "m5", "y", "6", "m6", "x1", "x2", "7", "m7", "y", "y", "html", "mhtml", "interactive"]
   </script>
 </test-html>
+<test-html test="../beforeScriptExecute/test6_endedNodes_a.html">
+  <script expected>
+    [
+      ["#text", "H3", "#text", "#text", "#text", "#text", "SCRIPT", "#text"],
+      "xxx",
+      "a",
+      ["DIV", "#text", "DIV", "#text", "DIV", "#text", "#text", "#text", "SCRIPT", "#text"],
+      "xxx",
+      "b",
+      ["HTML", "BODY", "DIV", "#text", "#comment"],
+      "xxx",
+      "interactive",
+      "complete"
+    ]
+  </script>
+</test-html>
 
 <h3>ConstructionFrame</h3>
 <test-html test="../constructionFrame/test1.html">

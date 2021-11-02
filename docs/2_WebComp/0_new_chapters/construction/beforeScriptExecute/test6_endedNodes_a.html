@@ -1,0 +1,21 @@
+<script src="beforescriptexecute.js"></script>
+<script>
+
+  function onBreak(last, endedNodes) {
+    console.log(...endedNodes.map(n=>n.nodeName)), Promise.resolve().then(()=> console.log("xxx"));
+  }
+
+  const po = new ParserObserver(onBreak);
+  document.addEventListener('readystatechange', _ => (console.log(document.readyState)));
+</script>
+
+<h3>Test of ParserObserver endedNodes</h3>
+<div id="1">
+  <div id="2">
+    <script id="3">console.log("a")</script>
+    <div id="4">
+      <div id="5"></div>
+    </div>
+  </div>
+  <script id="6">console.log("b")</script>
+</div>

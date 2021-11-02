@@ -99,6 +99,7 @@
   }
 
   function* addedNodes(mrs) {
+    //todo the dynamic add/remove comment patch for readystatechange event adds the #comment in Chrome and FF, but not Safari.
     for (let {addedNodes} of mrs)
       if (addedNodes)
         for (let n of addedNodes)
