@@ -16,7 +16,7 @@ const template = `
     .added {color: green}
     .removed {color: red}
   </style>
-  <span id="title"></span><a id="link" target="_blank">(=> new tab)</a>
+  <span id="title"></span><a id="link" target="_blank">(=> new tab)</a> <a id="clipboard">[copy JSON-result]</a>
   <div id="diff"></div>
   <div id="code"></div>
   <iframe id="iframe"></iframe>
@@ -39,11 +39,14 @@ class TestHtml extends HTMLElement {
     this.#expected = this.children[0];
     window.addEventListener('message', e => this.onMessage(e));
     this.shadowRoot.addEventListener('dblclick', e => this.onDblclick(e));
+    this.shadowRoot.getElementById('clipboard').addEventListener('click',
+        _ => navigator.clipboard.writeText(JSON.stringify(this.#resultObj))
+    );
   }
 
   onMessage(e) {
     const res = JSON.parse(e.data);
-    if(!(res instanceof Array) || res.shift() !== this.#id + '')
+    if (!(res instanceof Array) || res.shift() !== this.#id + '')
       return;
     this.#resultObj.push(res.length === 1 ? res[0] : res);
     this.render();

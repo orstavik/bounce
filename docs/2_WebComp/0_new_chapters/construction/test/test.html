@@ -78,6 +78,56 @@
     ]
   </script>
 </test-html>
+<test-html test="../beforeScriptExecute/test7_script_before_web-comp.html">
+  <script expected>
+    [
+      ["added", "HTML", "HEAD", "BASE", "SCRIPT", "#text", "SCRIPT", "#text", "#text", "SCRIPT", "#text", "SCRIPT", "#text"],
+      ["ended", "BASE", "SCRIPT", "#text", "SCRIPT", "#text", "#text", "SCRIPT", "#text", "SCRIPT", "#text"],
+      ["open", "HTML", "HEAD"],
+      ["added", "#text", "BODY", "#text", "H3", "#text", "#text"],
+      ["ended", "HEAD", "#text", "#text", "H3", "#text", "#text"],
+      ["open", "HTML", "BODY"],
+      "COMP-CONSTRUCTOR",
+      ["added", "COMP-CONSTRUCTOR"],
+      "ended",
+      ["open", "HTML", "BODY", "COMP-CONSTRUCTOR"],
+      "COMP-CONNECTED",
+      ["added", "COMP-CONNECTED", "#text"],
+      ["ended", "COMP-CONSTRUCTOR", "COMP-CONNECTED", "#text"],
+      ["open", "HTML", "BODY"],
+      "COMP-CONNECTED", "COMP-CONSTRUCTOR",
+      ["added", "COMP-CONNECTED", "COMP-CONSTRUCTOR", "#text", "SCRIPT", "#text"],
+      ["ended", "COMP-CONNECTED", "COMP-CONSTRUCTOR", "#text", "SCRIPT", "#text"],
+      ["open", "HTML", "BODY"],
+      "1", "COMP-CONSTRUCTOR",
+      ["added", "COMP-CONSTRUCTOR", "#text", "SCRIPT", "#text"],
+      ["ended", "COMP-CONSTRUCTOR", "#text", "SCRIPT", "#text"],
+      ["open", "HTML", "BODY"],
+      "2", "COMP-CONNECTED",
+      ["added", "COMP-CONNECTED", "#text"],
+      ["ended", "COMP-CONNECTED", "#text"],
+      ["open", "HTML", "BODY"],
+      "COMP-CONSTRUCTOR",
+      ["added", "COMP-CONSTRUCTOR", "SCRIPT", "#text"],
+      ["ended", "COMP-CONSTRUCTOR", "SCRIPT", "#text"],
+      ["open", "HTML", "BODY"],
+      "3",
+      ["added", "#text"],
+      ["ended", "#text"],
+      ["open", "HTML", "BODY"],
+      "COMP-CONNECTED",
+      ["added", "COMP-CONNECTED", "SCRIPT", "#text"],
+      ["ended", "COMP-CONNECTED", "SCRIPT", "#text"],
+      ["open", "HTML", "BODY"],
+      "4",
+      ["added", "#text"],
+      ["ended", "HTML", "BODY", "#text"],
+      "open",
+      "interactive",
+      "complete"
+    ]
+  </script>
+</test-html>
 
 <h3>ConstructionFrame</h3>
 <test-html test="../constructionFrame/test1.html">

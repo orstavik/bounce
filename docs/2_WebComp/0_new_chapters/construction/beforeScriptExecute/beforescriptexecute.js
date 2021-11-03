@@ -108,15 +108,20 @@
         yield n;
   }
 
+  function* xpathIterator(xpr) {
+    for (var i = 0; i < xpr.snapshotLength; i++)
+      yield xpr[i] ??= xpr.snapshotItem(i);
+  }
+
   class ParserBreakEvent extends Event {
-    #mrs;
-    #newEnded;
+    #added;
+    #previouslyOpen;
     #stillOpen;
 
-    constructor(newEnded, mrs, stillOpen = []) {
+    constructor(listsWithAdded, previouslyOpen, stillOpen = []) {
       super('parser-break');
-      this.#mrs = mrs;
-      this.#newEnded = newEnded;
+      this.#added = listsWithAdded;
+      this.#previouslyOpen = previouslyOpen;
       this.#stillOpen = stillOpen;
     }
 
@@ -125,16 +130,18 @@
     }
 
     * endedNodes() {
-      if (!this.target) return;
-      for (let n of this.#newEnded)
-        yield n;
-      for (let added of addedNodes(this.#mrs))
+      for (let n of this.#previouslyOpen)
+        if(this.#stillOpen.indexOf(n)===-1)
+          yield n;
+      for (let added of this.addedNodes())
         if (this.#stillOpen.indexOf(added) === -1)
           yield added;
     }
 
     * addedNodes() {
-      yield* addedNodes(this.#mrs);
+      for (let list of this.#added)
+        for (let n of (list instanceof XPathResult ? xpathIterator(list) : addedNodes(list)))
+          yield n;
     }
   }
 
@@ -143,7 +150,8 @@
     const touchDom = _ => document.body.append(c);                                         //MO-readystatechange race #1
     document.addEventListener('readystatechange', touchDom, {capture: true, once: true});  //MO-readystatechange race #1
 
-    let lastBreakStillOpen = [];
+    let openEnded = [];
+    let addeds = [document.evaluate("//node()", document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)];
 
     return function onMO(mrs) {
       //1. skip DOM mutation inside <script>
@@ -154,20 +162,20 @@
         this.disconnect();
         (mrs[mrs.length - 1].addedNodes[0] === c) && (c.remove(), mrs.pop());              //MO-readystatechange race #2
         document.removeEventListener('readystatechange', touchDom, {capture: true});       //MO-readystatechange race #2
-        return document.dispatchEvent(new ParserBreakEvent(lastBreakStillOpen, mrs));
+        return document.dispatchEvent(new ParserBreakEvent([...addeds, mrs], openEnded));
       }
       //3. A parser-break
+      addeds.push(mrs);
       const nodes = mrs[mrs.length - 1].addedNodes;
       const lastAdded = nodes[nodes.length - 1];
       //4. .connectedCallback() macro-task is a BAD parser-break
       if (lastAdded.connectedCallback)
-        return lastBreakStillOpen = [...lastBreakStillOpen, ...addedNodes(mrs)];
-      const nowOpen = [];
+        return;
+      const previousOpen = openEnded;
+      openEnded = [];
       for (let n = lastAdded; n; n = n.parentNode)
-        n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && nowOpen.unshift(n);
-      const newEnded = lastBreakStillOpen.filter(el => nowOpen.indexOf(el) === -1)
-      lastBreakStillOpen = nowOpen;
-      lastAdded.dispatchEvent(new ParserBreakEvent(newEnded, mrs, lastBreakStillOpen));
+        n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && openEnded.unshift(n);
+      lastAdded.dispatchEvent(new ParserBreakEvent(addeds.splice(0), previousOpen, openEnded));
     }
   }
 
