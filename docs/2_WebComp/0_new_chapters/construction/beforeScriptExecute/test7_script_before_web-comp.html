@@ -5,11 +5,10 @@
     console.log('open', ...Array.from(e.openNodes()).map(n => n.tagName));
   }
   window.addEventListener('parser-break', test, {capture: true});
-  document.addEventListener('readystatechange', _ => console.log(document.readyState));
 </script>
 <script src="beforescriptexecute.js"></script>
 <script>
-
+  document.addEventListener('readystatechange', _ => console.log(document.readyState));
 
   customElements.define('comp-constructor', class CompConstructor extends HTMLElement {
     constructor() {
