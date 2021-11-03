@@ -19,7 +19,7 @@
     const div = document.querySelector("div");
     const dblclick = div.getAttributeNode(":dblclick");
     div.setAttribute(":hello", "sunshine");
-    const bob = document.createAttribute(":bob", "bob");
+    const bob = document.createAttribute(":bob");
     console.log(bob.name, bob.value);
     console.log(...Array.from(div.attributes).map(({name, value}) => name + ' ' + value));
 

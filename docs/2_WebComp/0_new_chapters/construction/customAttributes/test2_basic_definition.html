@@ -1,0 +1,29 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :counter="40"></div>
+
+<script>
+  class CounterAttr extends Attr {
+
+    upgrade(setCustomValue) {
+      this.ownerElement.addEventListener('click', () => setCustomValue(this.count + 1));
+    }
+
+    get count() {
+      return parseInt(this.value);
+    }
+  }
+
+  customAttributes.define(':counter', CounterAttr);
+</script>
+
+<script>
+  const div = document.querySelector("div");
+  div.click();
+  div.click();
+  console.log(div.getAttribute(':counter'));
+  console.log(div.getAttributeNode(':counter').count / 2);
+</script>

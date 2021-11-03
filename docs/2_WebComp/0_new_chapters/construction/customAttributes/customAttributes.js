@@ -30,6 +30,7 @@
   const cache = {};
 
   function* weakArrayIterator(wa) {  //todo this is ok now, but if we await while inside a for loop with this iterator, then it can break.
+    if(!wa) return;
     for (let i = 0; i < wa.length; i++) {
       let el = wa[i].deref();
       el ? yield el : wa.splice(i--, 1);
@@ -40,7 +41,7 @@
     if (!def)
       return (cache[ca.name] ??= []).push(new WeakRef(ca));
     //1. we have already done a syntax check of the def, so we can just set the new prototype on the attribute object.
-    Object.setPrototypeOf(ca, def);
+    Object.setPrototypeOf(ca, def.prototype);
     //2. make the setCustomValue(val) function for this specific custom attribute
     const setCustomValue = function setValue(val) {
       setValueOG.call(ca, val);
@@ -74,7 +75,7 @@
       //todo enable MutableCustomAttributes?? by simple patching Element.setAttribute, Attr.value and skipping this check
       if (name[0] !== ':' || name[1] === ':')
         throw new SyntaxError(`CustomAttribute names must be on the form ':custom' or ':custom-attribute', not: ${name}`);
-      if (definition.prototype instanceof Attr) //todo untested, this should allow for class inheritance.
+      if (!(definition.prototype instanceof Attr))
         throw new SyntaxError(`CustomAttribute definition must 'extends Attr', not: '${definition.prototype.name}'.`);
 
       defs[name] = definition;
