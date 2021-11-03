@@ -1,6 +1,6 @@
 <script src="beforescriptexecute.js"></script>
 <script>
-  const po = new ParserObserver(last => console.log(last === document.documentElement ? "html" : last.textContent[0]));
+  window.addEventListener('parser-break', e => console.log(e.target === document ? "html" : e.target.textContent[0]), true);
   document.addEventListener('readystatechange', _ => console.log(document.readyState), {once: true});
 
   const tests = ["4", "2"];

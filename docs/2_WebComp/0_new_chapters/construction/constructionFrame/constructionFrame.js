@@ -402,7 +402,7 @@
     ConstructionFrame.dropNow();
   }
 
-  new ParserObserver(tryToEndPredictiveFrames); //todo turn parserObserver here into a parser-break event.
+  window.addEventListener('parser-break', e => tryToEndPredictiveFrames(e.target), true);
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {

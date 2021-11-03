@@ -86,11 +86,39 @@
 // This is bad because we want all parser-breaks to have their own macrotask.
 // Therefore, the ParserObserver will not call a break in these instances.
 
-(function () {
+//MO-readystatechange race
+// Chrome and FF runs 'readystatechange:interactive' before the last MO function with the remainder of the DOM.
+// Safari runs the last MO first, and then the readystatechange:interactive event listeners.
+// Safari is correct, Chrome and FF is wrong.
+//
+// To force the MO to run before the readystatechange:interactive event listeners,
+// we add an event listener for readystatechange:interactive, and then we force a change to the DOM.
+// we then remove that node in the MO immediately, thus leaving the DOM intact.
+// This will trick the MO to run as a macrotask (the readystatechange event is macro task event)
+// before the readystatechange events.
 
-  function touchDom(c) {
-    document.head.append(c = new Comment());
-    c.remove();
+
+(function () {
+  class ParserBreakEvent extends Event {
+    #mrs;
+    #previouslyOpen;
+
+    constructor(previouslyOpen, mrs) {
+      super('parser-break');
+      this.#mrs = mrs;
+      this.#previouslyOpen = previouslyOpen;
+    }
+
+    * endedNodes() {
+      if(!this.target) return;
+      //todo stillOpen should be locked at dispatch. add an earlybird event listener?
+      const stillOpen = endTagUnknown(this.target);
+      for (let n of this.#previouslyOpen.filter(el => stillOpen.indexOf(el) === -1))
+        yield n;
+      for (let added of addedNodes(this.#mrs))
+        if (stillOpen.indexOf(added) === -1)
+          yield added;
+    }
   }
 
   function lastAddedNode(mrs) {
@@ -99,11 +127,9 @@
   }
 
   function* addedNodes(mrs) {
-    //todo the dynamic add/remove comment patch for readystatechange event adds the #comment in Chrome and FF, but not Safari.
     for (let {addedNodes} of mrs)
-      if (addedNodes)
-        for (let n of addedNodes)
-          yield n;
+      for (let n of addedNodes)
+        yield n;
   }
 
   function endTagUnknown(n) {
@@ -114,43 +140,52 @@
   }
 
   window.ParserObserver = class ParserObserver {
-    #cb1;
+
+    static #c = new Comment();                                                                //MO-readystatechange race #0
+    static #touchDom = (a=>document.body.append(a)).bind(null, ParserObserver.#c);      //MO-readystatechange race #0
+    // #cb1;
     #mo;
     #stillOpen = [];
 
     constructor(onEveryBreakCb) {
       if (document.readyState !== 'loading')
         throw new Error('new ParserObserver(..) can only be created while document is loading');
-      this.#cb1 = onEveryBreakCb;
+      // this.#cb1 = onEveryBreakCb;
 
       this.#mo = new MutationObserver(mrs => {
         if (document.currentScript)            //1. skip DOM mutation inside <script>
           return;
         if (document.readyState !== 'loading') //2. The last MO is the end, not a break.
-          return this.disconnect(mrs);
+          return this.#disconnect(mrs);
         const node = lastAddedNode(mrs);
         if (node.connectedCallback)            //3. .connectedCallback() macro-task mixup
           return;
         this.#onBreak(node, mrs);
       });
       this.#mo.observe(document.documentElement, {childList: true, subtree: true});
-      //chrome and firefox runs 'readystatechange:interactive' before the last MO trigger.
-      //thus, to force the last MO trigger in the same macrotask, we do a mutation on the body
-      document.addEventListener('readystatechange', touchDom, {capture: true, once: true});
+      document.addEventListener('readystatechange', ParserObserver.#touchDom, {capture: true, once: true});  //MO-readystatechange race #1
     }
 
     #onBreak(target, mrs) {
       const stillOpen = endTagUnknown(target);
-      const ended1 = this.#stillOpen.filter(n => stillOpen.indexOf(n) === -1);
+      // const ended1 = this.#stillOpen.filter(n => stillOpen.indexOf(n) === -1);
+      const previouslyOpen = this.#stillOpen;
       this.#stillOpen = stillOpen;
-      const ended2 = [...addedNodes(mrs)].filter(n => stillOpen.indexOf(n) === -1);
-      this.#cb1(target, [...ended1, ...ended2]);
+      // const ended2 = [...addedNodes(mrs)].filter(n => stillOpen.indexOf(n) === -1);
+      // const ended = [...ended1, ...ended2];
+      // this.#cb1(target, ended);
+      target.dispatchEvent(new ParserBreakEvent(previouslyOpen, mrs));
     }
 
-    disconnect(mrs) {
-      this.#cb1(document.documentElement, [...this.#stillOpen, ...addedNodes(mrs)]);
-      document.removeEventListener('readystatechange', touchDom, {capture: true});
+    #disconnect(mrs) {
+      (mrs[mrs.length - 1].addedNodes[0] === ParserObserver.#c)                                 //MO-readystatechange race #2
+       && ParserObserver.#c.remove(), mrs.pop();
+      // const ended = [...this.#stillOpen, ...addedNodes(mrs)];
+      // this.#cb1(document.documentElement, ended);
+      document.dispatchEvent(new ParserBreakEvent(this.#stillOpen, mrs));
+      document.removeEventListener('readystatechange', ParserObserver.#touchDom, {capture: true});//MO-readystatechange race #3
       this.#mo.disconnect();
     }
   }
+  new ParserObserver();
 })();

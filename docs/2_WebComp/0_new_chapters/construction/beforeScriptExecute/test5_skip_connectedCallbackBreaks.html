@@ -1,12 +1,12 @@
 <script src="beforescriptexecute.js"></script>
 <script>
 
-  function onBreak(last) {
-    const txt = last === document.documentElement ? "html" : last.textContent[0];
+
+  function check(e) {
+    const txt = e.target === document ? "html" : e.target.textContent[0];
     return console.log(txt), Promise.resolve().then(()=> console.log("m" + txt));
   }
-
-  const po = new ParserObserver(onBreak);
+  window.addEventListener('parser-break', check, true);
   document.addEventListener('readystatechange', _ => console.log(document.readyState), {once: true});
 
   customElements.define('comp-constructor', class CompConstructor extends HTMLElement {

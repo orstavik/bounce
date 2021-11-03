@@ -1,6 +1,6 @@
 <script src="beforescriptexecute.js"></script>
 <script>
-  const po = new ParserObserver(last => console.log(last === document.documentElement ? 'the end' : last.textContent));
+  window.addEventListener('parser-break',e=> console.log(e.target === document ? 'the end' : e.target.textContent), true);
   document.addEventListener('readystatechange', () => console.log(document.readyState), {once: true});
 
   customElements.define('web-comp', class WebComp extends HTMLElement {

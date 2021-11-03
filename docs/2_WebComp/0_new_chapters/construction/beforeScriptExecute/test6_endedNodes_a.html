@@ -1,11 +1,7 @@
 <script src="beforescriptexecute.js"></script>
 <script>
-
-  new ParserObserver(() => 1);
-  window.addEventListener('parser-break', e =>
-    console.log(Array.from(e.endedNodes()).map(n => n.nodeName)), true);
+  window.addEventListener('parser-break', e => console.log(Array.from(e.endedNodes()).map(n => n.nodeName)), true);
   document.addEventListener('readystatechange', _ => (console.log(document.readyState)));
-  // const po = new ParserObserver(onBreak);
 </script>
 
 <h3>Test of ParserObserver endedNodes</h3>

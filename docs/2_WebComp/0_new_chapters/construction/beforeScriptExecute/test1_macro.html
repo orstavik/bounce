@@ -1,12 +1,11 @@
 <script src="beforescriptexecute.js"></script>
 <script>
   function check(x) {
-    x instanceof Node && (x = x === document.documentElement ? '7' : x.textContent[0]);
-    console.log(x)
-    Promise.resolve().then(() => Promise.resolve().then(() => console.log("mm" + x)));
+    console.log(x);
+    Promise.resolve().then(() => Promise.resolve().then(() => console.log('mm' + x)));
   }
 
-  const po = new ParserObserver(check);
+  window.addEventListener('parser-break', e => check(e.target === document ? '7' : e.target.textContent[0]), true);
   document.addEventListener('readystatechange', () => console.log(document.readyState), {once: true});
 
   const tests = ["4", "2"];
