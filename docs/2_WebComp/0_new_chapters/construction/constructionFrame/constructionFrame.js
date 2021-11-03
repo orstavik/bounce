@@ -364,8 +364,7 @@
       this.#el = el;
     }
 
-    end(el, skips) {
-      this.#el = el;
+    end(skips) {
       this.#skips = skips;
       super.end();
     }
@@ -386,6 +385,26 @@
     }
   }
 
+  class ParserConstructionFrame extends ConstructionFrame {
+    #nodes;
+
+    end(nodes) {
+      this.#nodes = [...nodes]; //
+      super.end();
+    }
+
+    * nodes() {
+      for (let n of this.#nodes)
+        yield n;
+    }
+
+    * elements() {
+      for (let n of this.nodes())
+        if (n.tagName)
+          yield n;
+    }
+  }
+
   let completedBranches = [];
   const frames = [];
 
@@ -393,16 +412,18 @@
     return el !== lastParsed && el.compareDocumentPosition(lastParsed) !== 20;
   }
 
-  function tryToEndPredictiveFrames(last) {
-    while (frames[0] && endTagRead(frames[0].el, last)) {
+  function onParserBreak(e) {
+    if (!frames.length)
+      return new ParserConstructionFrame().end(e.endedNodes())
+    while (frames[0] && endTagRead(frames[0].el, e.target)) {
       const frame = frames.shift();
-      frame.end(frame.el, completedBranches);
+      frame.end(completedBranches);
       completedBranches.push(frame.el);
     }
     ConstructionFrame.dropNow();
   }
 
-  window.addEventListener('parser-break', e => tryToEndPredictiveFrames(e.target), true);
+  window.addEventListener('parser-break', onParserBreak, true);
 
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
