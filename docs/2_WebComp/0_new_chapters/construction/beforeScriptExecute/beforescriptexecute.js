@@ -1,5 +1,7 @@
 /**
- * beforescriptexecute polyfill
+ * parser-break event
+ *
+ * The parser-break event resemble the native beforescriptexecute event.
  *
  * The beforescriptexecute event is dispatched before a <script> is triggered during loading of the main document.
  * As such, the beforescriptexecute event signify a break when the parser switches from adding native elements into the
@@ -96,9 +98,10 @@
 // we then remove that node in the MO immediately, thus leaving the DOM intact.
 // This will trick the MO to run as a macrotask (the readystatechange event is macro task event)
 // before the readystatechange events.
-
-
 (function () {
+  if (document.readyState !== 'loading')
+    throw new Error('new ParserObserver(..) can only be created while document is loading');
+
   class ParserBreakEvent extends Event {
     #mrs;
     #newEnded;
@@ -115,64 +118,52 @@
       if (!this.target) return;
       for (let n of this.#newEnded)
         yield n;
-      for (let added of addedNodes(this.#mrs))
-        if (this.#stillOpen.indexOf(added) === -1)
+      for (let {addedNodes} of this.#mrs)
+        for (let added of addedNodes)
+          if (this.#stillOpen.indexOf(added) === -1)
+            yield added;
+    }
+
+    * addedNodes() {
+      for (let {addedNodes} of this.#mrs)
+        for (let added of addedNodes)
           yield added;
     }
   }
 
-  function lastAddedNode(mrs) {
-    const nodes = mrs[mrs.length - 1].addedNodes;
-    return nodes[nodes.length - 1];
-  }
+  function makeOnMoObserver() {
+    const c = new Comment();                                                               //MO-readystatechange race #1
+    const touchDom = _ => document.body.append(c);                                         //MO-readystatechange race #1
+    document.addEventListener('readystatechange', touchDom, {capture: true, once: true});  //MO-readystatechange race #1
 
-  function* addedNodes(mrs) {
-    for (let {addedNodes} of mrs)
-      for (let n of addedNodes)
-        yield n;
-  }
+    let lastBreakStillOpen = [];
 
-  function endTagUnknown(n) {
-    const res = [];
-    for (; n; n = n.parentNode)
-      n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && res.unshift(n);
-    return res;
-  }
-
-  (function () {
-    if (document.readyState !== 'loading')
-      throw new Error('new ParserObserver(..) can only be created while document is loading');
-
-    let stillOpen = [];
-    const c = new Comment();                             //MO-readystatechange race #0
-    const touchDom = _ => document.body.append(c);       //MO-readystatechange race #0
-
-    function onBreak(target, mrs) {
-      const nowOpen = endTagUnknown(target);
-      const newEnded = stillOpen.filter(el => nowOpen.indexOf(el) === -1)
-      stillOpen = nowOpen;
-      target.dispatchEvent(new ParserBreakEvent(newEnded, mrs, stillOpen)); //todo use the last of endTagUnknown instead.
-    }
-
-    function disconnect(mrs) {
-      (mrs[mrs.length - 1].addedNodes[0] === c) && c.remove(), mrs.pop();//MO-readystatechange race #2
-      document.dispatchEvent(new ParserBreakEvent(stillOpen, mrs, []));
-      document.removeEventListener('readystatechange', touchDom, {capture: true});//MO-readystatechange race #3
-      mo.disconnect();
-    }
-
-    const mo = new MutationObserver(mrs => {
-      if (document.currentScript)                 //1. skip DOM mutation inside <script>
+    return function onMO(mrs) {
+      //1. skip DOM mutation inside <script>
+      if (document.currentScript)
         return;
-      if (document.readyState !== 'loading')      //2. The last MO is the end, not a break.
-        return disconnect(mrs);
+      //2. The end parser-break
+      if (document.readyState !== 'loading') {
+        (mrs[mrs.length - 1].addedNodes[0] === c) && (c.remove(), mrs.pop());                //MO-readystatechange race #2
+        document.removeEventListener('readystatechange', touchDom, {capture: true});       //MO-readystatechange race #2
+        document.dispatchEvent(new ParserBreakEvent(lastBreakStillOpen, mrs, []));
+        return mo.disconnect();
+      }
+      //3. A parser-break
       const nodes = mrs[mrs.length - 1].addedNodes;
       const lastAdded = nodes[nodes.length - 1];
-      if (lastAdded.connectedCallback)            //3. .connectedCallback() macro-task mixup
+      //4. .connectedCallback() macro-task mixup
+      if (lastAdded.connectedCallback)
         return;
-      onBreak(lastAdded, mrs);
-    });
-    mo.observe(document.documentElement, {childList: true, subtree: true});
-    document.addEventListener('readystatechange', touchDom, {capture: true, once: true});  //MO-readystatechange race #1
-  })();
+      const nowOpen = [];
+      for (let n = lastAdded; n; n = n.parentNode)
+        n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && nowOpen.unshift(n);
+      const newEnded = lastBreakStillOpen.filter(el => nowOpen.indexOf(el) === -1)
+      lastBreakStillOpen = nowOpen;
+      lastAdded.dispatchEvent(new ParserBreakEvent(newEnded, mrs, lastBreakStillOpen));  //todo do a try catch here //todo add an error event on the
+    }
+  }
+
+  const mo = new MutationObserver(makeOnMoObserver());
+  mo.observe(document.documentElement, {childList: true, subtree: true});
 })();

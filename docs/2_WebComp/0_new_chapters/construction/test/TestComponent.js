@@ -73,7 +73,7 @@ class TestHtml extends HTMLElement {
     this.shadowRoot.getElementById("link").setAttribute('href', testUrl);
     const testTxt = await (await fetch(testUrl)).text();
     this.shadowRoot.getElementById("code").textContent = testTxt;
-    const txt = `<base href='${testUrl}'/><script>(${(consoleLogMonkey.toString())})();</script>${testTxt}`;
+    const txt = `<base href='${testUrl}'/><script>(${consoleLogMonkey.toString()})();</script>${testTxt}`;
     this.shadowRoot.getElementById("iframe").src = `data:text/html;charset=utf-8,${encodeURI(txt)}#${this.#id}`;
   }
 
