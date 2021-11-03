@@ -1,3 +1,9 @@
+function consoleLogMonkey() {
+  console.log = function consoleLogMonkey(...args) {
+    return parent.postMessage(JSON.stringify([location.hash.substr(1), ...args]), '*');
+  }
+}
+
 //todo 2. make a better view per element.  Make the link on the iframe? then, make the diff something you see when you click on it.
 //language=HTML
 const template = `
@@ -15,8 +21,6 @@ const template = `
   <div id="code"></div>
   <iframe id="iframe"></iframe>
 `;
-
-import {} from "https://unpkg.com/diff@5.0.0/dist/diff.js";
 
 class TestHtml extends HTMLElement {
 
@@ -36,10 +40,10 @@ class TestHtml extends HTMLElement {
   }
 
   onMessage(e) {
-    let res = JSON.parse(e.data);
-    if (!(res instanceof Array) || res[0] !== this.#id + '')
+    const res = JSON.parse(e.data);
+    if(!(res instanceof Array) || res.shift() !== this.#id + '')
       return;
-    this.#resultObj.push(res[1]);
+    this.#resultObj.push(res.length === 1 ? res[0] : res);
     this.render();
   }
 
@@ -65,13 +69,10 @@ class TestHtml extends HTMLElement {
     this.shadowRoot.getElementById("title").textContent = newValue.substr(newValue.lastIndexOf('/') + 1);
     const testUrl = new URL(newValue, document.location);
     this.shadowRoot.getElementById("link").setAttribute('href', testUrl);
-    const logUrl = new URL('log.js', document.location);
-    const response = await fetch(testUrl);
-    const testTxt = await response.text();
+    const testTxt = await (await fetch(testUrl)).text();
     this.shadowRoot.getElementById("code").textContent = testTxt;
-    const txt = `<base href='${testUrl}'/><script src='${logUrl}'></script>${testTxt}`;
-    const data = encodeURI(txt);
-    this.shadowRoot.getElementById("iframe").src = `data:text/html;charset=utf-8,${data}#${this.#id}`;
+    const txt = `<base href='${testUrl}'/><script>(${(consoleLogMonkey.toString())})();</script>${testTxt}`;
+    this.shadowRoot.getElementById("iframe").src = `data:text/html;charset=utf-8,${encodeURI(txt)}#${this.#id}`;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
