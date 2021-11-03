@@ -43,6 +43,32 @@
     ]
   </script>
 </test-html>
+<test-html test="../beforeScriptExecute/test6_endedNodes_b.html">
+  <script expected>
+    [
+      ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text"],
+      "constructor",
+      ["DIV", "WEB-COMP", "#text", "SPAN", "#text", "B", "#text", "#text", "#text", "#text" ],
+      "constructor",
+      ["HTML", "BODY", "MAIN", "WEB-COMP", "#text"],
+      "interactive",
+      "complete"
+    ]
+  </script>
+</test-html>
+<test-html test="../beforeScriptExecute/test6_endedNodes_c.html">
+  <script expected>
+    [
+      ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text"],
+      "connected",
+      ["DIV", "WEB-COMP", "#text", "SPAN", "#text", "B", "#text", "#text", "#text", "#text" ],
+      "connected",
+      ["HTML", "BODY", "MAIN", "WEB-COMP", "#text"],
+      "interactive",
+      "complete"
+    ]
+  </script>
+</test-html>
 
 <h3>ConstructionFrame</h3>
 <test-html test="../constructionFrame/test1.html">

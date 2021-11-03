@@ -102,6 +102,12 @@
   if (document.readyState !== 'loading')
     throw new Error('new ParserObserver(..) can only be created while document is loading');
 
+  function * addedNodes(mrs) {
+    for (let {addedNodes} of mrs)
+      for (let n of addedNodes)
+        yield n;
+  }
+
   class ParserBreakEvent extends Event {
     #mrs;
     #newEnded;
@@ -118,16 +124,13 @@
       if (!this.target) return;
       for (let n of this.#newEnded)
         yield n;
-      for (let {addedNodes} of this.#mrs)
-        for (let added of addedNodes)
-          if (this.#stillOpen.indexOf(added) === -1)
-            yield added;
+      for (let added of addedNodes(this.#mrs))
+        if (this.#stillOpen.indexOf(added) === -1)
+          yield added;
     }
 
     * addedNodes() {
-      for (let {addedNodes} of this.#mrs)
-        for (let added of addedNodes)
-          yield added;
+      yield* addedNodes(this.#mrs);
     }
   }
 
@@ -154,7 +157,7 @@
       const lastAdded = nodes[nodes.length - 1];
       //4. .connectedCallback() macro-task mixup
       if (lastAdded.connectedCallback)
-        return;
+        return lastBreakStillOpen = [...lastBreakStillOpen, ...addedNodes(mrs)];
       const nowOpen = [];
       for (let n = lastAdded; n; n = n.parentNode)
         n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && nowOpen.unshift(n);
