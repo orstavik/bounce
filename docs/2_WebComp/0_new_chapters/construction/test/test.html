@@ -34,10 +34,13 @@
   <script expected>
     [
       ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text", "SCRIPT", "#text"],
+      ["HTML", "BODY", "MAIN", "DIV"],
       "a",
       ["DIV", "#text", "SPAN", "#text", "B", "#text", "#text", "#text", "#text", "SCRIPT", "#text"],
+      ["HTML", "BODY", "MAIN"],
       "b",
       ["HTML", "BODY", "MAIN", "#text"],
+      [],
       "interactive",
       "complete"
     ]
@@ -47,10 +50,13 @@
   <script expected>
     [
       ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text"],
+      ["HTML", "BODY", "MAIN", "DIV"],
       "constructor",
-      ["DIV", "WEB-COMP", "#text", "SPAN", "#text", "B", "#text", "#text", "#text", "#text" ],
+      ["DIV", "WEB-COMP", "#text", "SPAN", "#text", "B", "#text", "#text", "#text", "#text"],
+      ["HTML", "BODY", "MAIN"],
       "constructor",
       ["HTML", "BODY", "MAIN", "WEB-COMP", "#text"],
+      [],
       "interactive",
       "complete"
     ]
@@ -60,10 +66,13 @@
   <script expected>
     [
       ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text"],
+      ["HTML", "BODY", "MAIN", "DIV"],
       "connected",
-      ["DIV", "WEB-COMP", "#text", "SPAN", "#text", "B", "#text", "#text", "#text", "#text" ],
+      ["DIV", "WEB-COMP", "#text", "SPAN", "#text", "B", "#text", "#text", "#text", "#text"],
+      ["HTML", "BODY", "MAIN"],
       "connected",
       ["HTML", "BODY", "MAIN", "WEB-COMP", "#text"],
+      [],
       "interactive",
       "complete"
     ]

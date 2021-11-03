@@ -102,7 +102,7 @@
   if (document.readyState !== 'loading')
     throw new Error('new ParserObserver(..) can only be created while document is loading');
 
-  function * addedNodes(mrs) {
+  function* addedNodes(mrs) {
     for (let {addedNodes} of mrs)
       for (let n of addedNodes)
         yield n;
@@ -113,11 +113,15 @@
     #newEnded;
     #stillOpen;
 
-    constructor(newEnded, mrs, stillOpen) {
+    constructor(newEnded, mrs, stillOpen = []) {
       super('parser-break');
       this.#mrs = mrs;
       this.#newEnded = newEnded;
       this.#stillOpen = stillOpen;
+    }
+
+    * openNodes() {
+      yield* this.#stillOpen[Symbol.iterator]();
     }
 
     * endedNodes() {
@@ -147,15 +151,15 @@
         return;
       //2. The end parser-break
       if (document.readyState !== 'loading') {
-        (mrs[mrs.length - 1].addedNodes[0] === c) && (c.remove(), mrs.pop());                //MO-readystatechange race #2
+        this.disconnect();
+        (mrs[mrs.length - 1].addedNodes[0] === c) && (c.remove(), mrs.pop());              //MO-readystatechange race #2
         document.removeEventListener('readystatechange', touchDom, {capture: true});       //MO-readystatechange race #2
-        document.dispatchEvent(new ParserBreakEvent(lastBreakStillOpen, mrs, []));
-        return mo.disconnect();
+        return document.dispatchEvent(new ParserBreakEvent(lastBreakStillOpen, mrs));
       }
       //3. A parser-break
       const nodes = mrs[mrs.length - 1].addedNodes;
       const lastAdded = nodes[nodes.length - 1];
-      //4. .connectedCallback() macro-task mixup
+      //4. .connectedCallback() macro-task is a BAD parser-break
       if (lastAdded.connectedCallback)
         return lastBreakStillOpen = [...lastBreakStillOpen, ...addedNodes(mrs)];
       const nowOpen = [];
@@ -163,7 +167,7 @@
         n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && nowOpen.unshift(n);
       const newEnded = lastBreakStillOpen.filter(el => nowOpen.indexOf(el) === -1)
       lastBreakStillOpen = nowOpen;
-      lastAdded.dispatchEvent(new ParserBreakEvent(newEnded, mrs, lastBreakStillOpen));  //todo do a try catch here //todo add an error event on the
+      lastAdded.dispatchEvent(new ParserBreakEvent(newEnded, mrs, lastBreakStillOpen));
     }
   }
 
