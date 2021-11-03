@@ -22,6 +22,8 @@ const template = `
   <iframe id="iframe"></iframe>
 `;
 
+import {} from "https://unpkg.com/diff@5.0.0/dist/diff.js";
+
 class TestHtml extends HTMLElement {
 
   static #count = 0;
