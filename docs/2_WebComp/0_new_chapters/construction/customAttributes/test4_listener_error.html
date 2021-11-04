@@ -1,0 +1,21 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :custom>hello sunshine</div>
+
+<script>
+  window.addEventListener('error', e => (console.log('error'), e.preventDefault()));
+
+  console.log(1);
+  customAttributes.define(':custom', class CustomAttr extends Attr {
+    upgrade(setCustomValue) {
+      this.ownerElement.addEventListener('click', e => { throw new Error('omg')});
+    }
+  });
+  console.log(2);
+  const div = document.querySelector("div");
+  div.click();
+  console.log(3);
+</script>

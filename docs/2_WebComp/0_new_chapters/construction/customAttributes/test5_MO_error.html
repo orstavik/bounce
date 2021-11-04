@@ -1,0 +1,23 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :custom>hello sunshine</div>
+
+<script>
+  window.addEventListener('error', e => (console.log('error'), e.preventDefault()));
+
+  console.log(1);
+  customAttributes.define(':custom', class CustomAttr extends Attr {
+    upgrade(setCustomValue) {
+      const MO = new MutationObserver(function(){throw new Error('omg')});
+      MO.observe(this.ownerElement, {attributes: true});
+    }
+  });
+  console.log(2);
+  const div = document.querySelector("div");
+  div.setAttribute('ca', 'boom');
+  console.log(3);
+  Promise.resolve().then(()=> console.log(4))
+</script>
