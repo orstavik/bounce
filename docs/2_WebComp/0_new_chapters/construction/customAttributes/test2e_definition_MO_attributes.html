@@ -1,0 +1,36 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :sum>hello sunshine</div>
+
+<script>
+  customAttributes.define(':sum', class ChildCounterAttr extends Attr {
+
+    upgrade(setCustomValue) {
+      setCustomValue(this.sum);
+      const MO = new MutationObserver(() => setCustomValue(this.sum));
+      MO.observe(this.ownerElement, {attributes: true, attributeFilter: ['a', 'b']});
+    }
+
+    get sum() {
+      return parseInt(this.ownerElement.getAttribute('a')) + parseInt(this.ownerElement.getAttribute('b'));
+    }
+  });
+
+
+  (function () {
+    function test(el) {
+      console.log(el.getAttribute(':sum'), el.getAttributeNode(':sum').value, el.getAttributeNode(':sum').sum);
+    }
+
+    const div = document.querySelector("div");
+    test(div);
+    div.setAttribute('a', 21);
+    test(div);
+    div.setAttribute('b', 21);
+    test(div);
+    Promise.resolve().then(() => test(div));
+  })();
+</script>
