@@ -1,0 +1,39 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+hello sunshine
+<div></div>
+
+<script>
+  const wa = [];
+
+  customAttributes.define(':custom', class CustomAttr extends Attr {
+    upgrade(setCustomValue) {
+      const MO = new MutationObserver(function () {
+        this.bob = 'alice';
+        setCustomValue(Math.random());
+      });
+      MO.observe(this.ownerElement, {attributes: true});
+      wa.push(new WeakRef(this));
+      wa.push(new WeakRef(MO));
+    }
+  });
+
+  const div = document.querySelector("div");
+
+  let m = 1;
+  const bob = setInterval(function () {
+    if (m > 17)
+      clearInterval(bob);
+    for (let i = 0; i < (2 ** m); i++)
+      div.innerHTML = '<span :custom></span>';  //making lots of elements, connecting them and everything, but then overwriting them so only the last remain.
+    const dereffed = wa.filter(wr => !wr.deref());
+    console.info(`gc ${m} ${2 ** m}`);
+    if (dereffed.length) {
+      console.log("success");
+      clearInterval(bob);
+    }
+    m++;
+  }, 100)
+</script>
