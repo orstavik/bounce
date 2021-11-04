@@ -1,0 +1,42 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :child-counter>
+  <h1>hello</h1>
+</div>
+
+<script>
+  customAttributes.define(':child-counter', class ChildCounterAttr extends Attr {
+
+    upgrade(setCustomValue) {
+      setCustomValue(this.count);
+      const MO = new MutationObserver(() => setCustomValue(this.count));
+      MO.observe(this.ownerElement, {childList: true});
+    }
+
+    get count() {
+      return this.ownerElement.childNodes.length + ':' + this.ownerElement.children.length;
+    }
+  });
+
+
+  (function () {
+    function test(el) {
+      console.log(
+        el.getAttribute(':child-counter'),
+        el.getAttributeNode(':child-counter').value,
+        el.getAttributeNode(':child-counter').count
+      );
+    }
+
+    const div = document.querySelector("div");
+    test(div);
+    div.append(document.createElement('hr'));
+    test(div);
+    div.append(document.createTextNode('sunshine'));
+    test(div);
+    Promise.resolve().then(() => test(div));
+  })();
+</script>
