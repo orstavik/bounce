@@ -1,0 +1,34 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :count-down="3">
+  <h1>hello</h1>
+</div>
+
+<script>
+  const div = document.querySelector("div");
+  const countDownState = div.getAttribute(':count-down');
+  console.log(parseInt(countDownState));
+
+  customAttributes.define(':count-down', class CounterDownAttr extends Attr {
+
+    upgrade(setCustomValue) {
+      const ticker = setInterval(() => {
+        setCustomValue(parseInt(this.value) - 1);
+        if (!this.value)
+          clearInterval(ticker);
+      }, 10);
+    }
+  });
+
+  const watcher = setInterval(function () {
+    const countDownState = div.getAttribute(':count-down');
+    console.log(parseInt(countDownState));
+    if (countDownState !== "0")
+      return;
+    clearInterval(watcher);
+    console.log("the end");
+  }, 10);
+</script>

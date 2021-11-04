@@ -1,0 +1,42 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<style>
+  * {margin: 0; padding: 0; box-sizing: border-box}
+  p {height: 10px}
+</style>
+
+<div :height>
+  <p>hello</p>
+</div>
+
+<script>
+  (function () {
+    //todo raf doesn't work in Chrome Safari in the automatic tests, because the iframe is out of view... We need to make the iframe visible... The tests must run in visible mode, and then be made smaller.
+    const div = document.querySelector("div");
+    console.log(div.getAttribute(':height') || null);
+
+    const setValues = new WeakMap();
+    customAttributes.define(':height', class HeightAttr extends Attr {
+
+      upgrade(setCustomValue) {
+        setValues.set(this, setCustomValue);
+        this.update();
+        requestAnimationFrame(() => this.update());
+      }
+
+      update() {
+        const clientRect = this.ownerElement.getBoundingClientRect();
+        return setValues.get(this)(clientRect.height);
+      }
+    });
+    console.log(div.getAttribute(':height') || null);
+    const p = document.createElement('p');
+    p.innerText = 'sunshine';
+    div.append(p);
+    console.log(div.getAttribute(':height') || null);
+    requestAnimationFrame(() => console.log(div.getAttribute(':height') || null));
+  })();
+</script>

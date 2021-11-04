@@ -630,12 +630,12 @@
     ]
   </script>
 </test-html>
-<test-html test="../customAttributes/test2_definition.html">
+<test-html test="../customAttributes/test2a_definition_listener.html">
   <script expected>
     ["42", 21]
   </script>
 </test-html>
-<test-html test="../customAttributes/test2a_definition_MO.html">
+<test-html test="../customAttributes/test2b_definition_MO.html">
   <script expected>
     [
       ["3:1", "3:1", "3:1"],
@@ -643,6 +643,16 @@
       ["3:1", "3:1", "5:2"],
       ["5:2", "5:2", "5:2"]
     ]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test2c_definition_timer.html">
+  <script expected>
+    [3, 2, 1, 0, "the end"]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test2d_definition_raf.html">
+  <script expected>
+    [null, "10", "10", "20"]
   </script>
 </test-html>
 <test-html test="../customAttributes/test3_definition_error.html">
