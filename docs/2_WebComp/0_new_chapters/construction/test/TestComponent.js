@@ -11,15 +11,20 @@ const template = `
     :host { display: block; height: 1em; overflow: hidden; }
     :host([ok="true"]) { border-left: 5px solid green; }
     :host([ok="false"]) { border-left: 5px solid red; }
-    :host([active]) { height: 60vh; overflow: scroll; }
+
     #diff, #code { white-space: pre; border: 4px double lightblue }
     .added {color: green}
     .removed {color: red}
+    iframe { height: 10px; width: 10px; display: inline-block; }
+
+    :host([active]) { height: 60vh; overflow: scroll; }
+    :host([active]) iframe{ height: auto; width: auto; display: block;}
+    :host([active]) div { display: none;}
   </style>
   <span id="title"></span><a id="link" target="_blank">(=> new tab)</a> <a id="clipboard">[copy JSON-result]</a>
+  <iframe id="iframe"></iframe>
   <div id="diff"></div>
   <div id="code"></div>
-  <iframe id="iframe"></iframe>
 `;
 
 import {} from "https://unpkg.com/diff@5.0.0/dist/diff.js";

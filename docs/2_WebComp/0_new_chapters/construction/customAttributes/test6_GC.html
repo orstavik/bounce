@@ -22,18 +22,16 @@ hello sunshine
 
   const div = document.querySelector("div");
 
-  let m = 1;
-  const bob = setInterval(function () {
-    if (m > 17)
-      clearInterval(bob);
-    for (let i = 0; i < (2 ** m); i++)
+  (function bob(m) {
+    const count = 2 ** m;
+    console.debug(`GC ${m} ${count}`);
+    for (let i = 0; i < count; i++)
       div.innerHTML = '<span :custom></span>';  //making lots of elements, connecting them and everything, but then overwriting them so only the last remain.
     const dereffed = wa.filter(wr => !wr.deref());
-    console.info(`gc ${m} ${2 ** m}`);
-    if (dereffed.length) {
-      console.log("success");
-      clearInterval(bob);
-    }
-    m++;
-  }, 100)
+    if (m > 17)
+      return console.log("the gc didn't kick in, expect this in Firefox");
+    if (dereffed.length)
+      return console.log("success");
+    setTimeout(() => bob(++m), count);
+  })(4);
 </script>
