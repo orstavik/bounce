@@ -630,9 +630,14 @@
     ]
   </script>
 </test-html>
-<test-html test="../customAttributes/test1_basic_definition.html">
+<test-html test="../customAttributes/test2_definition.html">
   <script expected>
-    [42, 21]
+    ["42", 21]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test3_definition_error.html">
+  <script expected>
+    [1,"error",2,"error",3]
   </script>
 </test-html>
 

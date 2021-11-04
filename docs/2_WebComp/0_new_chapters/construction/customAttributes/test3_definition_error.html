@@ -1,0 +1,21 @@
+<script src="../beforeScriptExecute/beforescriptexecute.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script>
+
+<div :custom>hello</div>
+<span>sunshine</span>
+
+<script>
+  window.addEventListener('error', e => (console.log('error'), e.preventDefault()));
+
+  console.log(1);
+  customAttributes.define(':custom', class CustomAttr extends Attr {
+    upgrade(setCustomValue) {
+      throw new Error();
+    }
+  });
+  console.log(2);
+  document.querySelector("span").setAttribute(':custom', 'will fail');
+  console.log(3);
+</script>

@@ -30,7 +30,7 @@
   const cache = {};
 
   function* weakArrayIterator(wa) {  //todo this is ok now, but if we await while inside a for loop with this iterator, then it can break.
-    if(!wa) return;
+    if (!wa) return;
     for (let i = 0; i < wa.length; i++) {
       let el = wa[i].deref();
       el ? yield el : wa.splice(i--, 1);
@@ -40,13 +40,12 @@
   function upgradeAttribute(ca, def = defs[ca.name]) {
     if (!def)
       return (cache[ca.name] ??= []).push(new WeakRef(ca));
-    //1. we have already done a syntax check of the def, so we can just set the new prototype on the attribute object.
-    Object.setPrototypeOf(ca, def.prototype);
-    //2. make the setCustomValue(val) function for this specific custom attribute
-    const setCustomValue = function setValue(val) {
-      setValueOG.call(ca, val);
-    };
-    ca.upgrade(setCustomValue);                     //todo here the callback is made
+    try {
+      Object.setPrototypeOf(ca, def.prototype);  //1. upgrade the prototype/"class" of the attr with the CA definition
+      ca.upgrade(setValueOG.bind(ca));           //2. upgrade() callback with the setValue() OG bound to the attr object.
+    } catch (error) {
+      window.dispatchEvent(new ErrorEvent('error', {error}));
+    }
   }
 
   function* customAttributes(elements) {
