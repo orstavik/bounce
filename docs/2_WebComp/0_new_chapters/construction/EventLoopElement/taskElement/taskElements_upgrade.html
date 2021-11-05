@@ -1,0 +1,120 @@
+<event-loop>
+    <task :created="1631618371262" :delay="3000" :cb="printRes" :start="1631789839549"></task>
+    <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="plus">
+        <task :created="1631618374264" :delay="2000" :start="1631789839346" :cb=multiply>
+            <task :created="1631618374262" :delay="2000" :start="1631789839346" :cb=divide>
+                <int>6</int>
+                <int>1</int>
+            </task>
+            <int>2</int>
+            <int>5</int>
+        </task>
+        <int>3</int>
+    </task>
+
+
+    <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="asyncPlus">
+        <task :created="1631618374264" :delay="2000" :start="1631789839346" :cb=asyncMultiply>
+            <task :created="1631618374262" :delay="2000" :start="1631789839346" :cb=asyncDivide>
+                <float>6.8</float>
+                <float>1.0</float>
+            </task>
+            <int>2</int>
+            <int>5</int>
+        </task>
+        <int>3</int>
+    </task>
+
+    <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="asyncPlus">
+        <task :created="1631618374264" :delay="2000" :start="1631789839346" :cb=asyncMultiply>
+            <task :created="1631618374262" :delay="2000" :start="1631789839346" :cb=asyncDivide>
+                <float>5.8</float>
+                <float>1.5</float>
+            </task>
+            <float>2.5</float>
+            <int>5</int>
+        </task>
+        <float>3.5</float>
+    </task>
+</event-loop>
+
+<task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="asyncPlus">
+    <task :created="1631618374264" :delay="2000" :start="1631789839346" :cb=asyncPlus>
+        <task :created="1631618374262" :delay="2000" :start="1631789839346" :cb=asyncPlus>
+            <float>1.1</float>
+            <float>1.2</float>
+            <float>1.3</float>
+            <float>1.4</float>
+            <float>1.5</float>
+        </task>
+        <float>1.5</float>
+        <float>2.5</float>
+        <float>3.5</float>
+        <float>4.7</float>
+        <float>5.5</float>
+    </task>
+    <int>3</int>
+    <int>2</int>
+    <int>1</int>
+    <int>0</int>
+</task>
+</event-loop>
+
+<script>
+
+  function printRes(res) {
+    const taskElements = document.documentElement.querySelectorAll("task[\\:res]");
+    console.log(
+      [...taskElements].reverse().map(n => n?.attributes?.[":res"]?.value + " " + n?.attributes?.[":res-type"]?.value))
+  }
+
+  function multiply(args) {
+
+    return args.reduce((sum, value) => sum * value);
+  }
+
+  function divide(args) {
+    return args.reduce((sum, value) => sum / value);
+  }
+
+  function plus(args) {
+    return args.reduce((sum, value) => sum + value);
+  }
+
+
+  function asyncMultiply(args) {
+    return new Promise((resolve, reject) => {
+      let res = args.reduce((sum, value) => sum * value);
+      resolve(res)
+    });
+  }
+
+  function asyncDivide(args) {
+    return new Promise((resolve, reject) => {
+      let res = args.reduce((sum, value) => sum / value);
+      resolve(res)
+    });
+  }
+
+  function asyncPlus(args) {
+    return new Promise((resolve, reject) => {
+      let res = args.reduce((sum, value) => sum + value);
+      resolve(res)
+    });
+  }
+
+  const eventLoopElement = document.querySelector("event-loop");
+
+  function take5() {
+    return 5;
+  }
+
+  setTimeout(take5, 2000);
+  console.log([...eventLoopElement.children].map(n => n.nodeName));
+</script>
+
+<script src="../src/BouncedPath.js"></script>
+<script src="../src/Event.js"></script>
+<script src="../src/EventListenerRegistry.js"></script>
+<script src="../src/FirstConnectedCallbackMixin.js"></script>
+<script src="../src/EventLoop.js"></script>
