@@ -686,6 +686,7 @@
   </script>
 </test-html>
 dobulecheck
+
 <h1>Test Event Loop element</h1>
 <h3>task element tests</h3>
 
@@ -695,19 +696,19 @@ dobulecheck
   </script>
 </test-html>
 
-<test-html test="../taskElement/taskElements_upgrade.html">
+<test-html test="../EventLoopElement/taskElement/taskElements_upgrade.html">
   <script expected>[["TASK", "TASK", "TASK", "TASK"], ["6.5 FLOAT", "24.2 FLOAT", "30.2 INT", "3.8666666666666667 FLOAT", "48.33333333333333 INT", "51.5 FLOAT", "6.8 FLOAT", "68 INT", "71 INT", "6 INT", "60 INT", "63 INT"]]
   </script>
 </test-html>
 
 <h3>event element tests</h3>
 
-<test-html test="../eventElement/eventElement_predictive.html">
+<test-html test="../EventLoopElement/eventElement/eventElement_predictive.html">
   <script expected>
     [["EVENT"]]
   </script>
 </test-html>
-<test-html test="../eventElement/eventElement_upgrade.html">
+<test-html test="../EventLoopElement/eventElement/eventElement_upgrade.html">
   <script expected>
     [[]]
   </script>
@@ -715,7 +716,7 @@ dobulecheck
 
 <h3>error tests</h3>
 
-<test-html test="../errorTests/event_loop_expected_errors.html">
+<test-html test="../EventLoopElement/errorTests/event_loop_expected_errors.html">
   <script expected>
     [
       "Two event-loop elements",
