@@ -713,4 +713,23 @@ dobulecheck
   </script>
 </test-html>
 
+<h3>error tests</h3>
+
+<test-html test="../errorTests/event_loop_expected_errors.html">
+  <script expected>
+    [
+      "Two event-loop elements",
+      "error",
+      "Append to illegal element",
+      "error",
+      "Set event element without :target",
+      "error",
+      "Set wrong :target attribute to event element",
+      "error",
+      "Create event element without :uid",
+      "error"
+    ]
+  </script>
+</test-html>
+
 <script type="module" src="TestComponent.js"></script>
