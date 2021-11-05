@@ -12,14 +12,14 @@ const template = `
     :host([ok="true"]) { border-left: 5px solid green; }
     :host([ok="false"]) { border-left: 5px solid red; }
 
-    #diff, #code { white-space: pre; border: 4px double lightblue }
+    #diff, #code { white-space: pre; border: 4px double lightblue; }
     .added {color: green}
     .removed {color: red}
     iframe { height: 10px; width: 10px; display: inline-block; }
 
     :host([active]) { height: 60vh; overflow: scroll; }
-    :host([active]) iframe{ height: auto; width: auto; display: block;}
-    :host([active]) div { display: none;}
+    :host([active]) iframe { height: auto; width: auto; display: block;}
+    /*:host([active]) #diff, #code { display: block;}*/
   </style>
   <span id="title"></span><a id="link" target="_blank">(=> new tab)</a> <a id="clipboard">[copy JSON-result]</a>
   <iframe id="iframe"></iframe>
@@ -45,7 +45,7 @@ class TestHtml extends HTMLElement {
     window.addEventListener('message', e => this.onMessage(e));
     this.shadowRoot.addEventListener('dblclick', e => this.onDblclick(e));
     this.shadowRoot.getElementById('clipboard').addEventListener('click',
-        _ => navigator.clipboard.writeText(JSON.stringify(this.#resultObj))
+      _ => navigator.clipboard.writeText(JSON.stringify(this.#resultObj))
     );
   }
 
