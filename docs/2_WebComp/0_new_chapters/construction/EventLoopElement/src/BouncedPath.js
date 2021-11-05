@@ -1,4 +1,4 @@
-  function* ContextIterator(context, parent) {
+function* ContextIterator(context, parent) {
   context.parent = parent;
   yield context;
   for (let child of context.contextChildren.filter(c => c)) {
@@ -7,7 +7,7 @@
   }
 }
 
-  function calculateRoot(target, root, e) {
+function calculateRoot(target, root, e) {
   if (target === window) return window;
   if (root === false) return target.getRootNode();
   if (root === true) return target.getRootNode({composed: true});
@@ -15,7 +15,7 @@
   return target.getRootNode(e);
 }
 
-  function composedPath(target, endDocumentOrComposedTrueFalse) {
+function composedPath(target, endDocumentOrComposedTrueFalse) {
   const res = [];
   while (target) {
     res.push(target);
@@ -25,7 +25,7 @@
 }
 
 //rule 1: The Bounce sequence always ends with a DocumentFragment or the document.
-  function bounceSequence(target, endDocumentTrueOrFalse, contextChildren = []) {
+function bounceSequence(target, endDocumentTrueOrFalse, contextChildren = []) {
   //1. make path
   const path = [];
   let root = target;
@@ -44,7 +44,7 @@
   return bounceSequence(root.host, endDocumentTrueOrFalse, [context]);
 }
 
-  function toString(context, depth = '', i = 0) {
+function toString(context, depth = '', i = 0) {
   let {path, contextChildren} = context;
   path = depth + i + ':' + path.map(et => et.nodeName).join(',');
   contextChildren = contextChildren.map((c, i) => c ? toString(c, depth + '..', i) : null).filter(a => a);

@@ -1,4 +1,4 @@
-  class EventListenerRegistry {
+class EventListenerRegistry {
   constructor() {
     this.map = {};
     this.listsWithRemoved = [];

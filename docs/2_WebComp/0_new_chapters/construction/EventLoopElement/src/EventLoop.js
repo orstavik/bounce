@@ -118,7 +118,7 @@ function runCallback(el) {
 }
 
 
- class EventLoop extends FirstConnectedCallbackMixin {
+class EventLoop extends FirstConnectedCallbackMixin {
   constructor() {
     super();
     document.addEventListener('DOMContentLoaded', () => {    //todo: add new

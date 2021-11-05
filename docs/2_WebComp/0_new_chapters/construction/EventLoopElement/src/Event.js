@@ -12,7 +12,7 @@ function initEvent(e, composedPath) {
   });
 }
 
- function updateEvent(e, key, value) {
+function updateEvent(e, key, value) {
   (eventToState.get(e))[key] = value;
 }
 

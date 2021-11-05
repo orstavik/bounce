@@ -1,6 +1,6 @@
 const cache = new WeakSet();
 
-class FirstConnectedCallbackMixin extends HTMLElement {
+class FirstConnectedCallbackMixin extends HTMLElement  {
   connectedCallback() {
     if (cache.has(this))
       return;
