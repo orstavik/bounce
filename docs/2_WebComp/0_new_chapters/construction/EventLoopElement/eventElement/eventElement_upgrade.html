@@ -14,7 +14,7 @@
     event.uid = divElement.getAttribute(":uid");
     divElement.dispatchEvent(event);
     console.log([...eventLoop.children].map(n => n.nodeName))
-  })()
+  })();
 </script>
 
 <script src="../src/BouncedPath.js"></script>
