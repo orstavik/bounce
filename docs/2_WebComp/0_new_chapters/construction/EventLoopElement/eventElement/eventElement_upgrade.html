@@ -1,0 +1,25 @@
+<div :uid="1"></div>
+
+<event-loop></event-loop>
+
+<script>
+  function gotFive() {
+    return 5;
+  }
+
+  (() => {
+    const divElement = document.querySelector("div");
+    const eventLoop = document.querySelector("event-loop");
+    const event = new Event("test");
+    event.cb = gotFive.name;
+    event.uid = divElement.getAttribute(":uid");
+    divElement.dispatchEvent(event);
+    console.log([...eventLoop.children].map(n => n.nodeName))
+  })()
+</script>
+
+<script src="../src/BouncedPath.js"></script>
+<script src="../src/Event.js"></script>
+<script src="../src/EventListenerRegistry.js"></script>
+<script src="../src/FirstConnectedCallbackMixin.js"></script>
+<script src="../src/EventLoop.js"></script>

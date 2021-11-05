@@ -1,0 +1,57 @@
+<script src="../src/BouncedPath.js"></script>
+<script src="../src/Event.js"></script>
+<script src="../src/EventListenerRegistry.js"></script>
+<script src="../src/FirstConnectedCallbackMixin.js"></script>
+<script src="../src/EventLoop.js"></script>
+
+<body>
+<div></div>
+</body>
+
+<script>
+
+  function cleanEventLoops() {
+    [...document.querySelectorAll("event-loop")].map(element => element.parentNode.removeChild(element));
+  }
+
+  window.addEventListener("error", e => {
+    console.log("error");
+    cleanEventLoops();
+  });
+
+  let eventLoop = document.createElement("event-loop");
+  const divElement = document.querySelector("div");
+
+
+  console.log("Two event-loop elements");
+  document.body.appendChild(document.createElement("event-loop"));
+  document.body.appendChild(document.createElement("event-loop"));
+
+  console.log("Append to illegal element");
+  divElement.appendChild(document.createElement("event-loop"));
+
+
+  console.log("Set event element without :target");
+  eventLoop.appendChild(document.createElement("event"));
+  divElement.appendChild(eventLoop);
+
+  console.log("Set wrong :target attribute to event element");
+  let elem1 = document.createElement("event");
+  elem1.setAttribute(":" + "target", "123");
+  eventLoop.appendChild(elem1);
+  divElement.appendChild(eventLoop);
+
+  console.log("Create event element without :uid");
+  document.createElement("span").dispatchEvent(new CustomEvent("test"));
+  debugger
+
+  console.log("Create task element with anonymous function");
+  setTimeout(() => {
+    console.log();
+  }, 0);
+
+  console.log("Create task element with anonymous function");
+  setTimeout(function test(){console.log()}, 0);
+
+
+</script>
