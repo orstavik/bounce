@@ -6,7 +6,7 @@
   }
   window.addEventListener('parser-break', test, {capture: true});
 </script>
-<script src="beforescriptexecute.js"></script>
+<script src="ParserBreakEvent.js"></script>
 <script>
   document.addEventListener('readystatechange', _ => console.log(document.readyState));
 
@@ -24,7 +24,7 @@
 </script>
 
 <body>
-<h3>Test of beforescriptexecute with script and web-comp close together</h3>
+<h3>Test of ParserBreakEvent with script and web-comp close together</h3>
 
 <comp-constructor></comp-constructor><comp-connected></comp-connected>
 

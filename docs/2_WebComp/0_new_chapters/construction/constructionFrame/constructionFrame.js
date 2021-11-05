@@ -11,7 +11,7 @@
    *                         runs light-shadow, top-down, left-right.
    *
    * The ConstructionFrame API depends on:
-   *  1. beforescriptexecute event.
+   *  1. ParserBreakEvent event.
    *  2. NoNewConstructorHTMLElement.
    *     The NoNewContructorHTMLElement essentially ensures that no 'new HTMLElement()' constructor is called directly.
    *     This is a restriction that applies to native elements, and this restriction is extended to custom elements.
@@ -74,7 +74,7 @@
    *    predictive constructionFrame and issue a construction-start event. all predictive constructionFrames will have
    *    an empty parent construction frame (ie. be a root construction frame).
    * 2. then, every time the predictive parser breaks to either a) run a script or b) run another custom element constructor,
-   *    ie. at beforescriptexecute time during loading, then the mechanism will check if the endTag of the custom element
+   *    ie. at ParserBreakEvent time during loading, then the mechanism will check if the endTag of the custom element
    *    whose constructor triggered the predictive construction frame has been read.
    * 3. If the endTag of the custom element that triggered the predictive frame has been read, the construction-end event
    *    is dispatched for that predictive construction frame.

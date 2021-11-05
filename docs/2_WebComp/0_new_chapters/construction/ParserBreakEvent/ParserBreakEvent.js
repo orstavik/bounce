@@ -15,7 +15,7 @@
  * The original Firefox beforescriptexecute event only triggers before <script> elements (1), and
  * *not* before custom element constructor() and ...Callback()s.
  *
- * The beforescriptexecute polyfill triggers before *both* custom elements *and* custom element constructors(),
+ * The ParserBreakEvent triggers before *both* custom elements *and* custom element constructors(),
  * with the following *two* exceptions:.
  * a. If the last element added to the DOM is the same, then there will be no second beforescriptevent,
  *    even though two different scripts are technically triggered. There are two examples of such a situation:
@@ -24,18 +24,18 @@
  *
  *    When a web component's <start-tag> *immediately* follows either a <script> or another <web-comp-x>
  *    (and where web-comp-x implements a custom connectedCallback()),
- *    then there will be no beforescriptexecute trigger *before* the web-comp constructor.
+ *    then there will be no ParserBreakEvent trigger *before* the web-comp constructor.
  *
  * Note: When would a custom element start tag immediately follow a <script>, <start-tag>, or <end-tag>?
  * 1. For some container elements whitespace might be meaningful. In such container elements no whitespace is meaningful.
  * 2. An html minifier of some sort might remove all whitespace.
  * In such situations custom elements *can* immediately follow either <script> or
- * other custom elements' <start-tag> or <end-tag>. And in such sitautions, no beforescriptexecute event will be
+ * other custom elements' <start-tag> or <end-tag>. And in such sitautions, no ParserBreakEvent event will be
  * dispatched.
  *
- * WhatIs: the `.target` of the `beforescriptexecute` polyfill event?
+ * WhatIs: the `.target` of the `ParserBreakEvent` event?
  *
- * The `target` of the `beforescriptexecute` event is the last element the parser has added to the DOM.
+ * The `target` of the `ParserBreakEvent` event is the last element the parser has added to the DOM.
  * a) For sync `<script>`'s that is the <script> element itself. The <script> element is always added to the DOM before the
  * javascript functions it contains are triggered.
  * b) When web component constructors are triggered, the web component itself is not yet added to the DOM.
@@ -43,9 +43,9 @@
  *    element, or c) a descendant of a previous sibling.
  *
  * Most commonly, web component start tags are preceded by whitespace. Therefore, most commonly the `target` of a
- * beforescriptexecute event would be a text node.
+ * ParserBreakEvent event would be a text node.
  *
- * How is the beforescriptexecute polyfill implemented?
+ * How is the ParserBreakEvent implemented?
  *
  * During "loading"/interpretation of the main document a
  *    `new MutationObserver(callback).observe(document.documentElement, {childList: true, subtree: true});`
@@ -65,16 +65,16 @@
  *       <a-a></a-a><b-b></b-b>
  *
  *    <a-a>'s definition implement a custom connectedCallback().
- *    Here, there should be no beforescriptexecute event dispatched before <b-b>.
+ *    Here, there should be no `parser-break` event dispatched before <b-b>.
  *
  *    b) Imagine the main document containing two *nested* custom element tags:
  *       <a-a><b-b></b-b></a-a>
  *
  *    <a-a>'s definition implement a custom connectedCallback().
- *    Here, there should be no beforescriptexecute event dispatched before <b-b>.
+ *    Here, there should be no `parser-break` event dispatched before <b-b>.
  *
  * Important test case 2:
- *    There should be no beforescriptexecute event after the first <script defer> has begun
+ *    There should be no `parser-break` event after the first <script defer> has begun
  *    or after the first 'readystatechange' event that marks the start of document.readyState === 'interactive'
  */
 

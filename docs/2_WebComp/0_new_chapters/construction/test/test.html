@@ -1,36 +1,36 @@
 <h1>Test for ready and childChanged callbacks</h1>
-<h3>beforeScriptExecute</h3>
-<test-html test="../beforeScriptExecute/test1.html">
+<h3>ParserBreakEvent</h3>
+<test-html test="../ParserBreakEvent/test1.html">
   <script expected>
     ["1", "2", "3", "4", "5", "6", "the end", "interactive", "defer", "complete"]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test1_macro.html">
+<test-html test="../ParserBreakEvent/test1_macro.html">
   <script expected>
     ["1", "mm1", "2", "mm2", "3", "mm3", "4", "mm4", "5", "mm5", "6", "mm6", "7", "mm7", "interactive"]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test2_connectedCallback.html">
+<test-html test="../ParserBreakEvent/test2_connectedCallback.html">
   <script expected>
     ["1", "mm1", "2", "mm2", "3", "mm3", "4", "mm4", "5", "mm5", "6", "mm6", "7", "mm7", "8", "mm8", "9", "mm9", "interactive"]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test3_connectedCallback.html">
+<test-html test="../ParserBreakEvent/test3_connectedCallback.html">
   <script expected>
     ["break", "connected", "connected", "the end", "interactive"]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test4_MO_inside_script.html">
+<test-html test="../ParserBreakEvent/test4_MO_inside_script.html">
   <script expected>
     ["1", "2", "3", "4", "5", "6", "html", "interactive"]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test5_skip_connectedCallbackBreaks.html">
+<test-html test="../ParserBreakEvent/test5_skip_connectedCallbackBreaks.html">
   <script expected>
     ["1", "m1", "x1", "x2", "2", "m2", "y", "3", "m3", "x1", "x2", "4", "m4", "y", "5", "m5", "y", "6", "m6", "x1", "x2", "7", "m7", "y", "y", "html", "mhtml", "interactive"]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test6_endedNodes_a.html">
+<test-html test="../ParserBreakEvent/test6_endedNodes_a.html">
   <script expected>
     [
       ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text", "SCRIPT", "#text"],
@@ -46,7 +46,7 @@
     ]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test6_endedNodes_b.html">
+<test-html test="../ParserBreakEvent/test6_endedNodes_b.html">
   <script expected>
     [
       ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text"],
@@ -62,7 +62,7 @@
     ]
   </script>
 </test-html>
-<test-html test="../beforeScriptExecute/test6_endedNodes_c.html">
+<test-html test="../ParserBreakEvent/test6_endedNodes_c.html">
   <script expected>
     [
       ["HEAD", "#text", "H3", "#text", "#text", "#text", "#text"],

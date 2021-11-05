@@ -1,4 +1,4 @@
-<script src="beforescriptexecute.js"></script>
+<script src="ParserBreakEvent.js"></script>
 <script>
   window.addEventListener('parser-break', e => console.log(e.target === document ? "html" : e.target.textContent[0]), true);
   document.addEventListener('readystatechange', _ => console.log(document.readyState), {once: true});
@@ -13,7 +13,7 @@
 </script>
 
 <body>
-<h3>Test of beforescriptexecute</h3>
+<h3>Test of ParserBreakEvent</h3>
 <!--1--><web-comp a>
   <!--3--><web-comp b></web-comp>
 </web-comp>
