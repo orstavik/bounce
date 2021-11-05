@@ -1,23 +1,26 @@
 (function () {
+  window.OG = {};
 
-  window.MonkeyPatch = class MonkeyPatch {
+  class MonkeyPatch {
 
     static monkeyPatch(proto, prop, fun) {
       const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-      const og = descriptor.value;
+      const og = OG[proto.constructor.name + '.' + prop] = descriptor.value;
       descriptor.value = function monkeypatch(...args) {
         return fun.call(this, og, ...args);
       };
       Object.defineProperty(proto, prop, descriptor);
+      return og;
     }
 
     static monkeyPatchSetter(proto, prop, fun) {
       const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-      const og = descriptor.set;
+      const og = OG[proto.constructor.name + '.' + prop] = descriptor.set;
       descriptor.set = function monkeypatch(...args) {
         return fun.call(this, og, ...args);
       };
       Object.defineProperty(proto, prop, descriptor);
+      return og;
     }
 
     static dropClass(cnstr) {
@@ -38,5 +41,21 @@
       MonkeyPatch.injectClass(OG, superCnstr);
       window.addEventListener('readystatechange', () => MonkeyPatch.dropClass(OG), {once: true, capture: true});
     }
+
+    static deprecate(proto, prop, msg){
+      const name = proto.constructor.name + "." + prop;
+      function deprecate() {
+        throw new SyntaxError(`"${name}" is deprecated. ${msg ?? ''}`);
+      }
+      MonkeyPatch.monkeyPatch(proto, prop, deprecate);
+    }
+
+    static lockOG(name){
+      const og = OG[name];
+      delete OG[name];
+      return og;
+    }
   }
-})();
+
+  window.MonkeyPatch = MonkeyPatch;
+  })();
