@@ -1,3 +1,4 @@
+//todo 1. monkey-patch Node.bouncePath()?
 window.BouncePath = class BouncePath {
   static #key = false;
   #target;
