@@ -145,6 +145,8 @@
     }
   }
 
+  const dispatchEventOG = EventTarget.prototype.dispatchEvent;
+
   function makeOnMoObserver() {
     const c = new Comment();                                                               //MO-readystatechange race #1
     const touchDom = _ => document.body.append(c);                                         //MO-readystatechange race #1
@@ -162,7 +164,7 @@
         this.disconnect();
         (mrs[mrs.length - 1].addedNodes[0] === c) && (c.remove(), mrs.pop());              //MO-readystatechange race #2
         document.removeEventListener('readystatechange', touchDom, {capture: true});       //MO-readystatechange race #2
-        return document.dispatchEvent(new ParserBreakEvent([...addeds, mrs], openEnded));
+        return dispatchEventOG.call(document, new ParserBreakEvent([...addeds, mrs], openEnded));
       }
       //3. A parser-break
       addeds.push(mrs);
@@ -175,7 +177,7 @@
       openEnded = [];
       for (let n = lastAdded; n; n = n.parentNode)
         n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && openEnded.unshift(n);
-      lastAdded.dispatchEvent(new ParserBreakEvent(addeds.splice(0), previousOpen, openEnded));
+      dispatchEventOG.call(lastAdded, new ParserBreakEvent(addeds.splice(0), previousOpen, openEnded));
     }
   }
 
