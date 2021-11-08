@@ -175,7 +175,7 @@
         return;
       const previousOpen = openEnded;
       openEnded = [];
-      for (let n = lastAdded; n; n = n.parentNode)
+      for (let n = lastAdded; n; n = n.parentElement)
         n.nodeType === Node.ELEMENT_NODE && n.tagName !== "SCRIPT" && openEnded.unshift(n);
       dispatchEventOG.call(lastAdded, new ParserBreakEvent(addeds.splice(0), previousOpen, openEnded));
     }
