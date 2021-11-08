@@ -145,7 +145,7 @@
     }
   }
 
-  const dispatchEventOG = EventTarget.prototype.dispatchEvent;
+  const dispatchEventOG = dispatchEvent;
 
   function makeOnMoObserver() {
     const c = new Comment();                                                               //MO-readystatechange race #1
