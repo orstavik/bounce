@@ -1,0 +1,22 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../BouncePath/BouncePath.js"></script>
+<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="EventLoop.js"></script>
+
+<event-loop></event-loop>
+
+<script>
+
+  window.a = function a(){
+    console.log("a");
+  }
+
+  const eventLoop = document.querySelector("event-loop");
+  console.log(eventLoop.childNodes.length); //0
+  setTimeout(a, 100);
+  console.log(eventLoop.childNodes.length); //1  //these run first because they are running sync, and the event-loop doesn't begin before DCL
+  //a after 100ms
+</script>
