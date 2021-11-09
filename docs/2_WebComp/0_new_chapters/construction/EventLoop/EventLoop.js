@@ -61,6 +61,7 @@
       this.#el.setAttribute(':default-prevented');
     }
   }
+
   //todo make this a static function under EventElement
   function makeEventElement(targetId, e) {
     const el = document.createElement('event');
@@ -79,13 +80,18 @@
 
   //todo make a class for TaskElement too. Lots of these functions can be moved under there.
   function getArguments(taskElement) {
-    let res = [];
+    const prevRes = taskElement.querySelector("[\\:res]")?.getAttribute(":res");
+    let res = prevRes ? [prevRes] : [];
     for (let child of taskElement.children) {
       if (child.tagName === 'EL')
         res.push(document.querySelector(`[\\:uid="${child.textContent}"]`));
-      if (child.tagName === 'JSON')
-        res = [...res, ...JSON.parse(child.textContent)];
-      throw new Error('illegal argument type');
+      if (child.tagName === 'JSON') {
+        try {
+          res = [...res, JSON.parse(child.textContent)];
+        } catch (e) {
+          throw new Error('illegal argument type');
+        }
+      }
     }
     return res;
   }
@@ -104,10 +110,11 @@
       og.call(this, type, listener);
       listeners.add(this, type, listener);
     });
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
-      og.call(this, type, listener);
-      listeners.remove(this, type, listener);
-    });
+    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener",
+      function removeEventListener(og, type, listener) {
+        og.call(this, type, listener);
+        listeners.remove(this, type, listener);
+      });
     MonkeyPatch.monkeyPatch(EventTarget.prototype, 'dispatchEvent', function dispatchEvent(og, e) {
       const targetId = this.getAttribute(":uid");
       if (!targetId)
@@ -155,9 +162,9 @@
 
     findFirstReadyTask(now) {
       for (let task of this.querySelectorAll('task:not([\\:started])')) {
-        if (task.children.length)
-          continue;
-        if (task.querySelectorAll(':scope > task:not([\\:result])').length)
+        // if (task.firstElementChild?.tagName === "TASK")
+        //   continue;
+        if (task.querySelectorAll(':scope > task:not([\\:res])').length)
           continue;
         if (parseInt(task.getAttribute(':start')) > now)
           continue;
@@ -243,7 +250,7 @@
       }
       const args = getArguments(task);
       try {
-        const res = cb.call(null, ...args);
+        const res = cb.call(null, [...args]);
         if (!(res instanceof Promise))
           return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res));
         res
