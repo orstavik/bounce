@@ -24,21 +24,21 @@
   window.asyncMultiply = async function (...args) {
     return new Promise((resolve, reject) => {
       let res = args.reduce((sum, value) => parseInt(sum) * parseInt(value));
-      resolve(res)
+      resolve(res);
     });
   }
 
   window.asyncDivide = async function (...args) {
     return new Promise((resolve, reject) => {
       let res = args.reduce((sum, value) => parseInt(sum) / parseInt(value));
-      resolve(res)
+      resolve(res);
     });
   }
 
   window.asyncPlus = async function (...args) {
     return new Promise((resolve, reject) => {
       let res = args.reduce((sum, value) => parseInt(sum) + parseInt(value));
-      resolve(res)
+      resolve(res);
     });
   }
 </script>
