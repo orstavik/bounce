@@ -83,9 +83,12 @@
     for (let child of taskElement.children) {
       if (child.tagName === 'EL')
         res.push(document.querySelector(`[\\:uid="${child.textContent}"]`));
-      if (child.tagName === 'JSON')
-        res = [...res, ...JSON.parse(child.textContent)];
-      throw new Error('illegal argument type');
+      else if(child.tagName === 'TASK')
+        child.hasAttribute(':res') && res.push(JSON.parse(child.getAttribute(':res')));
+      else if (child.tagName === 'JSON')
+        res = [...res, JSON.parse(child.textContent)];
+      else
+        throw new Error('illegal argument type');
     }
     return res;
   }
@@ -155,9 +158,9 @@
 
     findFirstReadyTask(now) {
       for (let task of this.querySelectorAll('task:not([\\:started])')) {
-        if (task.children.length)
-          continue;
-        if (task.querySelectorAll(':scope > task:not([\\:result])').length)
+        // if (task.children.length)
+        //   continue;
+        if (task.querySelectorAll(':scope > task:not([\\:res])').length)
           continue;
         if (parseInt(task.getAttribute(':start')) > now)
           continue;
@@ -245,9 +248,9 @@
       try {
         const res = cb.call(null, ...args);
         if (!(res instanceof Promise))
-          return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res));
+          return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
         res
-          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)))
+          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
           .catch(e => task.setAttribute(":error", e.message));
       } catch (error) {
         task.setAttribute(":error", error.message);

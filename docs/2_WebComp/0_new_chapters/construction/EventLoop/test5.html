@@ -1,0 +1,25 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../BouncePath/BouncePath.js"></script>
+<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="EventLoop.js"></script>
+
+<event-loop>
+    <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="dispatchEvent"></task>
+</event-loop>
+
+<body :uid="0">
+<h1 :uid="1">hello sunshine</h1>
+</body>
+
+<script>
+
+  window.dispatchEvent = async function dispatchEvent() {
+    const h1 = document.querySelector("h1");
+    await h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+    console.log([...document.querySelector("event-loop").children].map(n => n.nodeName))
+  }
+
+</script>

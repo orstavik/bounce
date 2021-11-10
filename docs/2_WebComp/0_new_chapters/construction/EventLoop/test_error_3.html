@@ -1,0 +1,29 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../BouncePath/BouncePath.js"></script>
+<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="EventLoop.js"></script>
+
+<event-loop>
+    <task :created="1631618374262" :delay="2000" :start="1631789839348" :cb="asyncDivide">
+        <int>6</int>
+        <int>1</int>
+    </task>
+</event-loop>
+
+<script>
+  console.log("Pass illegal argumentType");
+
+  window.addEventListener("error", e => {
+    console.log("Error");
+  });
+
+  window.asyncDivide = async function (...args) {
+    return new Promise((resolve, reject) => {
+      let res = args.reduce((sum, value) => parseInt(sum) / parseInt(value));
+      resolve(res);
+    });
+  }
+</script>

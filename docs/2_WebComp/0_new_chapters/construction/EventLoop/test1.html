@@ -9,7 +9,7 @@
 <event-loop></event-loop>
 
 <body :uid="0">
-<h1 :uid="1">hello sunshine</h1>
+  <h1 :uid="1">hello sunshine</h1>
 </body>
 
 <script type="module">
@@ -19,5 +19,4 @@
   console.log(eventLoop.childNodes.length);
   h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
   console.log(eventLoop.childNodes.length);
-  //0, 1, click
 </script>
