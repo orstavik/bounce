@@ -1,0 +1,34 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../BouncePath/BouncePath.js"></script>
+<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="EventLoop.js"></script>
+
+<event-loop>
+    <event :created="1636554478570" :type="click" :composed="true" :bubbles="true"></event>
+</event-loop>
+
+<body>
+<div></div>
+</body>
+
+<script>
+
+  window.addEventListener("error", e => {
+    console.log("Error");
+  });
+
+  const divElement = document.querySelector("div");
+
+  console.log("Two event-loop elements");
+  document.body.appendChild(document.createElement("event-loop"));
+
+  console.log("Append to illegal element");
+  divElement.appendChild(document.createElement("event-loop"));
+
+  console.log("Dispatch new event on element without :target");
+  divElement.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+
+</script>

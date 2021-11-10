@@ -720,4 +720,69 @@
   </script>
 </test-html>
 
+<h3>EventLoop</h3>
+
+<test-html test="../EventLoop/test1.html">
+    <script expected>
+      [0, 1, "click"]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test2.html">
+    <script expected>
+      [0, 1, "a"]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test3.html">
+    <script expected>
+      [["63", "60", "6"]]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test4.html">
+    <script expected>
+      [["63", "60", "6"]]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test5.html">
+    <script expected>
+      [["EVENT", "TASK"]]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test6.html">
+    <script expected>
+      [[true, true]]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test_error_1.html">
+    <script expected>
+      ["Two event-loop elements",
+        "Error",
+        "Append to illegal element",
+        "Error",
+        "Dispatch new event on element without :target",
+        "Error"]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test_error_2.html">
+    <script expected>
+      ["Create task element with anonymous function",
+        "Error",
+        "Error"]
+    </script>
+</test-html>
+
+<test-html test="../EventLoop/test_error_3.html">
+    <script expected>
+      ["Pass illegal argumentType",
+        "Error"
+      ]
+    </script>
+</test-html>
+
 <script type="module" src="TestComponent.js"></script>

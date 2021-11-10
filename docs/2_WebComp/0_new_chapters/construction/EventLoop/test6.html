@@ -19,7 +19,7 @@
   window.dispatchEvent = async function dispatchEvent() {
     const h1 = document.querySelector("h1");
     await h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
-    console.log([...document.querySelector("event-loop").children].map(n => n.nodeName))
+    console.log([...document.querySelector("event-loop").children].map(c => c.hasAttribute(":finished") && c.hasAttribute(":started")))
   }
 
 </script>
