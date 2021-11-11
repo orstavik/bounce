@@ -93,6 +93,9 @@
     return res;
   }
 
+  //todo
+  //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient?
+
   function makeTaskElement(cb, ms = 0, time = Date.now()) {
     const el = document.createElement('task');
     el.setAttribute(":cb", cb);
@@ -198,9 +201,6 @@
 
     propagateEvent(target, eventElement) {
       const e = new EventElement(eventElement, target);
-      // initEvent(e, eventElement);                         //todo update the event element instead
-      // eventElement.composedPath = BouncePath.composedPath(target, e.composed);       //these two, should be done from the constructor.
-      // eventElement.topMostContext = BouncePath.make(target, e.composed);
       for (let context of eventElement.topMostContext) {
         eventElement.context = context;
         if (e.defaultPrevented)
