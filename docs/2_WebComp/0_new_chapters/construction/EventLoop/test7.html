@@ -1,0 +1,28 @@
+<head>
+  <script src="../MonkeyPatch/MonkeyPatch.js"></script>
+  <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+  <script src="../constructionFrame/constructionFrame.js"></script>
+  <script src="../childChanged/ChildChangedCallback.js"></script>
+  <script src="../BouncePath/BouncePath.js"></script>
+  <script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+  <script src="EventLoop.js"></script>
+
+  <script>
+    window.printRes = function () {
+      const taskElements = [...document.querySelectorAll("task[\\:res]")];
+      console.log(taskElements.map(n => n.getAttribute(":res")));
+    };
+
+    window.plus = function (...args) {
+      return args.reduce((sum, value) => parseInt(sum) + parseInt(value));
+    };
+  </script>
+
+  <event-loop>
+    <task :created="1631618371262" :cb="printRes" :start="1631789839549">
+      <task :created="1631618374265" :cb="plus" :start="1631789839346">
+        [1,2,3,4,32]
+      </task>
+    </task>
+  </event-loop>
+</head>

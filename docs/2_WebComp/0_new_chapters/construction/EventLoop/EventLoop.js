@@ -79,18 +79,23 @@
 
   //todo make a class for TaskElement too. Lots of these functions can be moved under there.
   function getArguments(taskElement) {
-    let res = [];
-    for (let child of taskElement.children) {
-      if (child.tagName === 'EL')
-        res.push(document.querySelector(`[\\:uid="${child.textContent}"]`));
-      else if(child.tagName === 'TASK')
-        child.hasAttribute(':res') && res.push(JSON.parse(child.getAttribute(':res')));
-      else if (child.tagName === 'JSON')
-        res.push(JSON.parse(child.textContent));
-      else
-        throw new Error('illegal argument type');
+    if (!taskElement.children.length) {
+      const txt = taskElement.textContent.trim();
+      return txt ? JSON.parse(txt) : [];
     }
-    return res;
+    for (let c of taskElement.children) {
+      if(c.tagName === 'TASK' && !c.hasAttribute(':res'))
+        return null;
+    }
+    return [...taskElement.children].map(child => {
+      if (child.tagName === 'EL')
+        return document.querySelector(`[\\:uid="${child.textContent}"]`);
+      if (child.tagName === 'TASK')
+        return JSON.parse(child.getAttribute(':res'));
+      if (child.tagName === 'JSON')
+        return JSON.parse(child.textContent);
+      throw new Error('illegal argument type');
+    });
   }
 
   //todo
