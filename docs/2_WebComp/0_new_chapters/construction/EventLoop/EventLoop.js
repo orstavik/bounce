@@ -86,7 +86,7 @@
       else if(child.tagName === 'TASK')
         child.hasAttribute(':res') && res.push(JSON.parse(child.getAttribute(':res')));
       else if (child.tagName === 'JSON')
-        res = [...res, JSON.parse(child.textContent)];
+        res.push(JSON.parse(child.textContent));
       else
         throw new Error('illegal argument type');
     }
