@@ -13,6 +13,7 @@
 
 <script>
   window.addEventListener("error", e => {
+    e.preventDefault();
     console.log("Error");
   });
 
