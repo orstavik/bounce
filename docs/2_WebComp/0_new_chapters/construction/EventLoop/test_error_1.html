@@ -17,6 +17,7 @@
 <script>
 
   window.addEventListener("error", e => {
+    e.preventDefault();
     console.log("Error");
   });
 
@@ -30,5 +31,4 @@
 
   console.log("Dispatch new event on element without :target");
   divElement.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
-
 </script>

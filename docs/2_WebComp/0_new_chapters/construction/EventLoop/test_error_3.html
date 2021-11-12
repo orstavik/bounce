@@ -17,6 +17,7 @@
   console.log("Pass illegal argumentType");
 
   window.addEventListener("error", e => {
+    e.preventDefault();
     console.log("Error");
   });
 
@@ -25,5 +26,9 @@
       let res = args.reduce((sum, value) => parseInt(sum) / parseInt(value));
       resolve(res);
     });
-  }
+  };
+
+  const eventLoopElement = document.querySelector("event-loop");
+
+
 </script>
