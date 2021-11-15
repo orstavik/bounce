@@ -1,0 +1,27 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../BouncePath/BouncePath.js"></script>
+<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="EventLoop.js"></script>
+
+<event-loop></event-loop>
+
+<body :uid="0">
+<h1>No :uid</h1>
+</body>
+
+<script>
+
+  window.addEventListener("error", e => {
+    e.preventDefault();
+    console.log("Error");
+  });
+
+  console.log("No :uid attribute on target element")
+  const h1 = document.querySelector("h1");
+  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+
+
+</script>
