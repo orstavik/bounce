@@ -2,6 +2,14 @@
 
   Object.defineProperty(Event, 'FINISHED', {value: 4, writable: false, enumerable: true, configurable: false});
 
+  const privateTaskProps = new WeakMap();
+
+  function upgradeTask(el, dataIn) {
+    Object.setPrototypeOf(el, HTMLTaskElement.prototype);
+    if (dataIn)
+      privateTaskProps.set(el, dataIn);
+  }
+
   class EventElement extends Event {
     #el;
 
@@ -60,54 +68,56 @@
     preventDefault() {
       this.#el.setAttribute(':default-prevented');
     }
-  }
-  //todo make this a static function under EventElement
-  function makeEventElement(targetId, e) {
-    const el = document.createElement('event');
-    el.setAttribute(':target', targetId);
-    el.setAttribute(":created", Date.now());
-    el.setAttribute(':type', e.type);
-    el.setAttribute(':composed', e.composed);
-    el.setAttribute(':bubbles', e.bubbles);
-    if (e.pointerType === "mouse") {
-      el.setAttribute(':x', e.x);
-      el.setAttribute(':y', e.y);
-    }
-    return el;
-  }
 
-
-  //todo make a class for TaskElement too. Lots of these functions can be moved under there.
-  function getArguments(taskElement) {
-    if (!taskElement.children.length) {
-      const txt = taskElement.textContent.trim();
-      return txt ? JSON.parse(txt) : [];
+    //todo make this a static function under EventElement
+    static makeEventElement(targetId, e) {
+      const el = document.createElement('event');
+      el.setAttribute(':target', targetId);
+      el.setAttribute(":created", Date.now());
+      el.setAttribute(':type', e.type);
+      el.setAttribute(':composed', e.composed);
+      el.setAttribute(':bubbles', e.bubbles);
+      if (e.pointerType === "mouse") {
+        el.setAttribute(':x', e.x);
+        el.setAttribute(':y', e.y);
+      }
+      return el;
     }
-    for (let c of taskElement.children) {
-      if(c.tagName === 'TASK' && !c.hasAttribute(':res'))
-        return null;
-    }
-    return [...taskElement.children].map(child => {
-      if (child.tagName === 'EL')
-        return document.querySelector(`[\\:uid="${child.textContent}"]`);
-      if (child.tagName === 'TASK')
-        return JSON.parse(child.getAttribute(':res'));
-      if (child.tagName === 'JSON')
-        return JSON.parse(child.textContent);
-      throw new Error('illegal argument type');
-    });
   }
 
-  //todo
-  //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient?
+  class HTMLTaskElement extends HTMLElement {
 
-  function makeTaskElement(cb, ms = 0, time = Date.now()) {
-    const el = document.createElement('task');
-    el.setAttribute(":cb", cb);
-    el.setAttribute(":created", time);
-    el.setAttribute(":delay", ms);
-    el.setAttribute(":start", time + ms);
-    return el;
+    //todo make a class for TaskElement too. Lots of these functions can be moved under there.
+    getArguments() {
+      if (!this.children.length) {
+        const txt = this.textContent.trim();
+        return txt ? JSON.parse(txt) : [];
+      }
+      for (let c of this.children) {
+        if (c.tagName === 'TASK' && !c.hasAttribute(':res'))
+          return null;
+      }
+      return [...this.children].map(child => {
+        if (child.tagName === 'EL')
+          return document.querySelector(`[\\:uid="${child.textContent}"]`);
+        if (child.tagName === 'TASK')
+          return JSON.parse(child.getAttribute(':res'));
+        if (child.tagName === 'JSON')
+          return JSON.parse(child.textContent);
+        throw new Error('illegal argument type');
+      });
+    }
+
+    //todo
+    //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient
+    static makeTaskElement(cb, ms = 0, time = Date.now()) {
+      const el = document.createElement('task');
+      el.setAttribute(":cb", cb);
+      el.setAttribute(":created", time);
+      el.setAttribute(":delay", ms);
+      el.setAttribute(":start", time + ms);
+      return el;
+    }
   }
 
   function monkeyPatch(eventLoop, listeners) {
@@ -115,22 +125,23 @@
       og.call(this, type, listener);
       listeners.add(this, type, listener);
     });
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
-      og.call(this, type, listener);
-      listeners.remove(this, type, listener);
-    });
+    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener",
+      function removeEventListener(og, type, listener) {
+        og.call(this, type, listener);
+        listeners.remove(this, type, listener);
+      });
     MonkeyPatch.monkeyPatch(EventTarget.prototype, 'dispatchEvent', function dispatchEvent(og, e) {
       const targetId = this.getAttribute(":uid");
       if (!targetId)
         throw new Error("No :uid attribute on target element" + e.target);
-      eventLoop.prepend(makeEventElement(targetId, e));
+      eventLoop.prepend(EventElement.makeEventElement(targetId, e));
     });
     return MonkeyPatch.monkeyPatch(window, 'setTimeout', function setTimeout(og, cb, ms) {
       if (window[cb.name] !== cb)
         throw new Error("setTimeout(function) only accepts functions whose function.name === window[name]");
       //todo we should also actually specify that the cb should be a frozen, non mutable property on window.
       //todo or, better, we should have two different tasks. those that are supposed to be resumable, and those that are same session only
-      eventLoop.prepend(makeTaskElement(cb.name, ms));
+      eventLoop.prepend(HTMLTaskElement.makeTaskElement(cb.name, ms));
     });
   }
 
@@ -190,7 +201,6 @@
           this.runTask(nonResolvedTask);
           continue;
         }
-
         let notStarted = [...this.querySelectorAll('task:not([\\:started])')];
         if (notStarted.length) {
           notStarted = notStarted.map(el => el.getAttribute(':start')).sort();
@@ -206,6 +216,7 @@
 
     propagateEvent(target, eventElement) {
       const e = new EventElement(eventElement, target);
+
       for (let context of eventElement.topMostContext) {
         eventElement.context = context;
         if (e.defaultPrevented)
@@ -243,19 +254,23 @@
 
     runTask(task) {
       task.setAttribute(":started", Date.now());
+      upgradeTask(task,);
       const cb = window[task.getAttribute(":cb")];
       if (!cb) {
         const error = new Error("Can't find the window[cb] any longer.. need to freeze stuff");
         task.setAttribute(":error", error.message);
         throw error;
       }
-      const args = getArguments(task);
+      const args = task.getArguments();
       try {
         const res = cb.call(null, ...args);
         if (!(res instanceof Promise))
-          return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
+          return task.setAttribute(":res",
+            res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished",
+            Date.now());
         res
-          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
+          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)),
+            task.setAttribute(":finished", Date.now()))
           .catch(e => task.setAttribute(":error", e.message));
       } catch (error) {
         task.setAttribute(":error", error.message);
