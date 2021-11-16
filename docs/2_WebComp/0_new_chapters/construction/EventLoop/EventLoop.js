@@ -1,7 +1,6 @@
 (function () {
 
   Object.defineProperty(Event, 'FINISHED', {value: 4, writable: false, enumerable: true, configurable: false});
-
   const privateTaskProps = new WeakMap();
 
   function upgradeTask(el, dataIn) {
@@ -109,7 +108,7 @@
     }
 
     //todo
-    //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient
+    //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient?
     static makeTaskElement(cb, ms = 0, time = Date.now()) {
       const el = document.createElement('task');
       el.setAttribute(":cb", cb);
@@ -125,11 +124,10 @@
       og.call(this, type, listener);
       listeners.add(this, type, listener);
     });
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener",
-      function removeEventListener(og, type, listener) {
-        og.call(this, type, listener);
-        listeners.remove(this, type, listener);
-      });
+    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
+      og.call(this, type, listener);
+      listeners.remove(this, type, listener);
+    });
     MonkeyPatch.monkeyPatch(EventTarget.prototype, 'dispatchEvent', function dispatchEvent(og, e) {
       const targetId = this.getAttribute(":uid");
       if (!targetId)
@@ -201,6 +199,7 @@
           this.runTask(nonResolvedTask);
           continue;
         }
+
         let notStarted = [...this.querySelectorAll('task:not([\\:started])')];
         if (notStarted.length) {
           notStarted = notStarted.map(el => el.getAttribute(':start')).sort();
@@ -216,7 +215,6 @@
 
     propagateEvent(target, eventElement) {
       const e = new EventElement(eventElement, target);
-
       for (let context of eventElement.topMostContext) {
         eventElement.context = context;
         if (e.defaultPrevented)
@@ -254,7 +252,7 @@
 
     runTask(task) {
       task.setAttribute(":started", Date.now());
-      upgradeTask(task,);
+      upgradeTask(task);
       const cb = window[task.getAttribute(":cb")];
       if (!cb) {
         const error = new Error("Can't find the window[cb] any longer.. need to freeze stuff");
@@ -265,12 +263,9 @@
       try {
         const res = cb.call(null, ...args);
         if (!(res instanceof Promise))
-          return task.setAttribute(":res",
-            res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished",
-            Date.now());
+          return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
         res
-          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)),
-            task.setAttribute(":finished", Date.now()))
+          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
           .catch(e => task.setAttribute(":error", e.message));
       } catch (error) {
         task.setAttribute(":error", error.message);
