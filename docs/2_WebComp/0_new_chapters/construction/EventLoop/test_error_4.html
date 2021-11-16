@@ -22,4 +22,5 @@
   console.log("No :uid attribute on target element")
   const h1 = document.querySelector("h1");
   h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+  
 </script>
