@@ -1,7 +1,15 @@
 (function () {
 
   Object.defineProperty(Event, 'FINISHED', {value: 4, writable: false, enumerable: true, configurable: false});
+  
+  const privateTaskProps = new WeakMap();
 
+  function upgradeTask(el, dataIn) {
+    Object.setPrototypeOf(el, HTMLTaskElement.prototype);
+    if (dataIn)
+      privateTaskProps.set(el, dataIn);
+  }
+  
   class EventElement extends Event {
     #el;
 
@@ -60,9 +68,9 @@
     preventDefault() {
       this.#el.setAttribute(':default-prevented');
     }
-  }
+
   //todo make this a static function under EventElement
-  function makeEventElement(targetId, e) {
+  static makeEventElement(targetId, e) {
     const el = document.createElement('event');
     el.setAttribute(':target', targetId);
     el.setAttribute(":created", Date.now());
@@ -75,10 +83,11 @@
     }
     return el;
   }
+}
 
-
+class HTMLTaskElement extends HTMLElement {  
   //todo make a class for TaskElement too. Lots of these functions can be moved under there.
-  function getArguments(taskElement) {
+ getArguments(taskElement) {
     if (!taskElement.children.length) {
       const txt = taskElement.textContent.trim();
       return txt ? JSON.parse(txt) : [];
@@ -101,7 +110,7 @@
   //todo
   //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient?
 
-  function makeTaskElement(cb, ms = 0, time = Date.now()) {
+  static makeTaskElement(cb, ms = 0, time = Date.now()) {
     const el = document.createElement('task');
     el.setAttribute(":cb", cb);
     el.setAttribute(":created", time);
@@ -109,7 +118,8 @@
     el.setAttribute(":start", time + ms);
     return el;
   }
-
+}
+  
   function monkeyPatch(eventLoop, listeners) {
     MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
       og.call(this, type, listener);
@@ -123,14 +133,14 @@
       const targetId = this.getAttribute(":uid");
       if (!targetId)
         throw new Error("No :uid attribute on target element" + e.target);
-      eventLoop.prepend(makeEventElement(targetId, e));
+      eventLoop.prepend(EventElement.makeEventElement(targetId, e));
     });
     return MonkeyPatch.monkeyPatch(window, 'setTimeout', function setTimeout(og, cb, ms) {
       if (window[cb.name] !== cb)
         throw new Error("setTimeout(function) only accepts functions whose function.name === window[name]");
       //todo we should also actually specify that the cb should be a frozen, non mutable property on window.
       //todo or, better, we should have two different tasks. those that are supposed to be resumable, and those that are same session only
-      eventLoop.prepend(makeTaskElement(cb.name, ms));
+      eventLoop.prepend(HTMLTaskElement.makeTaskElement(cb.name, ms));
     });
   }
 
@@ -243,13 +253,14 @@
 
     runTask(task) {
       task.setAttribute(":started", Date.now());
+      upgradeTask(task,);
       const cb = window[task.getAttribute(":cb")];
       if (!cb) {
         const error = new Error("Can't find the window[cb] any longer.. need to freeze stuff");
         task.setAttribute(":error", error.message);
         throw error;
       }
-      const args = getArguments(task);
+      const args = task.getArguments(task);
       try {
         const res = cb.call(null, ...args);
         if (!(res instanceof Promise))
