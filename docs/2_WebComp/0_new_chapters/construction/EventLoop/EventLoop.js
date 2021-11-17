@@ -1,3 +1,25 @@
+function propagate(eventElement, target, listeners) {
+  const e = new ElementEvent(eventElement, target);        //todo reverse the course of this constructor, put it in an upgrade on the HTMLEventElement
+  for (let context of eventElement.topMostContext) {
+    if (e.defaultPrevented)                                //on this level, we just want to work with the EventElement.
+      break;                                               //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
+    eventElement.context = context;
+    for (let target of context.path) {
+      const list = listeners.get(target, e.type);
+      if (list) {
+        eventElement.currentTarget = target;
+        for (let fun of list) {
+          try {
+            fun?.call(target, e);
+          } catch (error) {
+            //eventElement.listenerErrors.push(target, fun, error); //todo something like this
+          }
+        }
+      }
+    }
+  }
+}
+
 (function () {
 
   class HTMLEventElement extends HTMLElement {
@@ -114,35 +136,13 @@
       this.#listeners.cleanup();
     }
 
-    propagateEvent(target, eventElement) {
-      const e = new ElementEvent(eventElement, target);
-      for (let context of eventElement.topMostContext) {
-        if (e.defaultPrevented)
-          break;
-        eventElement.context = context;
-        for (let target of context.path) {
-          const list = this.#listeners.get(target, e.type);
-          if (list) {
-            eventElement.currentTarget = target;
-            for (let fun of list) {
-              try {
-                fun?.call(target, e);
-              } catch (error) {
-                //eventElement.listenerErrors.push(target, fun, error); //todo something like this
-              }
-            }
-          }
-        }
-      }
-    }
-
     dispatchEvent(eventElement) {
       try {
         eventElement.setAttribute(":started", Date.now());
         const target = HTMLEventElement.getTarget(eventElement);
         if (!target)
           throw new Error(`Can't find target: ${(eventElement.getAttribute(":target"))}`);
-        this.propagateEvent(target, eventElement);
+        propagate(eventElement, target, this.#listeners);
       } catch (error) {
         eventElement.setAttribute(":error", error.message);
       } finally {
