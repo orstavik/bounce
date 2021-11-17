@@ -137,17 +137,13 @@ function propagate(eventElement, target, listeners) {
     }
 
     dispatchEvent(eventElement) {
-      try {
         eventElement.setAttribute(":started", Date.now());
         const target = HTMLEventElement.getTarget(eventElement);
         if (!target)
-          throw new Error(`Can't find target: ${(eventElement.getAttribute(":target"))}`);
-        propagate(eventElement, target, this.#listeners);
-      } catch (error) {
-        eventElement.setAttribute(":error", error.message);
-      } finally {
+          eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
+        else
+          propagate(eventElement, target, this.#listeners);
         eventElement.setAttribute(":finished", Date.now());
-      }
     }
   }
 
