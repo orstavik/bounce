@@ -20,6 +20,10 @@
 
   class HTMLTaskElement extends HTMLElement {
 
+    getCallback() {
+      return window[this.getAttribute(":cb")];
+    }
+
     getArguments() {
       if (!this.children.length) {
         const txt = this.textContent.trim();
@@ -55,16 +59,19 @@
     static start(task) {
       task.setAttribute(":started", Date.now());
       Object.setPrototypeOf(task, HTMLTaskElement.prototype);
-      const cb = window[task.getAttribute(":cb")];
-      if (!cb) {
-        const error = new Error("Can't find the window[cb] any longer.. need to freeze stuff");
-        task.setAttribute(":error", error.message);
+      try{
+        return HTMLTaskElement.#invoke(task);
+      } catch(error){
+        this.setAttribute(":error", error.message);
         throw error;
       }
-      return HTMLTaskElement.#invoke(task, cb);
     }
 
-    static #invoke(task, cb) {
+    static #invoke(task) {
+      const cb = task.getCallback();
+      if (!cb)
+        throw new Error("Can't find the window[cb] any longer.. need to freeze stuff");
+
       const args = task.getArguments();
       try {
         const res = cb.apply(null, args);
