@@ -61,10 +61,13 @@
         task.setAttribute(":error", error.message);
         throw error;
       }
+      return HTMLTaskElement.#invoke(task, cb);
+    }
 
+    static #invoke(task, cb) {
       const args = task.getArguments();
       try {
-        const res = cb.call(null, ...args); //apply
+        const res = cb.apply(null, args);
         if (!(res instanceof Promise))
           return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
         res
@@ -73,7 +76,6 @@
       } catch (error) {
         task.setAttribute(":error", error.message);
       }
-
     }
   }
 
