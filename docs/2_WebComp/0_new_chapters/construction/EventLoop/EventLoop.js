@@ -21,6 +21,7 @@
 
     static dispatchEvent(eventElement, listeners) {
       eventElement.setAttribute(":started", Date.now());
+      Object.setPrototypeOf(eventElement, HTMLEventElement.prototype);
       const target = HTMLEventElement.getTarget(eventElement);
       if (!target)
         eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
