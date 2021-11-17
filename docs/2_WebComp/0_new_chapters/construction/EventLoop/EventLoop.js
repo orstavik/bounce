@@ -67,22 +67,23 @@
     preventDefault() {
       this.#el.setAttribute(':default-prevented');
     }
-
-  //todo make this a static function under EventElement
-  static makeEventElement(targetId, e) {
-    const el = document.createElement('event');
-    el.setAttribute(':target', targetId);
-    el.setAttribute(":created", Date.now());
-    el.setAttribute(':type', e.type);
-    el.setAttribute(':composed', e.composed);
-    el.setAttribute(':bubbles', e.bubbles);
-    if (e.pointerType === "mouse") {
-      el.setAttribute(':x', e.x);
-      el.setAttribute(':y', e.y);
-    }
-    return el;
-  }
 }
+
+  class HTMLEventElement extends HTMLElement {
+    static makeEventElement(targetId, e) {
+      const el = document.createElement('event');
+      el.setAttribute(':target', targetId);
+      el.setAttribute(":created", Date.now());
+      el.setAttribute(':type', e.type);
+      el.setAttribute(':composed', e.composed);
+      el.setAttribute(':bubbles', e.bubbles);
+      if (e.pointerType === "mouse") {
+        el.setAttribute(':x', e.x);
+        el.setAttribute(':y', e.y);
+      }
+      return el;
+    }
+  }
 
   class HTMLTaskElement extends HTMLElement {
   //todo make a class for TaskElement too. Lots of these functions can be moved under there.
@@ -134,7 +135,7 @@
       const targetId = this.getAttribute(":uid");
       if (!targetId)
         throw new Error("No :uid attribute on target element" + e.target);
-      eventLoop.prepend(EventElement.makeEventElement(targetId, e));
+      eventLoop.prepend(HTMLEventElement.makeEventElement(targetId, e));
     });
     return MonkeyPatch.monkeyPatch(window, 'setTimeout', function setTimeout(og, cb, ms) {
       if (window[cb.name] !== cb)
