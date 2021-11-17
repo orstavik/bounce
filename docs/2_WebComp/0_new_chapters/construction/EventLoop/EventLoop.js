@@ -1,25 +1,3 @@
-function propagate(eventElement, target, listeners) {
-  const e = new ElementEvent(eventElement, target);        //todo reverse the course of this constructor, put it in an upgrade on the HTMLEventElement
-  for (let context of eventElement.topMostContext) {
-    if (e.defaultPrevented)                                //on this level, we just want to work with the EventElement.
-      break;                                               //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
-    eventElement.context = context;
-    for (let target of context.path) {
-      const list = listeners.get(target, e.type);
-      if (list) {
-        eventElement.currentTarget = target;
-        for (let fun of list) {
-          try {
-            fun?.call(target, e);
-          } catch (error) {
-            //eventElement.listenerErrors.push(target, fun, error); //todo something like this
-          }
-        }
-      }
-    }
-  }
-}
-
 (function () {
 
   class HTMLEventElement extends HTMLElement {
@@ -39,6 +17,38 @@ function propagate(eventElement, target, listeners) {
 
     static getTarget(eventElement) {
       return document.querySelector(`[\\:uid='${(eventElement.getAttribute(":target"))}']`);
+    }
+
+    static dispatchEvent(eventElement, listeners) {
+      eventElement.setAttribute(":started", Date.now());
+      const target = HTMLEventElement.getTarget(eventElement);
+      if (!target)
+        eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
+      else
+        HTMLEventElement.propagate(eventElement, target, listeners);
+      eventElement.setAttribute(":finished", Date.now());
+    }
+
+    static propagate(eventElement, target, listeners) {
+      const e = new ElementEvent(eventElement, target);        //todo reverse the course of this constructor, put it in an upgrade on the HTMLEventElement
+      for (let context of eventElement.topMostContext) {
+        if (e.defaultPrevented)                                //on this level, we just want to work with the EventElement.
+          break;                                               //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
+        eventElement.context = context;
+        for (let target of context.path) {
+          const list = listeners.get(target, e.type);
+          if (list) {
+            eventElement.currentTarget = target;
+            for (let fun of list) {
+              try {
+                fun?.call(target, e);
+              } catch (error) {
+                //eventElement.listenerErrors.push(target, fun, error); //todo something like this
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -114,7 +124,7 @@ function propagate(eventElement, target, listeners) {
       while (true) {
         const waitingEvent = this.querySelector('event:not([\\:started])');
         if (waitingEvent) {
-          this.dispatchEvent(waitingEvent);
+          HTMLEventElement.dispatchEvent(waitingEvent, this.#listeners);
           continue;
         }
         const nonResolvedTask = this.findFirstReadyTask(Date.now());
@@ -134,16 +144,6 @@ function propagate(eventElement, target, listeners) {
       }
       this.active = false;
       this.#listeners.cleanup();
-    }
-
-    dispatchEvent(eventElement) {
-        eventElement.setAttribute(":started", Date.now());
-        const target = HTMLEventElement.getTarget(eventElement);
-        if (!target)
-          eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
-        else
-          propagate(eventElement, target, this.#listeners);
-        eventElement.setAttribute(":finished", Date.now());
     }
   }
 
