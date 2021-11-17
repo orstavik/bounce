@@ -28,8 +28,8 @@
 
 <script>
   window.printRes = async function () {
-    const taskElements = await document.querySelectorAll("task[\\:res]");
-    console.log([...taskElements].map(n => n?.attributes?.[":res"]?.value))
+      const res = [...document.querySelectorAll("task[\\:res]")].map(n => n.getAttribute(":res"));
+      console.log(...(await res));
   }
 
   window.asyncMultiply = async function (...args) {
