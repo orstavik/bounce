@@ -15,31 +15,31 @@
       return el;
     }
 
-    static getTarget(eventElement) {
-      return document.querySelector(`[\\:uid='${(eventElement.getAttribute(":target"))}']`);
+    get target() {
+      return document.querySelector(`[\\:uid='${this.getAttribute(":target")}']`);
     }
 
     static dispatchEvent(eventElement, listeners) {
       eventElement.setAttribute(":started", Date.now());
       Object.setPrototypeOf(eventElement, HTMLEventElement.prototype);
-      const target = HTMLEventElement.getTarget(eventElement);
+      const target = eventElement.target;
       if (!target)
         eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
       else
-        HTMLEventElement.propagate(eventElement, target, listeners);
+        eventElement.propagate(target, listeners);
       eventElement.setAttribute(":finished", Date.now());
     }
 
-    static propagate(eventElement, target, listeners) {
-      const e = new ElementEvent(eventElement, target);        //todo reverse the course of this constructor, put it in an upgrade on the HTMLEventElement
-      for (let context of eventElement.topMostContext) {
+    propagate(target, listeners) {
+      const e = new ElementEvent(this, target);        //todo reverse the course of this constructor, put it in an upgrade on the HTMLEventElement
+      for (let context of this.topMostContext) {
         if (e.defaultPrevented)                                //on this level, we just want to work with the EventElement.
           break;                                               //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
-        eventElement.context = context;
+        this.context = context;
         for (let target of context.path) {
           const list = listeners.get(target, e.type);
           if (list) {
-            eventElement.currentTarget = target;
+            this.currentTarget = target;
             for (let fun of list) {
               try {
                 fun?.call(target, e);
