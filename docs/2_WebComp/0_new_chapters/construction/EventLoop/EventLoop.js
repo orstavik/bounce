@@ -1,5 +1,7 @@
 (function () {
 
+  const events = new WeakMap();
+
   class HTMLEventElement extends HTMLElement {
     static makeEventElement(targetId, e) {
       const el = document.createElement('event');
@@ -31,6 +33,12 @@
       return this.getAttribute(":composed");
     }
 
+    get event(){
+      let event = events.get(this);
+      if(!event) events.set(this, event = new ElementEvent(this));
+      return event;
+    }
+
     static dispatchEvent(eventElement, listeners) {
       eventElement.setAttribute(":started", Date.now());
       Object.setPrototypeOf(eventElement, HTMLEventElement.prototype);
@@ -45,10 +53,9 @@
     static #propagate(eventEl, target, listeners) {
       eventEl.composedPath = BouncePath.composedPath(target, eventEl.composed);
       eventEl.topMostContext = BouncePath.make(target, eventEl.composed);
-      const e = new ElementEvent(eventEl);
       for (let context of eventEl.topMostContext) {
-        if (eventEl.defaultPrevented)                                //on this level, we just want to work with the EventElement.
-          break;                                               //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
+        if (eventEl.defaultPrevented)                  //on this level, we just want to work with the EventElement.
+          break;                                       //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
         eventEl.context = context;
         for (let target of context.path) {
           const list = listeners.get(target, eventEl.type);
@@ -56,7 +63,7 @@
             eventEl.currentTarget = target;
             for (let fun of list) {
               try {
-                fun?.call(target, e);
+                fun?.call(target, eventEl.event);
               } catch (error) {
                 //eventElement.listenerErrors.push(target, fun, error); //todo something like this
               }
