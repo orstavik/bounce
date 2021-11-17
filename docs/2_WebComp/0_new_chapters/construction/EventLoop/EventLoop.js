@@ -111,6 +111,8 @@
   }
 
   function monkeyPatch(eventLoop, listeners) {
+    MonkeyPatch.deprecate(Event.prototype, 'stopPropagation');                      //todo untested,
+    MonkeyPatch.deprecate(Event.prototype, 'stopImmediatePropagation');             //todo untested,
     MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
       og.call(this, type, listener);
       listeners.add(this, type, listener);
