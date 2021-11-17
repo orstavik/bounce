@@ -1,3 +1,6 @@
+MonkeyPatch.deprecate(Event.prototype, 'stopPropagation');                      //todo untested,
+MonkeyPatch.deprecate(Event.prototype, 'stopImmediatePropagation');             //todo untested,
+
 window.ElementEvent = class ElementEvent extends Event {
   #el;
 
