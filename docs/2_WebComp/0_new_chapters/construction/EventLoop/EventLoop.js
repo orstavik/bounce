@@ -80,16 +80,17 @@
           HTMLTaskElement.start(nonResolvedTask);
           continue;
         }
-
-        let notStarted = [...this.querySelectorAll('task:not([\\:started])')];
-        if (notStarted.length) {
-          notStarted = notStarted.map(el => el.getAttribute(':start')).sort();
-          let wait = parseInt(notStarted[0]) - Date.now();
-          wait = wait < 0 ? 0 : wait;
-          this.timer = this.#setTimeoutOG.call(window, () => this.findNextTask(), wait);
-        }
         break;
       }
+
+      let notStarted = [...this.querySelectorAll('task:not([\\:started])')];
+      if (notStarted.length) {
+        notStarted = notStarted.map(el => el.getAttribute(':start')).sort();
+        let wait = parseInt(notStarted[0]) - Date.now();
+        wait = wait < 0 ? 0 : wait;
+        this.timer = this.#setTimeoutOG.call(window, () => this.findNextTask(), wait);
+      }
+
       this.active = false;
       this.#listeners.cleanup();
     }
