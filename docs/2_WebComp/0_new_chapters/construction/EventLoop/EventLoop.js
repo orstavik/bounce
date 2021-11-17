@@ -1,7 +1,3 @@
-function ready(task, now) {
-  return !task.querySelectorAll(':scope > task:not([\\:res])').length && parseInt(task.getAttribute(':start')) <= now;
-}
-
 (function () {
 
   function monkeyPatch(eventLoop, listeners) {
@@ -59,10 +55,9 @@ function ready(task, now) {
     }
 
     findFirstReadyTask(now) {
-      for (let task of this.querySelectorAll('task:not([\\:started])')) {
-        if(ready(task, now))
-          return task;
-      }
+      //todo fix
+      for (let task of this.querySelectorAll('task:not([\\:started])'))
+        if(HTMLTaskElement.ready(task, now)) return task;
     }
 
     findNextTask() {

@@ -56,4 +56,8 @@ window.HTMLTaskElement = class HTMLTaskElement extends HTMLElement {
       .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
       .catch(e => task.setAttribute(":error", e.message));
   }
+
+  static ready(task, now) {
+    return !task.querySelectorAll(':scope > task:not([\\:res])').length && parseInt(task.getAttribute(':start')) <= now;
+  }
 }
