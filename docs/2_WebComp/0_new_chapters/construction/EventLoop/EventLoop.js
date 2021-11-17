@@ -14,6 +14,10 @@
       }
       return el;
     }
+
+    static getTarget(eventElement) {
+      return document.querySelector(`[\\:uid='${(eventElement.getAttribute(":target"))}']`);
+    }
   }
 
   function monkeyPatch(eventLoop, listeners) {
@@ -135,10 +139,9 @@
     dispatchEvent(eventElement) {
       try {
         eventElement.setAttribute(":started", Date.now());
-        const targetId = eventElement.getAttribute(":target");
-        const target = document.querySelector(`[\\:uid='${targetId}']`);
+        const target = HTMLEventElement.getTarget(eventElement);
         if (!target)
-          throw new Error(`Can't find target: ${targetId}`);
+          throw new Error(`Can't find target: ${(eventElement.getAttribute(":target"))}`);
         this.propagateEvent(target, eventElement);
       } catch (error) {
         eventElement.setAttribute(":error", error.message);
