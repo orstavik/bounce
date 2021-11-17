@@ -70,6 +70,8 @@
           }
           min = Math.min(min, delay);
         }
+        if (min === Infinity)
+          return;
         yield min;
       }
     }
@@ -82,9 +84,7 @@
           HTMLEventElement.dispatchEvent(taskOrTime, this.#listeners);
         } else if (taskOrTime.tagName === 'TASK') {
           HTMLTaskElement.start(taskOrTime);
-        } else if( taskOrTime === Infinity){
-          break;
-        } else{
+        } else {
           this.timer = this.#setTimeoutOG.call(window, () => this.findNextTask(), taskOrTime);
           break;
         }
