@@ -58,15 +58,15 @@ window.HTMLTaskElement = class HTMLTaskElement extends HTMLElement {
     if (!(res instanceof Promise))
       return HTMLTaskElement.#setResult(task, res);
     res
-      .then(d => HTMLTaskElement.#setResult(task, d))
+      .then(d => (HTMLTaskElement.#setResult(task, d), document.querySelector("event-loop").findNextTask()))
       .catch(e => task.setAttribute(":error", e.message));
   }
 
-  // static delay(task, now) {
-  //   if (task.querySelectorAll(':scope > task:not([\\:res])').length)
-  //     return Infinity;
-  //   return parseInt(task.getAttribute(':start')) - now;
-  // }
+  static delay(task, now) {
+    if (task.querySelectorAll(':scope > task:not([\\:res])').length)
+      return Infinity;
+    return parseInt(task.getAttribute(':start')) - now;
+  }
 
   static ready(task, now) {
     return !task.querySelectorAll(':scope > task:not([\\:res])').length && parseInt(task.getAttribute(':start')) <= now;

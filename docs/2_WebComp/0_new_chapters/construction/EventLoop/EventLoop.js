@@ -54,37 +54,41 @@
       this.findNextTask();
     }
 
-    findFirstReadyTask(now) {
-      //todo fix
-      for (let task of this.querySelectorAll('task:not([\\:started])'))
-        if(HTMLTaskElement.ready(task, now)) return task;
+    * #nextTask() {
+      main: while (true) {
+        const event = this.querySelector('event:not([\\:started])');
+        if (event) {
+          yield event;
+          continue main;
+        }
+        let min = Infinity, now = Date.now();
+        for (let task of this.querySelectorAll('task:not([\\:started])')) {
+          let delay = HTMLTaskElement.delay(task, now);
+          if (delay <= 0) {
+            yield task;
+            continue main;
+          }
+          min = Math.min(min, delay);
+        }
+        yield min;
+      }
     }
 
     findNextTask() {
       this.active = true;
       this.timer = clearTimeout(this.timer);
-      while (true) {
-        const waitingEvent = this.querySelector('event:not([\\:started])');
-        if (waitingEvent) {
-          HTMLEventElement.dispatchEvent(waitingEvent, this.#listeners);
-          continue;
+      for (let taskOrTime of this.#nextTask()) {
+        if (taskOrTime.tagName === 'EVENT') {
+          HTMLEventElement.dispatchEvent(taskOrTime, this.#listeners);
+        } else if (taskOrTime.tagName === 'TASK') {
+          HTMLTaskElement.start(taskOrTime);
+        } else if( taskOrTime === Infinity){
+          break;
+        } else{
+          this.timer = this.#setTimeoutOG.call(window, () => this.findNextTask(), taskOrTime);
+          break;
         }
-        const nonResolvedTask = this.findFirstReadyTask(Date.now());
-        if (nonResolvedTask) {
-          HTMLTaskElement.start(nonResolvedTask);
-          continue;
-        }
-        break;
       }
-
-      let notStarted = [...this.querySelectorAll('task:not([\\:started])')];
-      if (notStarted.length) {
-        notStarted = notStarted.map(el => el.getAttribute(':start')).sort();
-        let wait = parseInt(notStarted[0]) - Date.now();
-        wait = wait < 0 ? 0 : wait;
-        this.timer = this.#setTimeoutOG.call(window, () => this.findNextTask(), wait);
-      }
-
       this.active = false;
       this.#listeners.cleanup();
     }
