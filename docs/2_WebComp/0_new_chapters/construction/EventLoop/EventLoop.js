@@ -35,7 +35,7 @@
 
     get event(){
       let event = events.get(this);
-      if(!event) events.set(this, event = new ElementEvent(this));
+      !event && events.set(this, event = new ElementEvent(this));
       return event;
     }
 
@@ -60,6 +60,7 @@
         for (let target of context.path) {
           const list = listeners.get(target, eventEl.type);
           if (list) {
+
             eventEl.currentTarget = target;
             for (let fun of list) {
               try {
@@ -68,6 +69,7 @@
                 //eventElement.listenerErrors.push(target, fun, error); //todo something like this
               }
             }
+
           }
         }
       }
