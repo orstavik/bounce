@@ -24,6 +24,11 @@ window.HTMLTaskElement = class HTMLTaskElement extends HTMLElement {
     });
   }
 
+  static #setResult(task, res) {
+    task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res));
+    task.setAttribute(":finished", Date.now());
+  }
+
   static makeTaskElement(cb, ms = 0, time = Date.now()) {
     const el = document.createElement('task');
     el.setAttribute(":cb", cb);
@@ -51,18 +56,18 @@ window.HTMLTaskElement = class HTMLTaskElement extends HTMLElement {
 
     const res = cb.apply(null, task.getArguments());
     if (!(res instanceof Promise))
-      return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
+      return HTMLTaskElement.#setResult(task, res);
     res
-      .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
+      .then(d => HTMLTaskElement.#setResult(task, d))
       .catch(e => task.setAttribute(":error", e.message));
   }
 
-  // static delay(task, now){
-  //   if(task.querySelectorAll(':scope > task:not([\\:res])').length)
+  // static delay(task, now) {
+  //   if (task.querySelectorAll(':scope > task:not([\\:res])').length)
   //     return Infinity;
   //   return parseInt(task.getAttribute(':start')) - now;
   // }
-  //
+
   static ready(task, now) {
     return !task.querySelectorAll(':scope > task:not([\\:res])').length && parseInt(task.getAttribute(':start')) <= now;
   }
