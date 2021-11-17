@@ -1,7 +1,5 @@
 (function () {
 
-  Object.defineProperty(Event, 'FINISHED', {value: 4, writable: false, enumerable: true, configurable: false});
-
   class HTMLEventElement extends HTMLElement {
     static makeEventElement(targetId, e) {
       const el = document.createElement('event');
