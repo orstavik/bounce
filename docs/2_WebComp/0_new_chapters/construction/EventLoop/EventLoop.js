@@ -117,16 +117,16 @@
     propagateEvent(target, eventElement) {
       const e = new ElementEvent(eventElement, target);
       for (let context of eventElement.topMostContext) {
-        eventElement.context = context;
         if (e.defaultPrevented)
-          continue;
+          break;
+        eventElement.context = context;
         for (let target of context.path) {
           const list = this.#listeners.get(target, e.type);
           if (list) {
             eventElement.currentTarget = target;
             for (let fun of list) {
               try {
-                fun?.call(target, e); //todo try catch?? yes please
+                fun?.call(target, e);
               } catch (error) {
                 //eventElement.listenerErrors.push(target, fun, error); //todo something like this
               }
