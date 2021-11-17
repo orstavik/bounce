@@ -5,7 +5,7 @@ MonkeyPatch.deprecate(Event.prototype, 'stopImmediatePropagation');             
 window.ElementEvent = class ElementEvent extends Event {
   #el;
 
-  constructor(el, target) {
+  constructor(el) {
     super(el.getAttribute(':type'), {        //todo do we need to do this? can we not just get all the properties from the element?
       composed: el.getAttribute(":composed"),//todo do we need to do this? can we not just get all the properties from the element?
       bubbles: el.getAttribute(":bubbles"),  //todo do we need to do this? can we not just get all the properties from the element?
@@ -13,8 +13,6 @@ window.ElementEvent = class ElementEvent extends Event {
     this.x = el.getAttribute(':x');   //todo do we need to do this? can we not just get all the properties from the element?
     this.y = el.getAttribute(':y');    //todo do we need to do this? can we not just get all the properties from the element?
     this.#el = el;
-    el.composedPath = BouncePath.composedPath(target, this.composed);
-    el.topMostContext = BouncePath.make(target, this.composed);
   }
 
   get timeStamp() {

@@ -15,8 +15,20 @@
       return el;
     }
 
+    get type(){
+      return this.getAttribute(":type");
+    }
+
+    get defaultPrevented(){
+      return this.getAttribute(":default-prevented");
+    }
+
     get target() {
       return document.querySelector(`[\\:uid='${this.getAttribute(":target")}']`);
+    }
+
+    get composed() {
+      return this.getAttribute(":composed");
     }
 
     static dispatchEvent(eventElement, listeners) {
@@ -26,20 +38,22 @@
       if (!target)
         eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
       else
-        eventElement.propagate(target, listeners);
+        HTMLEventElement.#propagate(eventElement, target, listeners);
       eventElement.setAttribute(":finished", Date.now());
     }
 
-    propagate(target, listeners) {
-      const e = new ElementEvent(this, target);        //todo reverse the course of this constructor, put it in an upgrade on the HTMLEventElement
-      for (let context of this.topMostContext) {
-        if (e.defaultPrevented)                                //on this level, we just want to work with the EventElement.
+    static #propagate(eventEl, target, listeners) {
+      eventEl.composedPath = BouncePath.composedPath(target, eventEl.composed);
+      eventEl.topMostContext = BouncePath.make(target, eventEl.composed);
+      const e = new ElementEvent(eventEl);
+      for (let context of eventEl.topMostContext) {
+        if (eventEl.defaultPrevented)                                //on this level, we just want to work with the EventElement.
           break;                                               //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
-        this.context = context;
+        eventEl.context = context;
         for (let target of context.path) {
-          const list = listeners.get(target, e.type);
+          const list = listeners.get(target, eventEl.type);
           if (list) {
-            this.currentTarget = target;
+            eventEl.currentTarget = target;
             for (let fun of list) {
               try {
                 fun?.call(target, e);
