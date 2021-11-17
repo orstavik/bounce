@@ -1,13 +1,6 @@
 (function () {
 
   Object.defineProperty(Event, 'FINISHED', {value: 4, writable: false, enumerable: true, configurable: false});
-  const privateTaskProps = new WeakMap();
-
-  function upgradeTask(el, dataIn) {
-    Object.setPrototypeOf(el, HTMLTaskElement.prototype);
-    if (dataIn)
-      privateTaskProps.set(el, dataIn);
-  }
 
   class HTMLEventElement extends HTMLElement {
     static makeEventElement(targetId, e) {
@@ -26,7 +19,7 @@
   }
 
   class HTMLTaskElement extends HTMLElement {
-    //todo make a class for TaskElement too. Lots of these functions can be moved under there.
+
     getArguments() {
       if (!this.children.length) {
         const txt = this.textContent.trim();
@@ -57,6 +50,30 @@
       el.setAttribute(":delay", ms);
       el.setAttribute(":start", time + ms);
       return el;
+    }
+
+    static start(task) {
+      task.setAttribute(":started", Date.now());
+      Object.setPrototypeOf(task, HTMLTaskElement.prototype);
+      const cb = window[task.getAttribute(":cb")];
+      if (!cb) {
+        const error = new Error("Can't find the window[cb] any longer.. need to freeze stuff");
+        task.setAttribute(":error", error.message);
+        throw error;
+      }
+
+      const args = task.getArguments();
+      try {
+        const res = cb.call(null, ...args); //apply
+        if (!(res instanceof Promise))
+          return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
+        res
+          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
+          .catch(e => task.setAttribute(":error", e.message));
+      } catch (error) {
+        task.setAttribute(":error", error.message);
+      }
+
     }
   }
 
@@ -137,7 +154,7 @@
         }
         const nonResolvedTask = this.findFirstReadyTask(Date.now());
         if (nonResolvedTask) {
-          this.runTask(nonResolvedTask);
+          HTMLTaskElement.start(nonResolvedTask);
           continue;
         }
 
@@ -188,28 +205,6 @@
         eventElement.setAttribute(":error", error.message);
       } finally {
         eventElement.setAttribute(":finished", Date.now());
-      }
-    }
-
-    runTask(task) {
-      task.setAttribute(":started", Date.now());
-      upgradeTask(task);
-      const cb = window[task.getAttribute(":cb")];
-      if (!cb) {
-        const error = new Error("Can't find the window[cb] any longer.. need to freeze stuff");
-        task.setAttribute(":error", error.message);
-        throw error;
-      }
-      const args = task.getArguments();
-      try {
-        const res = cb.call(null, ...args);
-        if (!(res instanceof Promise))
-          return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
-        res
-          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
-          .catch(e => task.setAttribute(":error", e.message));
-      } catch (error) {
-        task.setAttribute(":error", error.message);
       }
     }
   }
