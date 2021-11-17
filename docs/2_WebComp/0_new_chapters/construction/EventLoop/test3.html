@@ -10,22 +10,28 @@
 <script src="EventLoop.js"></script>
 
 <event-loop>
-    <task :created="1631618371262" :delay="3000" :cb="printRes" :start="1631789839549">
-        <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="plus">
-            <task :created="1631618374264" :delay="2000" :start="1631789839347" :cb="multiply">
-                <task :created="1631618374262" :delay="2000" :start="1631789839348" :cb="divide">
-                    <json>6</json>
-                    <json>1</json>
-                </task>
-                <json>2</json>
-                <json>5</json>
-            </task>
-            <json>3</json>
+  <task :created="1631618371262" :delay="3000" :cb="printRes" :start="1631789839549">
+    <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="plus">
+      <task :created="1631618374264" :delay="2000" :start="1631789839347" :cb="multiply">
+        <task :created="1631618374262" :delay="2000" :start="1631789839348" :cb="divide">
+          <json>6</json>
+          <json>1</json>
         </task>
+        <json>2</json>
+        <json>5</json>
+      </task>
+      <json>3</json>
     </task>
+  </task>
 </event-loop>
 
 <script>
+  //Xpath experiment
+  // var tasks = document.evaluate(`//event-loop//task/@*[starts-with(name(), ':cb')]/parent::*`, document, null, XPathResult.ANY_TYPE, null );
+  // console.log(tasks)
+  // for(let task;task = tasks.iterateNext();)
+  //     console.log(task)
+  //
   window.printRes = function () {
     const taskElements = document.documentElement.querySelectorAll("task[\\:res]");
     console.log([...taskElements].map(n => n?.attributes?.[":res"]?.value))
