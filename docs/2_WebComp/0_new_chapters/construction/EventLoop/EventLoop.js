@@ -26,39 +26,39 @@
   }
 
   class HTMLTaskElement extends HTMLElement {
-  //todo make a class for TaskElement too. Lots of these functions can be moved under there.
+    //todo make a class for TaskElement too. Lots of these functions can be moved under there.
     getArguments() {
-    if (!this.children.length) {
-      const txt = this.textContent.trim();
-      return txt ? JSON.parse(txt) : [];
+      if (!this.children.length) {
+        const txt = this.textContent.trim();
+        return txt ? JSON.parse(txt) : [];
+      }
+      for (let c of this.children) {
+        if (c.tagName === 'TASK' && !c.hasAttribute(':res'))
+          return null;
+      }
+      return [...this.children].map(child => {
+        if (child.tagName === 'EL')
+          return document.querySelector(`[\\:uid="${child.textContent}"]`);
+        if (child.tagName === 'TASK')
+          return JSON.parse(child.getAttribute(':res'));
+        if (child.tagName === 'JSON')
+          return JSON.parse(child.textContent);
+        throw new Error('illegal argument type');
+      });
     }
-    for (let c of this.children) {
-      if(c.tagName === 'TASK' && !c.hasAttribute(':res'))
-        return null;
+
+    //todo
+    //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient?
+
+    static makeTaskElement(cb, ms = 0, time = Date.now()) {
+      const el = document.createElement('task');
+      el.setAttribute(":cb", cb);
+      el.setAttribute(":created", time);
+      el.setAttribute(":delay", ms);
+      el.setAttribute(":start", time + ms);
+      return el;
     }
-    return [...this.children].map(child => {
-      if (child.tagName === 'EL')
-        return document.querySelector(`[\\:uid="${child.textContent}"]`);
-      if (child.tagName === 'TASK')
-        return JSON.parse(child.getAttribute(':res'));
-      if (child.tagName === 'JSON')
-        return JSON.parse(child.textContent);
-      throw new Error('illegal argument type');
-    });
   }
-
-  //todo
-  //1. make both the EventElement and the TaskElement work via prototype. Can be made more efficient?
-
-  static makeTaskElement(cb, ms = 0, time = Date.now()) {
-    const el = document.createElement('task');
-    el.setAttribute(":cb", cb);
-    el.setAttribute(":created", time);
-    el.setAttribute(":delay", ms);
-    el.setAttribute(":start", time + ms);
-    return el;
-  }
-}
 
   function monkeyPatch(eventLoop, listeners) {
     MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
