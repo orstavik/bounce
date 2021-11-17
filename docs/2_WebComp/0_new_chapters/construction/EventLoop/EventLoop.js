@@ -59,9 +59,9 @@
     static start(task) {
       task.setAttribute(":started", Date.now());
       Object.setPrototypeOf(task, HTMLTaskElement.prototype);
-      try{
+      try {
         return HTMLTaskElement.#invoke(task);
-      } catch(error){
+      } catch (error) {
         this.setAttribute(":error", error.message);
         throw error;
       }
@@ -72,17 +72,12 @@
       if (!cb)
         throw new Error("Can't find the window[cb] any longer.. need to freeze stuff");
 
-      const args = task.getArguments();
-      try {
-        const res = cb.apply(null, args);
-        if (!(res instanceof Promise))
-          return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
-        res
-          .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
-          .catch(e => task.setAttribute(":error", e.message));
-      } catch (error) {
-        task.setAttribute(":error", error.message);
-      }
+      const res = cb.apply(null, task.getArguments());
+      if (!(res instanceof Promise))
+        return task.setAttribute(":res", res instanceof HTMLElement ? res.getAttribute(':uid') : JSON.stringify(res)), task.setAttribute(":finished", Date.now());
+      res
+        .then(d => task.setAttribute(":res", d instanceof HTMLElement ? d.getAttribute(':uid') : JSON.stringify(d)), task.setAttribute(":finished", Date.now()))
+        .catch(e => task.setAttribute(":error", e.message));
     }
   }
 
