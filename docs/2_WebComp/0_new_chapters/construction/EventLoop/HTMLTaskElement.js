@@ -39,7 +39,7 @@ window.HTMLTaskElement = class HTMLTaskElement extends HTMLElement {
     try {
       return HTMLTaskElement.#invoke(task);
     } catch (error) {
-      this.setAttribute(":error", error.message);
+      task.setAttribute(":error", error.message);  //todo this is untested
       throw error;
     }
   }
@@ -57,6 +57,12 @@ window.HTMLTaskElement = class HTMLTaskElement extends HTMLElement {
       .catch(e => task.setAttribute(":error", e.message));
   }
 
+  // static delay(task, now){
+  //   if(task.querySelectorAll(':scope > task:not([\\:res])').length)
+  //     return Infinity;
+  //   return parseInt(task.getAttribute(':start')) - now;
+  // }
+  //
   static ready(task, now) {
     return !task.querySelectorAll(':scope > task:not([\\:res])').length && parseInt(task.getAttribute(':start')) <= now;
   }
