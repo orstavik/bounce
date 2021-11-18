@@ -56,6 +56,6 @@ window.ElementEvent = class ElementEvent extends Event {
   }
 
   preventDefault() {
-    this.#el.setAttribute(':default-prevented');
+    this.defaultPrevented() || this.#el.setAttribute(':default-prevented');
   }
 }
