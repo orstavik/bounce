@@ -1,0 +1,92 @@
+<script src="../EventLoop/HTMLEventElement_dynamo.js"></script>
+<script>
+  customElements.define('outer-slot', class OuterSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = '<o><slot></slot></o>';
+    }
+  });
+  customElements.define('matroschka-inner', class MatroschkaInnerSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = '<i><slot></slot></i>';
+    }
+  });
+  customElements.define('matroschka-slot', class MatroschkaSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = '<m><matroschka-inner><slot></slot></matroschka-inner></m>';
+    }
+  });
+  customElements.define('shadow-outer-slot', class ShadowOuterSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = '<o><slot></slot></o>';
+    }
+  });
+  customElements.define('shadow-inner-slot', class ShadowInnerSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = '<i><slot></slot></i>';
+    }
+  });
+  customElements.define('atom-inner', class AtomInner extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = `<u>hello sunshine</u>`;
+    }
+  });
+  customElements.define('atom-outer', class AtomOuter extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = `
+<span>
+  <shadow-outer-slot>
+    <shadow-inner-slot>
+      <atom-inner></atom-inner>
+    </shadow-inner-slot>
+  </shadow-outer-slot>
+</span>`;
+    }
+  });
+</script>
+
+<a>no</a>
+<main>
+  <div>
+    <outer-slot>
+      <a>no</a>
+      <matroschka-slot>
+        <a>no</a>
+        <atom-outer></atom-outer>
+        <a>no</a>
+      </matroschka-slot>
+    </outer-slot>
+    <a>no</a>
+  </div>
+</main>
+<a>no</a>
+<script>
+  const atomOuter = document.querySelector("atom-outer");
+  const atomInner = atomOuter.shadowRoot.querySelector("atom-inner");
+  const u2 = atomInner.shadowRoot.querySelector('u');
+  const res = new Map();
+  for (let {target, root, depth, pos} of HTMLEventElement.dynamo_core(u2, true)) {
+    let ar = res.get(root)?.path ?? [];
+    ar.push(target);
+    res.set(root, {path: ar, depth, pos});
+  }
+  for (let {path} of res.values())
+    console.log(...path.map(n=>n.nodeName));
+
+  function toString(list) {
+    let res = '';
+    for (let {path, pos, depth} of list) {
+      const dots = Array(depth * 2).fill('.').join('');
+      const path2 = path.map(n => n.nodeName).join(',');
+      res += `${dots}${pos}:${path2}\n`;
+    }
+    return res.trim();
+  }
+  console.log(toString(res.values()));
+</script>
