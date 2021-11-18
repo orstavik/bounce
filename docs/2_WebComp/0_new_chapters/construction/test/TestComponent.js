@@ -12,7 +12,7 @@ const template = `
     :host([ok="true"]) { border-left: 5px solid green; }
     :host([ok="false"]) { border-left: 5px solid red; }
 
-    #diff, #code { white-space: pre; border: 4px double lightblue; }
+    #diff, #code { white-space: pre-wrap; border: 4px double lightblue; }
     .added {color: green}
     .removed {color: red}
     iframe { height: 10px; width: 10px; display: inline-block; }
