@@ -55,23 +55,26 @@ window.HTMLEventElement = class HTMLEventElement extends HTMLElement {
 
   static targetRoots(target, composed) {
     if (!composed)
-      return [{target, root: target.getRootNode(), path: [target]}];
+      return [{target, root: target.getRootNode(), path: []}];
     const hosts = [];
     for (let root; target; target = root.host)
-      hosts.unshift({target, root: root = target.getRootNode(), path: [target]});
+      hosts.unshift({target, root: root = target.getRootNode(), path: []});
     return hosts;
   }
 
   static* dynamo_core(target, composed, depth = 0, pos = 0) {
     const hosts = HTMLEventElement.targetRoots(target, composed);
     for (let i = 0; i < hosts.length; i++) {                           //user document is top down
-      let {target, root} = hosts[i];   //todo we need to preserve the actual nodes being called, because there might be mutations!
-      for (; target; target = target.parentNode)
-        yield {target, root, depth: depth + i, pos};
+      let {target, root, path} = hosts[i];
+      for (; target; target = target.parentNode){
+        path.push(target);
+        yield {target, root, depth: depth + i, pos, path};
+      }
     }
     for (let i = hosts.length - 1; i >= 0; i--) {                     //slotting/attributes  documents is bottom up
-      let {target, root} = hosts[i];
-      for (let pos = 0; target; target = target.parentNode, pos++) {
+      let {path} = hosts[i];
+      for (let pos = 0; pos < path.length; pos++) {
+        let target = path[pos];
         if (target.assignedSlot) {                                    //first shadowDom
           yield* this.dynamo_core(target.assignedSlot, false, depth + i + 1, pos + 1);
         }
