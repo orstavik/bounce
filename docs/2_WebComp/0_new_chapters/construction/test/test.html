@@ -688,48 +688,41 @@
 
 <h3>BouncePath</h3>
 <test-html test="../BouncePath/test1b.html">
-  <script expected>
-
-    [
-      "0:ATOM-OUTER,MATROSCHKA-SLOT,OUTER-SLOT,DIV,MAIN,BODY,HTML,#document",
-      "..0:ATOM-INNER,SHADOW-INNER-SLOT,SHADOW-OUTER-SLOT,SPAN,#document-fragment",
-      "....0:U,#document-fragment",
-      "....1:SLOT,I,#document-fragment",
-      "....2:SLOT,O,#document-fragment",
-      "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
-      "....1:SLOT,I,#document-fragment",
-      "..2:SLOT,O,#document-fragment"
-    ]
-  </script>
+  <script expected>[
+    "0:ATOM-OUTER,MATROSCHKA-SLOT,OUTER-SLOT,DIV,MAIN,BODY,HTML,#document",
+    "..0:ATOM-INNER,SHADOW-INNER-SLOT,SHADOW-OUTER-SLOT,SPAN,#document-fragment",
+    "....0:U,#document-fragment",
+    "....1:SLOT,I,#document-fragment",
+    "....2:SLOT,O,#document-fragment",
+    "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
+    "....1:SLOT,I,#document-fragment",
+    "..2:SLOT,O,#document-fragment"
+  ]</script>
 </test-html>
 <test-html test="../BouncePath/test1c.html">
-  <script expected>
-    [
-      "0:H1,MATROSCHKA-SLOT,BODY,HTML,#document",
-      "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
-      "....1:SLOT,I,#document-fragment"
-    ]
-  </script>
+  <script expected>[
+    "0:H1,MATROSCHKA-SLOT,BODY,HTML,#document",
+    "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
+    "....1:SLOT,I,#document-fragment"
+  ]</script>
 </test-html>
 
 <test-html test="../BouncePath/test_old.html">
-  <script expected>
-    [
-      "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
-      "..0:#document-fragment",
-      "..2:SLOT,FRAME-SLOT,#document-fragment",
-      "....1:SLOT,#document-fragment",
-      "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
-      "..0:INNER-HOST,INNER-LINK-SLOT,UPPER-INNER-LINK-SLOT,#document-fragment",
-      "....0:H1,#document-fragment",
-      "....1:SLOT,INNER-FRAME-SLOT,#document-fragment",
-      "......1:SLOT,#document-fragment",
-      "....2:SLOT,UPPER-INNER-FRAME-SLOT,#document-fragment",
-      "......1:SLOT,#document-fragment",
-      "..2:SLOT,FRAME-SLOT,#document-fragment",
-      "....1:SLOT,#document-fragment"
-    ]
-  </script>
+  <script expected>[
+    "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
+    "..0:#document-fragment",
+    "..2:SLOT,FRAME-SLOT,#document-fragment",
+    "....1:SLOT,#document-fragment",
+    "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
+    "..0:INNER-HOST,INNER-LINK-SLOT,UPPER-INNER-LINK-SLOT,#document-fragment",
+    "....0:H1,#document-fragment",
+    "....1:SLOT,INNER-FRAME-SLOT,#document-fragment",
+    "......1:SLOT,#document-fragment",
+    "....2:SLOT,UPPER-INNER-FRAME-SLOT,#document-fragment",
+    "......1:SLOT,#document-fragment",
+    "..2:SLOT,FRAME-SLOT,#document-fragment",
+    "....1:SLOT,#document-fragment"
+  ]</script>
 </test-html>
 
 <h3>EventLoop</h3>
@@ -784,36 +777,32 @@
 
 <test-html test="../EventLoop/test_error_1.html">
   <script expected>
-    ["Two event-loop elements",
+    [
+      "Two event-loop elements",
       "Error",
       "Append to illegal element",
       "Error",
       "Dispatch new event on element without :target",
-      "Error"]
+      "Error"
+    ]
   </script>
 </test-html>
 
 <test-html test="../EventLoop/test_error_2.html">
   <script expected>
-    ["Create task element with anonymous function",
-      "Error",
-      "Error"]
+    ["Create task element with anonymous function", "Error", "Error"]
   </script>
 </test-html>
 
 <test-html test="../EventLoop/test_error_3.html">
   <script expected>
-    ["Pass illegal argumentType",
-      "Error"
-    ]
+    ["Pass illegal argumentType", "Error"]
   </script>
 </test-html>
 
 <test-html test="../EventLoop/test_error_4.html">
   <script expected>
-    ["No :uid attribute on target element",
-      "Error"
-    ]
+    ["No :uid attribute on target element", "Error"]
   </script>
 </test-html>
 
