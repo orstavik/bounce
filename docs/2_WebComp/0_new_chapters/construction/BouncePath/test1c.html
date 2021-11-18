@@ -19,25 +19,16 @@
 </matroschka-slot>
 
 <script>
-  const h1 = document.querySelector("h1");
-  const res = new Map();
-  for (let {target, root, depth, pos} of HTMLEventElement.dynamo_core(h1, true)) {
-    let ar = res.get(root)?.path ?? [];
-    ar.push(target);
-    res.set(root, {path: ar, depth, pos});
-  }
-  for (let {path} of res.values())
-    console.log(...path.map(n => n.nodeName));
-
-  function toString(list) {
-    let res = '';
-    for (let {path, pos, depth} of list) {
-      const dots = Array(depth * 2).fill('.').join('');
-      const path2 = path.map(n => n.nodeName).join(',');
-      res += `${dots}${pos}:${path2}\n`;
-    }
-    return res.trim();
+  function toString({path, pos, depth}) {
+    const dots = Array(depth * 2).fill('.').join('');
+    const path2 = path.map(n => n.nodeName).join(',');
+    return `${dots}${pos}:${path2}`;
   }
 
-  console.log(toString(res.values()));
+  function runTest(target1) {
+    const res = [...HTMLEventElement.dynamo_core(target1, true)].reduce((res, output) => res.set(output.root, output), new Map());
+    [...res.values()].map(toString).forEach(str => console.log(str));
+  }
+
+  runTest(document.querySelector("h1"));
 </script>
