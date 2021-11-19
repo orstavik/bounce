@@ -1,3 +1,5 @@
+//todo can we inject this instead of the EventTarget??
+
 window.EventListenerRegistry = class EventListenerRegistry {
   //#map todo
   //#listsWithRemoved
@@ -29,7 +31,7 @@ window.EventListenerRegistry = class EventListenerRegistry {
       return false;
     listeners[index] = undefined;
     this.listsWithRemoved.push(listeners);
-    return listeners.every(f => !f);       //todo this is a heavy check..
+    return listeners.every(f => !f);       //todo this is a heavy check.. and also not that important. better wait until the event loop is empty??
   }
 
   get(target, type) {
@@ -48,3 +50,36 @@ window.EventListenerRegistry = class EventListenerRegistry {
     }
   }
 }
+//
+// window.CustomAttribute = class CustomAttribute extends Attr {
+//   #listeners = {};
+//
+//   upgrade(setCustomValue, addEventListener, removeEventListener, hasEventListener) {
+//     //todo, should we pass in addEventListener and removeEventListener and hasEventListener here too??
+//     //todo, that would make the methods very safe from interference. That way we could 100% trust that they are protected.
+//   }
+//
+//   addEventListener(type, listener) {
+//     let listeners = this.#listeners[type];
+//     if (!listeners)
+//       this.#listeners[type] = [listener];
+//     else if (listeners.indexOf(listener) < 0)
+//       listeners.push(listener);
+//   }
+//
+//   hasEventListener(type, listener) {
+//     return this.#listeners[type]?.indexOf(listener) ?? -1;
+//   }
+//
+//   removeEventListener(type, listener) {
+//     const index = hasEventListener(type, listener);
+//     index >= 0 && listeners.splice(index, 1);
+//   }
+//
+//   getEventListeners(type) {
+//     return this.#listeners[type];
+//   }
+// }
+//
+// //todo we need to lock the getEventListeners, that is only for the eventLoop. Will that work with the private this.#listeners?
+// // And we need to lock the add/has/removeEventListener(..) and pass those into the constructor only.

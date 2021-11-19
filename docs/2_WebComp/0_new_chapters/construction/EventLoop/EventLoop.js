@@ -1,20 +1,6 @@
 (function () {
 
-  function monkeyPatch(eventLoop, listeners) {
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
-      og.call(this, type, listener);
-      listeners.add(this, type, listener);
-    });
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
-      og.call(this, type, listener);
-      listeners.remove(this, type, listener);
-    });
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, 'dispatchEvent', function dispatchEvent(og, e) {
-      const targetId = this.getAttribute(":uid");
-      if (!targetId)
-        throw new Error("No :uid attribute on target element" + e.target);
-      eventLoop.prepend(HTMLEventElement.makeEventElement(targetId, e));
-    });
+  function monkeyPatch(eventLoop) {
     return MonkeyPatch.monkeyPatch(window, 'setTimeout', function setTimeout(og, cb, ms) {
       if (window[cb.name] !== cb)
         throw new Error("setTimeout(function) only accepts functions whose function.name === window[name]");
@@ -26,8 +12,10 @@
 
   class EventLoop extends HTMLElement {
     #ready = false;
-    #listeners;
+    // #listeners;
+    // #listenersGet;
     #setTimeoutOG;
+    // #cleanup;
 
     connectedCallback() {
       //1. verify that we are the first in the DOM
@@ -38,7 +26,7 @@
         throw new Error("event-loop element is not either a direct child of either head or body element");
 
       //2. highjack event listeners
-      this.#setTimeoutOG = monkeyPatch(this, this.#listeners = new EventListenerRegistry());
+      this.#setTimeoutOG = monkeyPatch(this/*, this.#listeners = new EventListenerRegistry()*/);
 
       //3. trigger the EventLoop to process its events after DCL
       window.addEventListener('DOMContentLoaded', e => {
@@ -81,7 +69,7 @@
       this.timer = clearTimeout(this.timer);
       for (let taskOrTime of this.#nextTask()) {
         if (taskOrTime.tagName === 'EVENT') {
-          HTMLEventElement.dispatchEvent(taskOrTime, this.#listeners);
+          HTMLEventElement.dispatchEvent(taskOrTime/*, this.#listenersGet*/);
         } else if (taskOrTime.tagName === 'TASK') {
           HTMLTaskElement.start(taskOrTime);
         } else {
@@ -90,7 +78,7 @@
         }
       }
       this.active = false;
-      this.#listeners.cleanup();
+      EventTarget.cleanup && EventTarget.cleanup();
     }
   }
 

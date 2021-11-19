@@ -3,15 +3,16 @@
   MonkeyPatch.deprecate(Element.prototype, 'getAttributeNS');
   MonkeyPatch.deprecate(Element.prototype, 'setAttributeNodeNS');
   MonkeyPatch.deprecate(Element.prototype, 'getAttributeNodeNS');
-  MonkeyPatch.deprecate(Element.prototype, 'setAttributeNode');
-  MonkeyPatch.deprecate(Element.prototype, 'getAttributeNode');
-  // MonkeyPatch.monkeyPatch(Element.prototype, 'setAttributeNode', function setAttributeNode_CA(og, attr) {
-  //   if (attr.name[0] === ':' && attr.name[1] !== ':' && this.hasAttribute(attr.name))
-  //     throw new SyntaxError(`The value of the custom attribute "${attr.name}" can only be *changed* from the CustomAttribute definition.`);
-  //   const res = og.call(this, attr);
-  //   upgradeAttribute(attr);
-  //   return res;
-  // });
+  // MonkeyPatch.deprecate(Element.prototype, 'setAttributeNode');
+  // MonkeyPatch.deprecate(Element.prototype, 'getAttributeNode');
+  //todo deprecate the setAttributeNode???
+  MonkeyPatch.monkeyPatch(Element.prototype, 'setAttributeNode', function setAttributeNode_CA(og, attr) {
+    if (attr.name[0] === ':' && attr.name[1] !== ':' && this.hasAttribute(attr.name))
+      throw new SyntaxError(`The value of the custom attribute "${attr.name}" can only be *changed* from the CustomAttribute definition.`);
+    const res = og.call(this, attr);
+    upgradeAttribute(attr);
+    return res;
+  });
   //todo MonkeyPatch.deprecate(Element.prototype, 'removeAttributeNode');
   MonkeyPatch.monkeyPatch(Element.prototype, 'setAttribute', function setAttribute_CA(og, name, value) {
     if (name[0] === ':' && name[1] !== ':' && this.hasAttribute(name))
@@ -88,4 +89,13 @@
   }
 
   window.customAttributes = new CustomAttributeRegistry();
+  window.ActionAttribute = class ActionAttribute extends Attr {
+    addEventListener() {
+      throw new Error('ActionAttribute doesnt work without a new EventLoop.');
+    }
+
+    removeEventListener() {
+      throw new Error('ActionAttribute doesnt work without a new EventLoop.');
+    }
+  };
 })();
