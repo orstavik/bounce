@@ -24,6 +24,9 @@
 
   const events = new WeakMap();
 
+  //todo this thing needs to capture both the Attr and the EventTarget. The Attr should have been an EventTarget, but it isn't
+  // so we need to make it so again.
+
   window.HTMLEventElement = class HTMLEventElement extends HTMLElement {
     static makeEventElement(targetId, e) {
       const el = document.createElement('event');
@@ -67,11 +70,11 @@
       return event;
     }
 
-    static dispatchEvent(eventElement/*, listenersGet*/) {
+    static dispatchEvent(eventElement) {
       eventElement.setAttribute(":started", Date.now());
       Object.setPrototypeOf(eventElement, HTMLEventElement.prototype);
       if (eventElement.innerTarget)
-        HTMLEventElement.#propagate(eventElement, eventElement.innerTarget/*, listenersGet*/);
+        HTMLEventElement.#propagate(eventElement, eventElement.innerTarget);
       else
         eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
       eventElement.setAttribute(":finished", Date.now());
@@ -133,18 +136,16 @@
     static* dynamo_preventDefaultStops(t, eventEl){
       let previousRoot;
       for (let {target, root} of this.dynamo_neverSameTargetTwice(t, eventEl.composed, true)) {
-        let newDocument = previousRoot !== root;
-        //defaultPrevented is a global variable... this could be a problem...
-        //this behavior also blocks mandatory defaultActions such as a dblclick attribute on the <body>. fix this stage 2.
-        if (newDocument && eventEl.defaultPrevented)
-          return;
-        previousRoot = root;
-        yield {target, newDocument: true};
+        if(previousRoot === root)
+          yield {target, newDocument: false};
+        else if(eventEl.defaultPrevented)  //defaultPrevented is a global variable... this could be a problem...
+          return;                          //blocks mandatory defaultActions such as a dblclick attribute on the <body>. fix this stage 2.
+        else
+          previousRoot = root, yield {target, newDocument: true};
       }
     }
 
-    static #propagate(eventEl, target/*, listenersGet*/) {
-      let previousRoot;
+    static #propagate(eventEl, target) {
       for (let {target: t, newDocument} of this.dynamo_preventDefaultStops(target, eventEl)) {
         if(newDocument)
           eventEl.target = t;    //todo lock this in weakMap

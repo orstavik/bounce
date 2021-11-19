@@ -56,7 +56,7 @@
         } else if (taskOrTime.tagName === 'TASK') {
           HTMLTaskElement.start(taskOrTime);
         } else {
-          this.timer = HTMLTaskElement.setTimeoutOG.call(window, () => this.findNextTask(), taskOrTime);
+          this.timer = HTMLTaskElement.setTimeoutOG(() => this.findNextTask(), taskOrTime);
           break;
         }
       }
