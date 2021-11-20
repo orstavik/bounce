@@ -16,8 +16,14 @@ window.HTMLTaskElement = class HTMLTaskElement extends HTMLElement {
     return [...this.children].map(child => {
       if (child.tagName === 'EL')
         return document.querySelector(`[\\:uid="${child.textContent}"]`);
-      if (child.tagName === 'TASK')
-        return JSON.parse(child.getAttribute(':res'));
+      if (child.tagName === 'TASK'){
+        const res = child.getAttribute(':res');
+        try {
+          return JSON.parse(child.getAttribute(':res'));
+        } catch (e) {
+          return document.querySelector(res);
+        }
+      }
       if (child.tagName === 'JSON')
         return JSON.parse(child.textContent);
       throw new Error('illegal argument type');
