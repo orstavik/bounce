@@ -687,108 +687,123 @@
 </test-html>
 
 <h3>BouncePath</h3>
-<test-html test="../BouncePath/test1.html">
-  <script expected>
-    [
-      ["ATOM-OUTER", "MATROSCHKA-SLOT", "OUTER-SLOT", "DIV", "MAIN", "BODY", "HTML", "#document"],
-      ["ATOM-INNER", "SHADOW-INNER-SLOT", "SHADOW-OUTER-SLOT", "SPAN", "#document-fragment"],
-      ["U", "#document-fragment"],
-      ["SLOT", "I", "#document-fragment"],
-      ["SLOT", "O", "#document-fragment"],
-      ["SLOT", "MATROSCHKA-INNER", "M", "#document-fragment"],
-      ["SLOT", "I", "#document-fragment"],
-      ["SLOT", "O", "#document-fragment"],
-      "0:ATOM-OUTER,MATROSCHKA-SLOT,OUTER-SLOT,DIV,MAIN,BODY,HTML,#document\n..0:ATOM-INNER,SHADOW-INNER-SLOT,SHADOW-OUTER-SLOT,SPAN,#document-fragment\n....0:U,#document-fragment\n....1:SLOT,I,#document-fragment\n....2:SLOT,O,#document-fragment\n..1:SLOT,MATROSCHKA-INNER,M,#document-fragment\n....1:SLOT,I,#document-fragment\n..2:SLOT,O,#document-fragment"
-    ]
-  </script>
+<test-html test="../BouncePath/test1b.html">
+  <script expected>[
+    "0:ATOM-OUTER,MATROSCHKA-SLOT,OUTER-SLOT,DIV,MAIN,BODY,HTML,#document",
+    "..0:ATOM-INNER,SHADOW-INNER-SLOT,SHADOW-OUTER-SLOT,SPAN,#document-fragment",
+    "....0:U,#document-fragment",
+    "....1:SLOT,I,#document-fragment",
+    "....2:SLOT,O,#document-fragment",
+    "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
+    "....1:SLOT,I,#document-fragment",
+    "..2:SLOT,O,#document-fragment"
+  ]</script>
+</test-html>
+<test-html test="../BouncePath/test1c.html">
+  <script expected>[
+    "0:H1,MATROSCHKA-SLOT,BODY,HTML,#document",
+    "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
+    "....1:SLOT,I,#document-fragment"
+  ]</script>
 </test-html>
 
 <test-html test="../BouncePath/test_old.html">
-  <script expected>
-    [
-      ["OUTER-HOST", "SPAN", "LINK-SLOT", "DIV", "BODY", "HTML", "#document"],
-      ["#document-fragment"],
-      ["SLOT", "FRAME-SLOT", "#document-fragment"],
-      ["SLOT", "#document-fragment"],
-      "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document\n..0:#document-fragment\n..2:SLOT,FRAME-SLOT,#document-fragment\n....1:SLOT,#document-fragment",
-      ["OUTER-HOST", "SPAN", "LINK-SLOT", "DIV", "BODY", "HTML", "#document"],
-      ["#document-fragment"],
-      ["SLOT", "FRAME-SLOT", "#document-fragment"],
-      ["SLOT", "#document-fragment"],
-      "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document\n..0:INNER-HOST,INNER-LINK-SLOT,UPPER-INNER-LINK-SLOT,#document-fragment\n....0:H1,#document-fragment\n....1:SLOT,INNER-FRAME-SLOT,#document-fragment\n......1:SLOT,#document-fragment\n....2:SLOT,UPPER-INNER-FRAME-SLOT,#document-fragment\n......1:SLOT,#document-fragment\n..2:SLOT,FRAME-SLOT,#document-fragment\n....1:SLOT,#document-fragment"
-    ]
-  </script>
+  <script expected>[
+    "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
+    "..0:#document-fragment",
+    "..2:SLOT,FRAME-SLOT,#document-fragment",
+    "....1:SLOT,#document-fragment",
+    "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
+    "..0:INNER-HOST,INNER-LINK-SLOT,UPPER-INNER-LINK-SLOT,#document-fragment",
+    "....0:H1,#document-fragment",
+    "....1:SLOT,INNER-FRAME-SLOT,#document-fragment",
+    "......1:SLOT,#document-fragment",
+    "....2:SLOT,UPPER-INNER-FRAME-SLOT,#document-fragment",
+    "......1:SLOT,#document-fragment",
+    "..2:SLOT,FRAME-SLOT,#document-fragment",
+    "....1:SLOT,#document-fragment"
+  ]</script>
 </test-html>
 
 <h3>EventLoop</h3>
 
 <test-html test="../EventLoop/test1.html">
-    <script expected>
-      [0, 1, "click"]
-    </script>
+  <script expected>
+    [0, 1, "click"]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test2.html">
-    <script expected>
-      [0, 1, "a"]
-    </script>
+  <script expected>
+    [0, 1, "a"]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test3.html">
-    <script expected>
-      [["63", "60", "6"]]
-    </script>
+  <script expected>
+    [["63", "60", "6"]]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test4.html">
-    <script expected>
-      [["63", "60", "6"]]
-    </script>
+  <script expected>
+    [["63", "60", "6"]]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test4a.html">
+  <script expected>
+    ["hello world"]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test5.html">
-    <script expected>
-      [["EVENT", "TASK"]]
-    </script>
+  <script expected>
+    [["EVENT", "TASK"]]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test6.html">
-    <script expected>
-      [[true, true]]
-    </script>
+  <script expected>
+    [[true, true]]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test7.html">
-    <script expected>
-      [["42"]]
-    </script>
+  <script expected>
+    [["42"]]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test_error_1.html">
-    <script expected>
-      ["Two event-loop elements",
-        "Error",
-        "Append to illegal element",
-        "Error",
-        "Dispatch new event on element without :target",
-        "Error"]
-    </script>
+  <script expected>
+    [
+      "Two event-loop elements",
+      "Error",
+      "Append to illegal element",
+      "Error",
+      "Dispatch new event on element without :target",
+      "Error"
+    ]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test_error_2.html">
-    <script expected>
-      ["Create task element with anonymous function",
-        "Error",
-        "Error"]
-    </script>
+  <script expected>
+    ["Create task element with anonymous function", "Error", "Error"]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test_error_3.html">
-    <script expected>
-      ["Pass illegal argumentType",
-        "Error"
-      ]
-    </script>
+  <script expected>
+    ["Pass illegal argumentType", "Error"]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test_error_4.html">
+  <script expected>
+    ["No :uid attribute on target element", "Error"]
+  </script>
 </test-html>
 
 <test-html test="../EventLoop/test_error_4.html">

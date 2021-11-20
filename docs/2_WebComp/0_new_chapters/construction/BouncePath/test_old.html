@@ -1,4 +1,6 @@
-<script src="BouncePath.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="../EventLoop/HTMLEventElement_dynamo.js"></script>
 <script>
   class OuterHost extends HTMLElement {
     constructor() {
@@ -88,15 +90,19 @@
   </link-slot>
 </div>
 <script>
-  const outerHost = document.querySelector('outer-host');
-  const bp = BouncePath.make(outerHost.shadowRoot, true);
-  for (let ctx of bp)
-    console.log(ctx.path.map(n=>n.nodeName));
-  console.log(bp.toString());
+  function toString({path, pos, depth}) {
+    const dots = Array(depth * 2).fill('.').join('');
+    const path2 = path.map(n => n.nodeName).join(',');
+    return `${dots}${pos}:${path2}`;
+  }
 
+  function runTest(target1) {
+    const res = [...HTMLEventElement.dynamo_core(target1, true)].reduce((res, output) => res.set(output.root, output), new Map());
+    [...res.values()].map(toString).forEach(str => console.log(str));
+  }
+
+  const outerHost = document.querySelector('outer-host');
+  runTest(outerHost.shadowRoot);
   const mostNestedH1 = outerHost.shadowRoot.children[0].children[0].children[0].shadowRoot.children[0];
-  const bp2 = BouncePath.make(mostNestedH1, true);
-  for (let ctx of bp)
-    console.log(ctx.path.map(n=>n.nodeName));
-  console.log(bp2.toString());
+  runTest(mostNestedH1);
 </script>

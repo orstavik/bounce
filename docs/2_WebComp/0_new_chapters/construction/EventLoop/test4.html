@@ -2,8 +2,8 @@
 <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="../constructionFrame/constructionFrame.js"></script>
 <script src="../childChanged/ChildChangedCallback.js"></script>
-<script src="../BouncePath/BouncePath.js"></script>
 <script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="HTMLTaskElement.js"></script>
 <script src="EventLoop.js"></script>
 
 <event-loop>
@@ -25,8 +25,8 @@
 
 <script>
   window.printRes = async function () {
-    const taskElements = await document.querySelectorAll("task[\\:res]");
-    console.log([...taskElements].map(n => n?.attributes?.[":res"]?.value))
+      const res = [...document.querySelectorAll("task[\\:res]")].map(n => n.getAttribute(":res"));
+      console.log(...(await res));
   }
 
   window.asyncMultiply = async function (...args) {

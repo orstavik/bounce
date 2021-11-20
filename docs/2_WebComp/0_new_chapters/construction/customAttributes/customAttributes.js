@@ -1,18 +1,24 @@
 (function () {
   MonkeyPatch.deprecate(Element.prototype, 'setAttributeNS');
+  MonkeyPatch.deprecate(Element.prototype, 'getAttributeNS');
   MonkeyPatch.deprecate(Element.prototype, 'setAttributeNodeNS');
-  MonkeyPatch.monkeyPatch(Element.prototype, 'setAttribute', function setAttribute_CA(og, name, value) {
-    if (name[0] === ':' && name[1] !== ':' && this.hasAttribute(name))
-      throw new SyntaxError(`The value of the custom attribute "${name}" can only be *changed* from the CustomAttribute definition.`);
-    const res = og.call(this, name, value);
-    upgradeAttribute(this.getAttributeNode(name));
-    return res;
-  });
+  MonkeyPatch.deprecate(Element.prototype, 'getAttributeNodeNS');
+  // MonkeyPatch.deprecate(Element.prototype, 'setAttributeNode');
+  // MonkeyPatch.deprecate(Element.prototype, 'getAttributeNode');
+  //todo deprecate the setAttributeNode???
   MonkeyPatch.monkeyPatch(Element.prototype, 'setAttributeNode', function setAttributeNode_CA(og, attr) {
     if (attr.name[0] === ':' && attr.name[1] !== ':' && this.hasAttribute(attr.name))
       throw new SyntaxError(`The value of the custom attribute "${attr.name}" can only be *changed* from the CustomAttribute definition.`);
     const res = og.call(this, attr);
     upgradeAttribute(attr);
+    return res;
+  });
+  //todo MonkeyPatch.deprecate(Element.prototype, 'removeAttributeNode');
+  MonkeyPatch.monkeyPatch(Element.prototype, 'setAttribute', function setAttribute_CA(og, name, value) {
+    if (name[0] === ':' && name[1] !== ':' && this.hasAttribute(name))
+      throw new SyntaxError(`The value of the custom attribute "${name}" can only be *changed* from the CustomAttribute definition.`);
+    const res = og.call(this, name, value);
+    upgradeAttribute(this.getAttributeNode(name));
     return res;
   });
   MonkeyPatch.monkeyPatchSetter(Attr.prototype, 'value', function value_CA(og, val) {
@@ -21,8 +27,7 @@
     return og.call(this, val);
   });
   //todo MonkeyPatch.monkeyPatch(Element.prototype, 'removeAttribute', function removeAttribute_CA(og, val) {
-  //todo MonkeyPatch.monkeyPatch(Element.prototype, 'removeAttributeNode', function removeAttributeNode_CA(og, val) {
-  //todo remove attribute will delete the prototype??
+  //todo remove attribute will delete the prototype?? If we remove the attribute, we should have a remove callback. This will essentially delete the attribute as it cannot be reattached to another element.
 
   const setValueOG = MonkeyPatch.lockOG("Attr.value");
 
@@ -84,4 +89,13 @@
   }
 
   window.customAttributes = new CustomAttributeRegistry();
+  window.ActionAttribute = class ActionAttribute extends Attr {
+    addEventListener() {
+      throw new Error('ActionAttribute doesnt work without a new EventLoop.');
+    }
+
+    removeEventListener() {
+      throw new Error('ActionAttribute doesnt work without a new EventLoop.');
+    }
+  };
 })();

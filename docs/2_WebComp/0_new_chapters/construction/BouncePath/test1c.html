@@ -1,0 +1,36 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="../EventLoop/HTMLEventElement_dynamo.js"></script>
+<script>
+  customElements.define('matroschka-inner', class MatroschkaInnerSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = '<i><slot></slot></i>';
+    }
+  });
+  customElements.define('matroschka-slot', class MatroschkaSlot extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: "open"}).innerHTML = '<m><matroschka-inner><slot></slot></matroschka-inner></m>';
+    }
+  });
+</script>
+
+<matroschka-slot>
+  <h1>hello sunshine</h1>
+</matroschka-slot>
+
+<script>
+  function toString({path, pos, depth}) {
+    const dots = Array(depth * 2).fill('.').join('');
+    const path2 = path.map(n => n.nodeName).join(',');
+    return `${dots}${pos}:${path2}`;
+  }
+
+  function runTest(target1) {
+    const res = [...HTMLEventElement.dynamo_core(target1, true)].reduce((res, output) => res.set(output.root, output), new Map());
+    [...res.values()].map(toString).forEach(str => console.log(str));
+  }
+
+  runTest(document.querySelector("h1"));
+</script>

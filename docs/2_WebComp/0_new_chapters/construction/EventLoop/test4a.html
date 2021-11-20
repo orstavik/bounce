@@ -1,3 +1,6 @@
+<script>
+  const setTimeoutOG = setTimeout;
+</script>
 <script src="../MonkeyPatch/MonkeyPatch.js"></script>
 <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="../constructionFrame/constructionFrame.js"></script>
@@ -5,18 +8,17 @@
 <script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
 <script src="HTMLTaskElement.js"></script>
 <script src="EventLoop.js"></script>
+<head>
+  <event-loop>
+    <task :created="1631618371262" :delay="3000" :cb="printRes" :start="1631789839549">
+      <json>"hello world"</json>
+    </task>
+  </event-loop>
 
-<event-loop></event-loop>
-
-<script>
-
-  window.a = function a(){
-    console.log("a");
-  }
-
-  const eventLoop = document.querySelector("event-loop");
-  console.log(eventLoop.childNodes.length); //0
-  setTimeout(a, 100);
-  console.log(eventLoop.childNodes.length); //1  //these run first because they are running sync, and the event-loop doesn't begin before DCL
-  //a after 100ms
-</script>
+  <script>
+    window.printRes = async function printRes(str) {
+      await (new Promise(r => setTimeoutOG(r, 100)));
+      console.log(str);
+    }
+  </script>
+</head>
