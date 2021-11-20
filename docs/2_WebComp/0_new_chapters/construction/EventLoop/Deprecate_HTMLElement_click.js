@@ -1,0 +1,1 @@
+MonkeyPatch.deprecate(HTMLElement.prototype, "click");
