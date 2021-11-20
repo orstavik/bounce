@@ -58,7 +58,7 @@
       return document.querySelector(`[\\:uid='${this.getAttribute(":inner-target")}']`);
     }
 
-    //target and currentTarget should be private.
+    //target and currentTarget should be private in a weakMap.
 
     get composed() {
       return this.getAttribute(":composed");

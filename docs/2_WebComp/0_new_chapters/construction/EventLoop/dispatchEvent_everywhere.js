@@ -4,8 +4,10 @@
 // for custom dispatchEvent functions, that handle a root argument, this can be handled quite easily.
 // but for the native dispatchEvent, this will break focus events limitation, and make them propagate all the way to the window.
 
-//Potential: If every event propagates through the dispatchEvent, then we can make them all run either sync or as separate macro tasks.
-(function (HTMLElement_prototype, EventTarget_prototype, stopImmediatePropagation, preventDefault, composedPath) {
+//Note 1: this only works if the native .dispatchEvent is monkeyPatched, because you cannot dispatch the same event while it is still being dispatched.
+
+// Potential: If every event propagates through the dispatchEvent, then we can make them all run either sync or as separate macro tasks.
+(function (EventTarget_prototype, stopImmediatePropagation, preventDefault, composedPath) {
 
   function nativeEventPickMeUpper(e) {
     stopImmediatePropagation.call(e);
@@ -24,27 +26,13 @@
     return wrapper;
   }
 
-  Object.defineProperties(EventTarget_prototype, {
-    addEventListener: {
-      value: function (og, type, listener) {
-        og.call(this, type, getMakeFunctionWrapper(listener));
-      }
-    },
-    removeEventListener: {
-      value: function (og, type, listener) {
-        og.call(this, type, getMakeFunctionWrapper(listener));
-      }
-    }
+  MonkeyPatch.monkeyPatch(EventTarget_prototype, "addEventListener", function addEventListener(og, type, listener) {
+    og.call(this, type, getMakeFunctionWrapper(listener));
   });
-
-  Object.defineProperty(HTMLElement_prototype, "click", {
-    value: function () {
-      this.dispatchEvent(new MouseEvent("click"));
-    }
+  MonkeyPatch.monkeyPatch(EventTarget_prototype, "removeEventListener", function removeEventListener(og, type, listener) {
+    og.call(this, type, getMakeFunctionWrapper(listener));
   });
-
 })(
-  HTMLElement.prototype,
   EventTarget.prototype,
   Event.prototype.stopImmediatePropagation,
   Event.prototype.preventDefault,
