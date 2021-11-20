@@ -1,0 +1,26 @@
+<head>
+    <script src="../MonkeyPatch/MonkeyPatch.js"></script>
+    <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+    <script src="../constructionFrame/constructionFrame.js"></script>
+    <script src="../childChanged/ChildChangedCallback.js"></script>
+    <script src="../BouncePath/BouncePath.js"></script>
+    <script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+    <script src="ElementEvent.js"></script>
+    <script src="HTMLEventElement.js"></script>
+    <script src="HTMLTaskElement.js"></script>
+    <script src="EventLoop.js"></script>
+
+    <event-loop></event-loop>
+</head>
+
+<body :uid="0">
+ <h1 :uid="1">hello sunshine</h1>
+</body>
+
+<script>
+  const h1 = document.querySelector("h1");
+  h1.addEventListener('click', () => console.log("hello world"));
+  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+</script>
