@@ -1,6 +1,4 @@
 Object.defineProperty(Event, 'FINISHED', {value: 4, writable: false, enumerable: true, configurable: false});
-MonkeyPatch.deprecate(Event.prototype, 'stopPropagation');                      //todo untested,
-MonkeyPatch.deprecate(Event.prototype, 'stopImmediatePropagation');             //todo untested,
 
 window.ElementEvent = class ElementEvent extends Event {
   #el;
