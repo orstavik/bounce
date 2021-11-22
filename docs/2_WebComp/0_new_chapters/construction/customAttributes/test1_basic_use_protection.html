@@ -26,8 +26,5 @@
     assertError(() => div.setAttribute(":dblclick", "5"), "Element.setAttribute");
     assertError(() => body.setAttributeNode(dblclick), "Element.setAttributeNode");
     assertError(() => dblclick.value = 42, "Attr.value");
-
-    assertError(() => div.setAttributeNS("bob", "dblclick", "5"), "Element.setAttributeNS");
-    assertError(() => body.setAttributeNodeNS(dblclick), "Element.setAttributeNodeNS");
   })();
 </script>

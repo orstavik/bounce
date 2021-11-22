@@ -3,7 +3,11 @@
 <h3>MonkeyPatch System</h3>
 <test-html test="../MonkeyPatch/test_deprecate.html">
   <script expected>
-    ["click"]
+    [
+      "click",
+      "setAttributeNS",
+      "setAttributeNodeNS"
+    ]
   </script>
 </test-html>
 
@@ -632,9 +636,7 @@
       [":dblclick 300", ":hello sunshine"],
       "Element.setAttribute",
       "Element.setAttributeNode",
-      "Attr.value",
-      "Element.setAttributeNS",
-      "Element.setAttributeNodeNS"
+      "Attr.value"
     ]
   </script>
 </test-html>
