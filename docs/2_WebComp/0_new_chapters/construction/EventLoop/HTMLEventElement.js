@@ -33,7 +33,7 @@
     const targetId = this.getAttribute(":uid");
     if (!targetId)
       throw new Error("No :uid attribute on target element" + e.target);
-    document.querySelector('event-loop').prepend(HTMLEventElement.makeEventElement(targetId, e));
+    document.querySelector('event-loop').append(HTMLEventElement.makeEventElement(targetId, e));
   });
 
   const events = new WeakMap();
