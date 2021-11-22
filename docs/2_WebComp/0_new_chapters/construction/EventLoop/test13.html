@@ -1,0 +1,52 @@
+<head>
+    <script>const setTimeoutOG = setTimeout;</script>
+    <!--  todo this is a problematic bad patch.
+            The problem is that the event-loop reacts to mutation observer, not sync dispatch as the platform does.
+            That means that the actual dispatch isn't done until next microTask.
+            And as this is a sync script, we need to make the format for such behavior post-event-loop emergense.
+            Todo the solution is probably to make the event-loop reactive from the very beginning.
+    -->
+    <script src="../MonkeyPatch/MonkeyPatch.js"></script>
+    <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+    <script src="../constructionFrame/constructionFrame.js"></script>
+    <script src="../childChanged/ChildChangedCallback.js"></script>
+    <script src="../BouncePath/BouncePath.js"></script>
+    <script src="../EventListenerRegistry/EventTarget.js"></script>
+    <script src="ElementEvent.js"></script>
+    <script src="HTMLEventElement.js"></script>
+    <script src="HTMLTaskElement.js"></script>
+    <script src="EventLoop.js"></script>
+
+    <event-loop></event-loop>
+</head>
+
+<body :uid="0">
+<div :uid="3"></div>
+
+<h2 :uid="2">
+    <h1 :uid="1">hello sunshine</h1>
+</h2>
+</body>
+
+<script>
+  function logEventElement() {
+    const res = [...document.querySelectorAll("event")].map(event => event.getAttribute(":inner-target"));
+    console.log(res);
+  }
+
+  const h1 = document.querySelector("h1");
+  const h2 = document.querySelector("h2");
+  const div = document.querySelector("div");
+
+  h1.addEventListener("click", logEventElement);
+  h2.addEventListener("click", logEventElement);
+  div.addEventListener("click", logEventElement);
+
+  h1.dispatchEvent(new MouseEvent('click'));
+  h2.dispatchEvent(new MouseEvent('click'));
+
+  setTimeoutOG(function () {
+    h1.removeEventListener("click", logEventElement);
+    div.dispatchEvent(new MouseEvent('click'));
+  }, 4);
+</script>
