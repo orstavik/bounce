@@ -21,8 +21,10 @@
 </head>
 
 <body :uid="0">
-<div :uid="2">
-    <h1 :uid="1">hello sunshine</h1>
+<div :uid="3">
+    <h2 :uid="2">
+        <h1 :uid="1">hello sunshine</h1>
+    </h2>
 </div>
 </body>
 
@@ -33,16 +35,18 @@
   }
 
   const h1 = document.querySelector("h1");
+  const h2 = document.querySelector("h2");
   const div = document.querySelector("div");
 
   h1.addEventListener("click", logEventElement);
+  h2.addEventListener("click", logEventElement);
   div.addEventListener("click", logEventElement);
 
   h1.dispatchEvent(new MouseEvent('click'));
-  div.dispatchEvent(new MouseEvent('click'));
+  h2.dispatchEvent(new MouseEvent('click'));
 
   setTimeoutOG(function () {
     h1.removeEventListener("click", logEventElement);
-    h1.dispatchEvent(new MouseEvent('click'));
+    div.dispatchEvent(new MouseEvent('click'));
   }, 4);
 </script>
