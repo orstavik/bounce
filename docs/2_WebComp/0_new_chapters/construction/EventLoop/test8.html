@@ -20,7 +20,7 @@
 <script>
   const h1 = document.querySelector("h1");
   h1.addEventListener('click', () => console.log("hello world"));
-  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
-  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
-  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+  h1.dispatchEvent(new MouseEvent('click'));
+  h1.dispatchEvent(new MouseEvent('click'));
+  h1.dispatchEvent(new MouseEvent('click'));
 </script>

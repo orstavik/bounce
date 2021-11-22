@@ -17,10 +17,16 @@
       return [...this.children].map(child => {
         if (child.tagName === 'EL')
           return document.querySelector(`[\\:uid="${child.textContent}"]`);
-        if (child.tagName === 'TASK')
-          return JSON.parse(child.getAttribute(':res'));
         if (child.tagName === 'JSON')
           return JSON.parse(child.textContent);
+        if (child.tagName === 'TASK') {
+          const res = child.getAttribute(':res');
+          try {
+            return JSON.parse(res);
+          } catch (error) {
+            return document.querySelector(res);
+          }
+        }
         throw new Error('illegal argument type');
       });
     }
