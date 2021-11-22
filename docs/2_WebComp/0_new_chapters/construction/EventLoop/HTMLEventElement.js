@@ -1,75 +1,166 @@
-const events = new WeakMap();
+(function () {
 
-window.HTMLEventElement = class HTMLEventElement extends HTMLElement {
-  static makeEventElement(targetId, e) {
-    const el = document.createElement('event');
-    el.setAttribute(':target', targetId);
-    el.setAttribute(":created", Date.now());
-    el.setAttribute(':type', e.type);
-    el.setAttribute(':composed', e.composed);
-    el.setAttribute(':bubbles', e.bubbles);
-    if (e.pointerType === "mouse") {
-      el.setAttribute(':x', e.x);
-      el.setAttribute(':y', e.y);
+  function monkeyEventTarget() {
+    const listeners = new EventListenerRegistry();
+    MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
+      og.call(this, type, listener);
+      listeners.add(this, type, listener);
+    });
+    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
+      og.call(this, type, listener);
+      listeners.remove(this, type, listener);
+    });
+    Object.defineProperty(EventTarget, 'cleanup', {value: listeners.cleanup.bind(listeners)});
+    return listeners.get.bind(listeners);
+  }
+  const listenersGet = monkeyEventTarget();
+
+  MonkeyPatch.monkeyPatch(EventTarget.prototype, 'dispatchEvent', function dispatchEvent(og, e) {
+    const targetId = this.getAttribute(":uid");
+    if (!targetId)
+      throw new Error("No :uid attribute on target element" + e.target);
+    document.querySelector('event-loop').prepend(HTMLEventElement.makeEventElement(targetId, e));
+  });
+
+  const events = new WeakMap();
+
+  //todo this thing needs to capture both the Attr and the EventTarget. The Attr should have been an EventTarget, but it isn't
+  // so we need to make it so again.
+
+  window.HTMLEventElement = class HTMLEventElement extends HTMLElement {
+    static makeEventElement(targetId, e) {
+      const el = document.createElement('event');
+      el.setAttribute(':inner-target', targetId);
+      el.setAttribute(":created", Date.now());
+      el.setAttribute(':type', e.type);
+      el.setAttribute(':composed', e.composed);
+      el.setAttribute(':bubbles', e.bubbles);
+      if (e.pointerType === "mouse") {
+        el.setAttribute(':x', e.x);
+        el.setAttribute(':y', e.y);
+      }
+      return el;
     }
-    return el;
-  }
 
-  get type() {
-    return this.getAttribute(":type");
-  }
+    get type() {
+      return this.getAttribute(":type");
+    }
 
-  get defaultPrevented() {
-    return this.getAttribute(":default-prevented");
-  }
+    get defaultPrevented() {
+      return this.getAttribute(":default-prevented");
+    }
 
-  get target() {
-    return document.querySelector(`[\\:uid='${this.getAttribute(":target")}']`);
-  }
+    get preventDefault() {
+      this.hasAttribute(":default-prevented") || this.setAttribute(":default-prevented");
+    }
 
-  get composed() {
-    return this.getAttribute(":composed");
-  }
+    get innerTarget() {
+      return document.querySelector(`[\\:uid='${this.getAttribute(":inner-target")}']`);
+    }
 
-  get event() {
-    let event = events.get(this);
-    !event && events.set(this, event = new ElementEvent(this));
-    return event;
-  }
+    //target and currentTarget should be private in a weakMap.
 
-  static dispatchEvent(eventElement, listeners) {
-    eventElement.setAttribute(":started", Date.now());
-    Object.setPrototypeOf(eventElement, HTMLEventElement.prototype);
-    const target = eventElement.target;
-    if (!target)
-      eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
-    else
-      HTMLEventElement.#propagate(eventElement, target, listeners);
-    eventElement.setAttribute(":finished", Date.now());
-  }
+    get composed() {
+      return this.getAttribute(":composed");
+    }
 
-  static #propagate(eventEl, target, listeners) {
-    eventEl.composedPath = BouncePath.composedPath(target, eventEl.composed);
-    eventEl.topMostContext = BouncePath.make(target, eventEl.composed);
-    for (let context of eventEl.topMostContext) {
-      if (eventEl.defaultPrevented)                  //on this level, we just want to work with the EventElement.
-        break;                                       //todo this doesn't work with mandatory functions, then we would have to complete the iteration.
-      eventEl.context = context;
-      for (let target of context.path) {
-        const list = listeners.get(target, eventEl.type);
-        if (list) {
+    get event() {
+      let event = events.get(this);
+      !event && events.set(this, event = new ElementEvent(this));
+      return event;
+    }
 
-          eventEl.currentTarget = target;
-          for (let fun of list) {
-            try {
-              fun?.call(target, eventEl.event);
-            } catch (error) {
-              //eventElement.listenerErrors.push(target, fun, error); //todo something like this
-            }
+    static dispatchEvent(eventElement) {
+      eventElement.setAttribute(":started", Date.now());
+      Object.setPrototypeOf(eventElement, HTMLEventElement.prototype);
+      if (eventElement.innerTarget)
+        HTMLEventElement.#propagate(eventElement, eventElement.innerTarget);
+      else
+        eventElement.setAttribute(":error", `Can't find target: ${(eventElement.getAttribute(":target"))}`);
+      eventElement.setAttribute(":finished", Date.now());
+    }
+
+    static targetRoots(target, composed) {
+      if (!composed)
+        return [{target, root: target.getRootNode(), path: []}];
+      const hosts = [];
+      for (let root; target; target = root.host)
+        hosts.unshift({target, root: root = target.getRootNode(), path: []});
+      return hosts;
+    }
+
+    static* dynamo_core(target, composed, depth = 0, pos = 0) {
+      const hosts = HTMLEventElement.targetRoots(target, composed);
+      for (let i = 0; i < hosts.length; i++) {                           //user document is top down
+        let {target, root, path} = hosts[i];
+        for (; target; target = target.parentNode) {
+          path.push(target);
+          yield {target, root, depth: depth + i, pos, path};
+        }
+      }
+      for (let i = hosts.length - 1; i >= 0; i--) {                     //slotting/attributes  documents is bottom up
+        let {path} = hosts[i];
+        for (let pos = 0; pos < path.length; pos++) {
+          let target = path[pos];
+          if (target.assignedSlot) {                                    //first shadowDom
+            yield* this.dynamo_core(target.assignedSlot, false, depth + i + 1, pos + 1);
           }
+          if (target.attributes)
+            for (let i = 0; i < target.attributes.length; i++)          //second attributes
+              yield {target: target.attributes[i], root: target, depth: depth + i, pos};
+        }
+      }
+    }
 
+    //if you remove a node from the dom, then you don't really need to run its listeners anymore.
+    static* dynamo_connected(t, composed, connectedOnly) {
+      if (!connectedOnly) {
+        yield* this.dynamo_core(t, composed);
+        return;
+      }
+      for (let {target, root} of this.dynamo_core(t, composed))
+        if (target.isConnected) yield {target, root};
+    }
+
+    //example of dev time check that can be used to produce error messages.
+    static* dynamo_neverSameTargetTwice(t, composed, connectedOnly) {
+      const seen = new WeakSet();
+      for (let {target, root} of this.dynamo_connected(t, composed, connectedOnly)) {
+        if (seen.has(target))
+          throw new Error("Don't manipulate the parent context of an element during event propagation");
+        seen.add(target);
+        yield {target, root};
+      }
+    }
+
+    static* dynamo_preventDefaultStops(t, eventEl){
+      let previousRoot;
+      for (let {target, root} of this.dynamo_neverSameTargetTwice(t, eventEl.composed, true)) {
+        if(previousRoot === root)
+          yield {target, newDocument: false};
+        else if(eventEl.defaultPrevented)  //defaultPrevented is a global variable... this could be a problem...
+          return;                          //blocks mandatory defaultActions such as a dblclick attribute on the <body>. fix this stage 2.
+        else
+          previousRoot = root, yield {target, newDocument: true};
+      }
+    }
+
+    static #propagate(eventEl, target) {
+      for (let {target: t, newDocument} of this.dynamo_preventDefaultStops(target, eventEl)) {
+        if(newDocument)
+          eventEl.target = t;    //todo lock this in weakMap
+        const list = listenersGet(t, eventEl.type);              //todo this is a locked, private function
+        if (!list)
+          continue;
+        eventEl.currentTarget = t;  //todo lock this in weakMap
+        for (let fun of list) {
+          try {
+            fun?.call(t, eventEl.event);
+          } catch (error) {
+            //eventElement.listenerErrors.push(target, fun, error); //todo something like this
+          }
         }
       }
     }
   }
-}
+})();
