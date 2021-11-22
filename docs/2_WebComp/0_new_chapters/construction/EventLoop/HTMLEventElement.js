@@ -1,19 +1,33 @@
 (function () {
 
-  function monkeyEventTarget() {
-    const listeners = new EventListenerRegistry();
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
-      og.call(this, type, listener);
-      listeners.add(this, type, listener);
-    });
-    MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
-      og.call(this, type, listener);
-      listeners.remove(this, type, listener);
-    });
-    Object.defineProperty(EventTarget, 'cleanup', {value: listeners.cleanup.bind(listeners)});
-    return listeners.get.bind(listeners);
-  }
-  const listenersGet = monkeyEventTarget();
+  // (function monkeyEventTarget() {
+  //   const listeners = new EventListenerRegistry();
+  //   MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
+  //     og.call(this, type, listener);
+  //     listeners.add(this, type, listener);
+  //   });
+  //   MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
+  //     og.call(this, type, listener);
+  //     listeners.remove(this, type, listener);
+  //   });
+  //   Object.defineProperty(EventTarget.prototype, 'getEventListeners', {
+  //     value: function (type) {
+  //       return listeners.get(this, type);
+  //     },
+  //     writable: true,
+  //     configurable: true,
+  //     enumerable: true
+  //   });
+  //   Object.defineProperty(EventTarget, 'cleanup', {
+  //     value: listeners.cleanup.bind(listeners),
+  //     writable: true,
+  //     configurable: true,
+  //     enumerable: true
+  //   });
+  // })();
+
+  const listenersGet = EventTarget.prototype.getEventListeners;
+  Object.defineProperty(EventTarget.prototype, 'getEventListeners', {value: undefined});
 
   MonkeyPatch.monkeyPatch(EventTarget.prototype, 'dispatchEvent', function dispatchEvent(og, e) {
     const targetId = this.getAttribute(":uid");
@@ -133,12 +147,12 @@
       }
     }
 
-    static* dynamo_preventDefaultStops(t, eventEl){
+    static* dynamo_preventDefaultStops(t, eventEl) {
       let previousRoot;
       for (let {target, root} of this.dynamo_neverSameTargetTwice(t, eventEl.composed, true)) {
-        if(previousRoot === root)
+        if (previousRoot === root)
           yield {target, newDocument: false};
-        else if(eventEl.defaultPrevented)  //defaultPrevented is a global variable... this could be a problem...
+        else if (eventEl.defaultPrevented)  //defaultPrevented is a global variable... this could be a problem...
           return;                          //blocks mandatory defaultActions such as a dblclick attribute on the <body>. fix this stage 2.
         else
           previousRoot = root, yield {target, newDocument: true};
@@ -147,9 +161,9 @@
 
     static #propagate(eventEl, target) {
       for (let {target: t, newDocument} of this.dynamo_preventDefaultStops(target, eventEl)) {
-        if(newDocument)
+        if (newDocument)
           eventEl.target = t;    //todo lock this in weakMap
-        const list = listenersGet(t, eventEl.type);              //todo this is a locked, private function
+        const list = listenersGet.call(t, eventEl.type);              //todo this is a locked, private function
         if (!list)
           continue;
         eventEl.currentTarget = t;  //todo lock this in weakMap
