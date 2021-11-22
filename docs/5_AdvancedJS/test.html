@@ -1,0 +1,17 @@
+<script>
+  class Oops {
+    #list = [];
+
+    assign(...newItems) {
+      this.#list = [];
+      for (let item of newItems)
+        this.#list.push(item);
+    }
+  }
+
+  const oops = new Oops();
+  oops.assign(...[1, 2, 3]);  //#list = [1,2,3]
+  oops.assign(...[1, 2, 3]);  //#list = [1,2,3]
+  for (let n of [1, 2, 3])
+    oops.assign(n);           //#list = [3]
+</script>
