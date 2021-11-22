@@ -2,10 +2,18 @@
 <script src="Deprecate.js"></script>
 <h1>hello sunshine</h1>
 <script>
-  const h1 = document.querySelector("h1");
-  try{
-    h1.click();
-  } catch(err){
-    console.log("click");
+  function assertError(closure, msg) {
+    try {
+      closure();
+    } catch (err) {
+      console.log(msg);
+    }
   }
+
+  const h1 = document.querySelector("h1");
+  const bob = document.createAttribute(":bob");
+  assertError(()=>h1.click(), "click");
+  assertError(() => h1.setAttributeNS("bob", "dblclick", "5"), "setAttributeNS");
+  assertError(() => h1.setAttributeNodeNS(bob), "setAttributeNodeNS");
+
 </script>
