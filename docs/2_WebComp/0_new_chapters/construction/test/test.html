@@ -1,4 +1,18 @@
 <h1>Test for ready and childChanged callbacks</h1>
+
+<h3>MonkeyPatch System</h3>
+<test-html test="../MonkeyPatch/test_deprecate.html">
+  <script expected>
+    [
+      "click",
+      "setAttributeNS",
+      "setAttributeNodeNS",
+      "stopProp",
+      "stopProp2"
+    ]
+  </script>
+</test-html>
+
 <h3>ParserBreakEvent</h3>
 <test-html test="../ParserBreakEvent/test1.html">
   <script expected>
@@ -624,9 +638,7 @@
       [":dblclick 300", ":hello sunshine"],
       "Element.setAttribute",
       "Element.setAttributeNode",
-      "Attr.value",
-      "Element.setAttributeNS",
-      "Element.setAttributeNodeNS"
+      "Attr.value"
     ]
   </script>
 </test-html>
@@ -772,6 +784,36 @@
 <test-html test="../EventLoop/test7.html">
   <script expected>
     [["42"]]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test8.html">
+  <script expected>
+    ["hello world", "hello world", "hello world"]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test9.html">
+  <script expected>
+    ["hello", "world"]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test10.html">
+  <script expected>
+    ["hello world"]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test11.html">
+  <script expected>
+    ["hello", "world", "world"]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test12.html">
+  <script expected>
+    ["hello", "world", "world", "world"]
   </script>
 </test-html>
 

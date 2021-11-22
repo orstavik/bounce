@@ -1,5 +1,4 @@
 <script src="../MonkeyPatch/MonkeyPatch.js"></script>
-<script src="Deprecate_HTMLElement_click.js"></script>
 <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="../constructionFrame/constructionFrame.js"></script>
 <script src="../childChanged/ChildChangedCallback.js"></script>
@@ -16,9 +15,9 @@ todo the bug. the event-loop cannot start until it gets the readystatechange eve
  And then we need the monkeyPatch function for everything, because it gives us the meta view list of which monkeypatches are
  done.
 -->
-<script src="../EventListenerRegistry/EventListenerRegistry.js"></script>
+<script src="../EventListenerRegistry/EventTarget.js"></script>
 <script src="ElementEvent.js"></script>
-<script src="HTMLEventElement_dynamo.js"></script>
+<script src="HTMLEventElement.js"></script>
 <script src="EventLoop.js"></script>
 
 <event-loop></event-loop>

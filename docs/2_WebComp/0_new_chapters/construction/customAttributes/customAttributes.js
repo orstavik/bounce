@@ -1,10 +1,4 @@
 (function () {
-  MonkeyPatch.deprecate(Element.prototype, 'setAttributeNS');
-  MonkeyPatch.deprecate(Element.prototype, 'getAttributeNS');
-  MonkeyPatch.deprecate(Element.prototype, 'setAttributeNodeNS');
-  MonkeyPatch.deprecate(Element.prototype, 'getAttributeNodeNS');
-  // MonkeyPatch.deprecate(Element.prototype, 'setAttributeNode');
-  // MonkeyPatch.deprecate(Element.prototype, 'getAttributeNode');
   //todo deprecate the setAttributeNode???
   MonkeyPatch.monkeyPatch(Element.prototype, 'setAttributeNode', function setAttributeNode_CA(og, attr) {
     if (attr.name[0] === ':' && attr.name[1] !== ':' && this.hasAttribute(attr.name))

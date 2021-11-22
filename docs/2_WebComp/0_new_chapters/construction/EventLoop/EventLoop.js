@@ -64,6 +64,8 @@
       EventTarget.cleanup && EventTarget.cleanup();
     }
   }
+  //  const cleanup = EventTarget.cleanup;                               //todo it is possible to do this outside.
+  //   Object.defineProperty(EventTarget, 'cleanup', {value: undefined});//todo But it is not good nor necessary.
 
   customElements.define('event-loop', EventLoop);
 })();

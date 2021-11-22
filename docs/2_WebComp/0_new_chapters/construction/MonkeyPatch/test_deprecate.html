@@ -1,0 +1,21 @@
+<script src="MonkeyPatch.js"></script>
+<script src="Deprecate.js"></script>
+<h1>hello sunshine</h1>
+<script>
+  function assertError(closure, msg) {
+    try {
+      closure();
+    } catch (err) {
+      console.log(msg);
+    }
+  }
+
+  const h1 = document.querySelector("h1");
+  const bob = document.createAttribute(":bob");
+  assertError(() => h1.click(), "click");
+  assertError(() => h1.setAttributeNS("bob", "dblclick", "5"), "setAttributeNS");
+  assertError(() => h1.setAttributeNodeNS(bob), "setAttributeNodeNS");
+
+  assertError(()=>new Event("bob").stopPropagation(), "stopProp");
+  assertError(()=>new Event("bob").stopImmediatePropagation(), "stopProp2");
+</script>
