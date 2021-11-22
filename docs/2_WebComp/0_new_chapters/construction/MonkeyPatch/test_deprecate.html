@@ -1,0 +1,11 @@
+<script src="MonkeyPatch.js"></script>
+<script src="Deprecate.js"></script>
+<h1>hello sunshine</h1>
+<script>
+  const h1 = document.querySelector("h1");
+  try{
+    h1.click();
+  } catch(err){
+    console.log("click");
+  }
+</script>
