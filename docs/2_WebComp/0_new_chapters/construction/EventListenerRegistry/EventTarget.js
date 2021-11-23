@@ -15,6 +15,19 @@
     return map[type]?.get(target);
   }
 
+  const addEventListenerOG = EventTarget.prototype.addEventListener;
+  class EventTargetExposed {
+    addEventListener(type, listener){
+      addEventListenerOG.call(this, type, listener);
+      const listenersPerNode = map[type] ??= new WeakMap();
+      let listeners = listenersPerNode.get(this);
+      if (!listeners)
+        return listenersPerNode.set(this, [listener]);
+      if (listeners.indexOf(listener) >= 0)
+        return false;
+      listeners.push(listener);
+    }
+  }
   class EventListenerRegistry {
 
     //adds the event listener function to the registry, if the function is not already added for that target and type.
@@ -41,10 +54,11 @@
     }
   }
 
-  MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
-    og.call(this, type, listener);
-    EventListenerRegistry.add(this, type, listener);
-  });
+  // MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
+  //   og.call(this, type, listener);
+  //   EventListenerRegistry.add(this, type, listener);
+  // });
+  Object.defineProperty(EventTarget.prototype, "addEventListener", {value: EventTargetExposed.prototype.addEventListener, writable: true, enumerable:true, configurable: true});
   MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
     og.call(this, type, listener);
     EventListenerRegistry.remove(this, type, listener);
