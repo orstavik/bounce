@@ -13,6 +13,18 @@
   </script>
 </test-html>
 
+<test-html test="../MonkeyPatch/test_error_5.html">
+  <script expected>
+    ["Call .stopPropagation() on event", "Error"]
+  </script>
+</test-html>
+
+<test-html test="../MonkeyPatch/test_error_6.html">
+  <script expected>
+    ["Call .stopImmediatePropagation() on event", "Error"]
+  </script>
+</test-html>
+
 <h3>ParserBreakEvent</h3>
 <test-html test="../ParserBreakEvent/test1.html">
   <script expected>
@@ -737,13 +749,84 @@
   ]</script>
 </test-html>
 
-<h3>EventLoop</h3>
-
-<test-html test="../EventLoop/test1.html">
+<test-html test="../HTMLEventElement/test1.html">
   <script expected>
     [0, 1, "click"]
   </script>
 </test-html>
+
+<test-html test="../HTMLEventElement/test8.html">
+  <script expected>
+    ["hello world", "hello world", "hello world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test9.html">
+  <script expected>
+    ["hello", "world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test10.html">
+  <script expected>
+    ["hello world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test11.html">
+  <script expected>
+    ["hello", "world", "world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test12.html">
+  <script expected>
+    ["hello", "world", "world", "world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test13.html">
+  <script expected>
+    [
+      ["1", "2"],
+      ["1", "2"],
+      ["1", "2", "3"]
+    ]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test14.html">
+  <script expected>
+    [
+      ["1", "2", "3", "1"],
+      ["1", "2", "3", "1"],
+      ["1", "2", "3", "1", "2", "1"],
+      "no click will run after this"
+    ]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_error_1.html">
+  <script expected>
+    [
+      "Two event-loop elements",
+      "Error",
+      "Append to illegal element",
+      "Error",
+      "Dispatch new event on element without :target",
+      "Error"
+    ]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_error_4.html">
+  <script expected>
+    ["No :uid attribute on target element", "Error"]
+  </script>
+</test-html>
+
+
+<h3>EventLoop</h3>
 
 <test-html test="../EventLoop/test2.html">
   <script expected>
@@ -787,70 +870,6 @@
   </script>
 </test-html>
 
-<test-html test="../EventLoop/test8.html">
-  <script expected>
-    ["hello world", "hello world", "hello world"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test9.html">
-  <script expected>
-    ["hello", "world"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test10.html">
-  <script expected>
-    ["hello world"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test11.html">
-  <script expected>
-    ["hello", "world", "world"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test12.html">
-  <script expected>
-    ["hello", "world", "world", "world"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test13.html">
-  <script expected>
-    [
-      ["1", "2"],
-      ["1", "2"],
-      ["1", "2", "3"]
-    ]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test14.html">
-  <script expected>
-    [
-      ["1", "2", "3", "1"],
-      ["1", "2", "3", "1"],
-      ["1", "2", "3", "1", "2", "1"],
-      "no click will run after this"
-    ]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test_error_1.html">
-  <script expected>
-    [
-      "Two event-loop elements",
-      "Error",
-      "Append to illegal element",
-      "Error",
-      "Dispatch new event on element without :target",
-      "Error"
-    ]
-  </script>
-</test-html>
-
 <test-html test="../EventLoop/test_error_2.html">
   <script expected>
     ["Create task element with anonymous function", "Error", "Error"]
@@ -860,24 +879,6 @@
 <test-html test="../EventLoop/test_error_3.html">
   <script expected>
     ["Pass illegal argumentType", "Error"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test_error_4.html">
-  <script expected>
-    ["No :uid attribute on target element", "Error"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test_error_5.html">
-  <script expected>
-    ["Call .stopPropagation() on event", "Error"]
-  </script>
-</test-html>
-
-<test-html test="../EventLoop/test_error_6.html">
-  <script expected>
-    ["Call .stopImmediatePropagation() on event", "Error"]
   </script>
 </test-html>
 

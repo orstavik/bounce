@@ -6,8 +6,7 @@
   <script src="../EventTarget/EventTarget.js"></script>
   <script src="ElementEvent.js"></script>
   <script src="HTMLEventElement.js"></script>
-  <script src="HTMLTaskElement.js"></script>
-  <script src="EventLoop.js"></script>
+  <script src="../EventLoop/EventLoop.js"></script>
 
   <event-loop></event-loop>
 </head>
@@ -17,8 +16,9 @@
 </body>
 
 <script>
-  document.addEventListener('click', () => console.log("world"));
-  document.body.addEventListener('click', () => console.log("hello"));
   const h1 = document.querySelector("h1");
+  h1.addEventListener('click', () => console.log("hello world"));
+  h1.dispatchEvent(new MouseEvent('click'));
+  h1.dispatchEvent(new MouseEvent('click'));
   h1.dispatchEvent(new MouseEvent('click'));
 </script>

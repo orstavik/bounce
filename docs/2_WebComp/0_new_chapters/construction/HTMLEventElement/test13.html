@@ -13,8 +13,7 @@
   <script src="../EventTarget/EventTarget.js"></script>
   <script src="ElementEvent.js"></script>
   <script src="HTMLEventElement.js"></script>
-  <script src="HTMLTaskElement.js"></script>
-  <script src="EventLoop.js"></script>
+  <script src="../EventLoop/EventLoop.js"></script>
 
   <event-loop></event-loop>
 </head>
@@ -28,7 +27,7 @@
 </body>
 
 <script>
-  window.logEventElement = function logEventElement() {
+  function logEventElement() {
     const res = [...document.querySelectorAll("event")].map(event => event.getAttribute(":inner-target"));
     console.log(res);
   }
@@ -41,18 +40,11 @@
   h2.addEventListener("click", logEventElement);
   div.addEventListener("click", logEventElement);
 
-  //check eventListenerRegistry by dispatching wrong events
-  h1.dispatchEvent(new MouseEvent('keypress'));
-  h2.dispatchEvent(new MouseEvent('keypress'));
-  div.dispatchEvent(new MouseEvent('keypress'));
   h1.dispatchEvent(new MouseEvent('click'));
-  logEventElement();
+  h2.dispatchEvent(new MouseEvent('click'));
 
   setTimeoutOG(function () {
     h1.removeEventListener("click", logEventElement);
-    h2.dispatchEvent(new MouseEvent('keypress'));
-    h1.dispatchEvent(new MouseEvent('click'));
-    logEventElement();
-    console.log("no click will run after this");
+    div.dispatchEvent(new MouseEvent('click'));
   }, 4);
 </script>

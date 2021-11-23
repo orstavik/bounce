@@ -1,78 +1,36 @@
-<script src="BouncePath.js"></script>
-<script>
-  customElements.define('outer-slot', class OuterSlot extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: "open"}).innerHTML = '<o><slot></slot></o>';
-    }
-  });
-  customElements.define('matroschka-inner', class MatroschkaInnerSlot extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: "open"}).innerHTML = '<i><slot></slot></i>';
-    }
-  });
-  customElements.define('matroschka-slot', class MatroschkaSlot extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: "open"}).innerHTML = '<m><matroschka-inner><slot></slot></matroschka-inner></m>';
-    }
-  });
-  customElements.define('shadow-outer-slot', class ShadowOuterSlot extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: "open"}).innerHTML = '<o><slot></slot></o>';
-    }
-  });
-  customElements.define('shadow-inner-slot', class ShadowInnerSlot extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: "open"}).innerHTML = '<i><slot></slot></i>';
-    }
-  });
-  customElements.define('atom-inner', class AtomInner extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: "open"}).innerHTML = `<u>hello sunshine</u>`;
-    }
-  });
-  customElements.define('atom-outer', class AtomOuter extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: "open"}).innerHTML = `
-<span>
-  <shadow-outer-slot>
-    <shadow-inner-slot>
-      <atom-inner></atom-inner>
-    </shadow-inner-slot>
-  </shadow-outer-slot>
-</span>`;
-    }
-  });
-</script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<!--<script src="dispatchEvent_everywhere.js"></script>-->
+<!--
+todo the bug. the event-loop cannot start until it gets the readystatechange event. So this listener needs to be the native one.
+ The monkey patches use the native event listener and dispatch event.
+ As the later monkeyPatches change them, this becomes a problem. So.
+ The monkeypatch for the EventLoop needs the native event listener? Yeah. If not, it depends on itself before it starts itself.
+ ..
+ How should we make that MonkeyPatch system? Should we provide methods for it? yes, some simple ones.
+ And, we also need to get the OG from some of them. This we could probably do on the function itself.
+ Just attach setTimeout.OG = native.setTimeout. Yeah. Such a system is easier to read.
+ And then we need the monkeyPatch function for everything, because it gives us the meta view list of which monkeypatches are
+ done.
+-->
+<script src="../EventTarget/EventTarget.js"></script>
+<script src="ElementEvent.js"></script>
+<script src="HTMLEventElement.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
 
-<a>no</a>
-<main>
-  <div>
-    <outer-slot>
-      <a>no</a>
-      <matroschka-slot>
-        <a>no</a>
-        <atom-outer></atom-outer>
-        <a>no</a>
-      </matroschka-slot>
-    </outer-slot>
-    <a>no</a>
-  </div>
-</main>
-<a>no</a>
-<script>
-  const atomOuter = document.querySelector("atom-outer");
-  const atomInner = atomOuter.shadowRoot.querySelector("atom-inner");
-  const u2 = atomInner.shadowRoot.querySelector('u');
+<event-loop></event-loop>
 
-  const bp = BouncePath.make(u2, true);
-  for (let c of bp)
-    console.log(...c.path.map(n=>n.nodeName));
-  console.log(bp.toString());
+<body :uid="0">
+  <h1 :uid="1">hello sunshine</h1>
+</body>
+
+<script type="module">
+  const h1 = document.querySelector("h1");
+  h1.addEventListener('click', e => console.log("click"));
+  const eventLoop = document.querySelector("event-loop");
+  console.log(eventLoop.childNodes.length);
+  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+  console.log(eventLoop.childNodes.length);
 </script>

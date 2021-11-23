@@ -13,39 +13,30 @@
   <script src="../EventTarget/EventTarget.js"></script>
   <script src="ElementEvent.js"></script>
   <script src="HTMLEventElement.js"></script>
-  <script src="HTMLTaskElement.js"></script>
-  <script src="EventLoop.js"></script>
+  <script src="../EventLoop/EventLoop.js"></script>
 
   <event-loop></event-loop>
 </head>
 
 <body :uid="0">
-<div :uid="3"></div>
-
-<h2 :uid="2">
-  <h1 :uid="1">hello sunshine</h1>
-</h2>
+<h1 :uid="1">hello sunshine</h1>
 </body>
 
 <script>
-  function logEventElement() {
-    const res = [...document.querySelectorAll("event")].map(event => event.getAttribute(":inner-target"));
-    console.log(res);
+  function sayHello() {
+    console.log("hello");
+  }
+
+  function sayWorld() {
+    console.log("world");
   }
 
   const h1 = document.querySelector("h1");
-  const h2 = document.querySelector("h2");
-  const div = document.querySelector("div");
-
-  h1.addEventListener("click", logEventElement);
-  h2.addEventListener("click", logEventElement);
-  div.addEventListener("click", logEventElement);
-
+  h1.addEventListener("click", sayHello);
+  h1.addEventListener("click", sayWorld);
   h1.dispatchEvent(new MouseEvent('click'));
-  h2.dispatchEvent(new MouseEvent('click'));
-
   setTimeoutOG(function () {
-    h1.removeEventListener("click", logEventElement);
-    div.dispatchEvent(new MouseEvent('click'));
+    h1.removeEventListener("click", sayHello);
+    h1.dispatchEvent(new MouseEvent('click'));
   }, 4);
 </script>
