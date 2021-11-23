@@ -16,8 +16,13 @@
 </body>
 
 <script>
-  document.addEventListener('click', () => console.log("world"));
-  document.body.addEventListener('click', () => console.log("hello"));
+  function doLog(str) {
+    const res = [...document.querySelector("event-loop").children].map(child => child.hasAttribute(":started"));
+    console.log(res, str);
+  }
+
+  document.addEventListener('click', ()=> doLog("world"));
+  document.body.addEventListener('click', ()=> doLog("hello"));
   const h1 = document.querySelector("h1");
   h1.dispatchEvent(new MouseEvent('click'));
 </script>
