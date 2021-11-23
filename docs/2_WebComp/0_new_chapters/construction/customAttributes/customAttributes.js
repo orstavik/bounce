@@ -83,13 +83,4 @@
   }
 
   window.customAttributes = new CustomAttributeRegistry();
-  window.ActionAttribute = class ActionAttribute extends Attr {
-    addEventListener() {
-      throw new Error('ActionAttribute doesnt work without a new EventLoop.');
-    }
-
-    removeEventListener() {
-      throw new Error('ActionAttribute doesnt work without a new EventLoop.');
-    }
-  };
 })();
