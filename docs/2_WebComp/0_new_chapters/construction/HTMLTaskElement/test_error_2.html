@@ -2,20 +2,16 @@
 <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="../constructionFrame/constructionFrame.js"></script>
 <script src="../childChanged/ChildChangedCallback.js"></script>
-<script src="../EventListenerRegistry/EventTarget.js"></script>
+<script src="../EventTarget/EventTarget.js"></script>
 <script src="HTMLTaskElement.js"></script>
-<script src="EventLoop.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
 
 <event-loop>
-    <task :created="1631618374262" :delay="2000" :start="1631789839348" :cb="asyncDivide">
-        <int>6</int>
-        <int>1</int>
-    </task>
+    <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="callAnonymousTimeout"></task>
+    <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="callNonDefinedFunction"></task>
 </event-loop>
 
 <script>
-  console.log("Pass illegal argumentType");
-
   window.addEventListener("error", e => {
     e.preventDefault();
     console.log("Error");
@@ -26,5 +22,16 @@
       let res = args.reduce((sum, value) => parseInt(sum) / parseInt(value));
       resolve(res);
     });
-  };
+  }
+
+  console.log("Create task element with anonymous function");
+  setTimeout(() => {
+    console.log("a");
+  }, 0);
+
+  window.callAnonymousTimeout = function callAnonymousTimeout() {
+    setTimeout(() => {
+      console.log("a");
+    }, 0);
+  }
 </script>
