@@ -15,7 +15,7 @@
   const addEventListenerOG = EventTarget.prototype.addEventListener;
   const removeEventListenerOG = EventTarget.prototype.removeEventListener;
 
-  class EventTargetExposed {
+  class EventTargetExpose {
     addEventListener(type, listener) {
       addEventListenerOG.call(this, type, listener);
       const listenersPerNode = map[type] ??= new WeakMap();
@@ -44,12 +44,14 @@
     }
   }
 
-  Object.defineProperty(EventTarget.prototype, "addEventListener",
-    {value: EventTargetExposed.prototype.addEventListener, writable, enumerable, configurable});
-  Object.defineProperty(EventTarget.prototype, "removeEventListener",
-    {value: EventTargetExposed.prototype.removeEventListener, writable, enumerable, configurable});
-  Object.defineProperty(EventTarget.prototype, 'getEventListeners',
-    {value: EventTargetExposed.prototype.getEventListeners, writable, enumerable, configurable});
-  Object.defineProperty(EventTarget, 'cleanup',
-    {value: cleanup, writable, enumerable, configurable});
+  function injectInterface(prototype) {
+    Object.defineProperties(prototype, {
+      addEventListener: {value: EventTargetExpose.prototype.addEventListener, writable, enumerable, configurable},
+      removeEventListener: {value: EventTargetExpose.prototype.removeEventListener, writable, enumerable, configurable},
+      getEventListeners: {value: EventTargetExpose.prototype.getEventListeners, writable, enumerable, configurable}
+    });
+  }
+
+  injectInterface(EventTarget.prototype);
+  Object.defineProperty(EventTarget, 'cleanup', {value: cleanup, writable, enumerable, configurable});
 })(EventTarget);
