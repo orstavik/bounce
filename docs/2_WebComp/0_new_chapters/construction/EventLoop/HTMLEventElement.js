@@ -1,31 +1,5 @@
 (function () {
 
-  // (function monkeyEventTarget() {
-  //   const listeners = new EventListenerRegistry();
-  //   MonkeyPatch.monkeyPatch(EventTarget.prototype, 'addEventListener', function addEventListener(og, type, listener) {
-  //     og.call(this, type, listener);
-  //     listeners.add(this, type, listener);
-  //   });
-  //   MonkeyPatch.monkeyPatch(EventTarget.prototype, "removeEventListener", function removeEventListener(og, type, listener) {
-  //     og.call(this, type, listener);
-  //     listeners.remove(this, type, listener);
-  //   });
-  //   Object.defineProperty(EventTarget.prototype, 'getEventListeners', {
-  //     value: function (type) {
-  //       return listeners.get(this, type);
-  //     },
-  //     writable: true,
-  //     configurable: true,
-  //     enumerable: true
-  //   });
-  //   Object.defineProperty(EventTarget, 'cleanup', {
-  //     value: listeners.cleanup.bind(listeners),
-  //     writable: true,
-  //     configurable: true,
-  //     enumerable: true
-  //   });
-  // })();
-
   const listenersGet = EventTarget.prototype.getEventListeners;
   Object.defineProperty(EventTarget.prototype, 'getEventListeners', {value: undefined});
 
