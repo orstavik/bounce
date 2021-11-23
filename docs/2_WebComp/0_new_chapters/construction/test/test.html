@@ -869,4 +869,16 @@
   </script>
 </test-html>
 
+<test-html test="../EventLoop/test_error_5.html">
+  <script expected>
+    ["Call .stopPropagation() on event", "Error"]
+  </script>
+</test-html>
+
+<test-html test="../EventLoop/test_error_6.html">
+  <script expected>
+    ["Call .stopImmediatePropagation() on event", "Error"]
+  </script>
+</test-html>
+
 <script type="module" src="TestComponent.js"></script>
