@@ -22,7 +22,7 @@
       el.setAttribute(":created", Date.now());
       el.setAttribute(':type', e.type);
       el.setAttribute(':composed', e.composed);
-      el.setAttribute(':bubbles', e.bubbles);
+      el.setAttribute(':bubbles', e.bubbles);        //todo always true?? I think yes.
       if (e.pointerType === "mouse") {
         el.setAttribute(':x', e.x);
         el.setAttribute(':y', e.y);
