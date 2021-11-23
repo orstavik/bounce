@@ -23,20 +23,18 @@
 </body>
 
 <script>
-  function sayHello() {
-    console.log("hello");
-  }
 
-  function sayWorld() {
-    console.log("world");
+  function doLog(str) {
+    const res = [...document.querySelector("event-loop").children].map(child => child.hasAttribute(":started"));
+    console.log(res, str);
   }
 
   const h1 = document.querySelector("h1");
-  h1.addEventListener("click", sayHello);
-  h1.addEventListener("click", sayWorld);
+  h1.addEventListener("click", () => doLog("hello"));
+  h1.addEventListener("click",  () => doLog("world"));
   h1.dispatchEvent(new MouseEvent('click'));
   setTimeoutOG(function () {
-    h1.removeEventListener("click", sayHello);
+    h1.removeEventListener("click", () => doLog("hello"));
     h1.dispatchEvent(new MouseEvent('click'));
   }, 4);
 </script>

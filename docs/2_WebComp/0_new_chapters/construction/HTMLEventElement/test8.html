@@ -20,6 +20,7 @@
     const res = [...document.querySelector("event-loop").children].map(child => child.hasAttribute(":started"));
     console.log(res, "hello world");
   }
+
   const h1 = document.querySelector("h1");
   h1.addEventListener('click', doLog);
   h1.dispatchEvent(new MouseEvent('click'));

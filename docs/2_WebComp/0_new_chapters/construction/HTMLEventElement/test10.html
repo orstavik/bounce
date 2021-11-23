@@ -24,7 +24,8 @@
 
 <script>
   function helloWorld() {
-    console.log("hello world");
+    const res = [...document.querySelector("event-loop").children].map(child => child.hasAttribute(":started"));
+    console.log(res, "hello world");
   }
 
   const h1 = document.querySelector("h1");
