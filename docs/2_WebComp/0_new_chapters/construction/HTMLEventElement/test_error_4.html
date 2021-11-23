@@ -2,11 +2,10 @@
 <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="../constructionFrame/constructionFrame.js"></script>
 <script src="../childChanged/ChildChangedCallback.js"></script>
-<script src="HTMLTaskElement.js"></script>
-<script src="../EventListenerRegistry/EventTarget.js"></script>
+<script src="../EventTarget/EventTarget.js"></script>
 <script src="ElementEvent.js"></script>
 <script src="HTMLEventElement.js"></script>
-<script src="EventLoop.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
 
 <event-loop></event-loop>
 
@@ -21,7 +20,7 @@
     console.log("Error");
   });
 
-  console.log("No :uid attribute on target element")
+  console.log("No :uid attribute on target element");
   const h1 = document.querySelector("h1");
-  h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+  h1.dispatchEvent(new MouseEvent('click', {composed: true}));
 </script>

@@ -2,11 +2,11 @@
 <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="../constructionFrame/constructionFrame.js"></script>
 <script src="../childChanged/ChildChangedCallback.js"></script>
-<script src="../EventListenerRegistry/EventTarget.js"></script>
-<script src="ElementEvent.js"></script>
-<script src="HTMLEventElement.js"></script>
+<script src="../EventTarget/EventTarget.js"></script>
+<script src="../HTMLEventElement/ElementEvent.js"></script>
+<script src="../HTMLEventElement/HTMLEventElement.js"></script>
 <script src="HTMLTaskElement.js"></script>
-<script src="EventLoop.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
 
 <event-loop>
     <task :created="1631618374265" :delay="2000" :start="1631789839346" :cb="dispatchEvent"></task>
@@ -21,7 +21,7 @@
   window.dispatchEvent = async function dispatchEvent() {
     const h1 = document.querySelector("h1");
     await h1.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
-    console.log([...document.querySelector("event-loop").children].map(c => c.hasAttribute(":finished") && c.hasAttribute(":started")))
+    console.log([...document.querySelector("event-loop").children].map(n => n.nodeName))
   }
 
 </script>

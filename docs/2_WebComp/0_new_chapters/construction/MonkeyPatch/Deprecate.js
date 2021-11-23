@@ -25,3 +25,10 @@ MonkeyPatch.deprecate(Element.prototype, 'getAttributeNodeNS');
 //Event system
 MonkeyPatch.deprecate(Event.prototype, 'stopPropagation');
 MonkeyPatch.deprecate(Event.prototype, 'stopImmediatePropagation');
+
+//CustomElements
+//1. we should first make all shadows open, and then close them once the EventLoop knows what it needs for the elements.
+
+// MonkeyPatch.monkeyPatch(HTMLElement.prototype, 'attachShadow', function attachShadow(og, options) {
+//   return og.call(this, Object.assign({}, (typeof options === 'object' && options) || {}, {mode: "open"}));
+// });
