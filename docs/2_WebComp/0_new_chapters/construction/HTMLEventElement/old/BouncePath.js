@@ -32,7 +32,7 @@ window.BouncePath = class BouncePath {
     yield this;
     for (let child of this.#children)
       if (child)
-        yield* child[Symbol.iterator](depth+1);
+        yield* child[Symbol.iterator](depth + 1);
   }
 
   * depthIterator(pos = 0, depth = 0) {
@@ -40,11 +40,11 @@ window.BouncePath = class BouncePath {
     for (let i = 0; i < this.#children.length; i++) {
       let child = this.#children[i];
       if (child)
-        yield* child.depthIterator(i, depth+ 1);
+        yield* child.depthIterator(i, depth + 1);
     }
   }
 
-  toString(){
+  toString() {
     let res = '';
     for (let {context, pos, depth} of this.depthIterator()) {
       const dots = Array(depth * 2).fill('.').join('');
@@ -81,6 +81,9 @@ window.BouncePath = class BouncePath {
       if (slot)
         contextChildren[i + 1] = this.#make(slot, false);
     }
+    //make the contextActions??
+    // contextAttributes = path.map(el => [...el.attributes].filter(a => a instanceof CustomAttribute));
+
     const context = new BouncePath(target, root, path, contextChildren);
     //3. if composed, try to pursue the host node.
     if (composed && root instanceof DocumentFragment && root.host)
@@ -88,12 +91,8 @@ window.BouncePath = class BouncePath {
     return context;
   }
 
-  static calculateRoot(target, root, e) {
-    if (target === window) return window;
-    if (root === false) return target.getRootNode();
-    if (root === true) return target.getRootNode({composed: true});
-    if (root instanceof Element || root instanceof DocumentFragment || root instanceof Document) return root;
-    return target.getRootNode(e);
+  static calculateRoot(target, e) {
+    return target === window ? window : target.getRootNode(e);
   }
 
   //if you need a partially composed path, such as with focus events, then simply slice a fully composedPath afterwards.
