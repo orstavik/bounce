@@ -52,6 +52,7 @@
     });
   }
 
-  injectInterface(EventTarget.prototype);
+  Object.defineProperty(EventTarget, 'injectInterface', {value: injectInterface, writable, enumerable, configurable});
   Object.defineProperty(EventTarget, 'cleanup', {value: cleanup, writable, enumerable, configurable});
+  EventTarget.injectInterface(EventTarget.prototype);
 })(EventTarget);
