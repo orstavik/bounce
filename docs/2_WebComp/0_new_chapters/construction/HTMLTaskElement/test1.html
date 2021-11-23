@@ -1,0 +1,15 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="HTMLTaskElement.js"></script>
+
+<task :cb="a"></task>
+
+<script>
+  window.a = function a() {
+    console.log("a");
+    return "b";
+  }
+
+  const task = document.querySelector("task");
+  console.log(HTMLTaskElement.start(task));
+  console.log(JSON.parse(task.getAttribute(":res")));
+</script>
