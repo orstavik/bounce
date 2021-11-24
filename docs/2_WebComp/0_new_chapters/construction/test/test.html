@@ -709,11 +709,6 @@
       ["success"]
     </script>
 </test-html>
-<test-html test="../customAttributes/action_test1.html">
-    <script expected>
-      ["0", "1"]
-    </script>
-</test-html>
 
 <h3>HTMLEventElement</h3>
 <test-html test="../HTMLEventElement/test1b.html">
@@ -816,20 +811,19 @@
 
 <test-html test="../HTMLEventElement/test_error_1.html">
     <script expected>
-      [
-        "Two event-loop elements",
-        "Error",
+      ["Two event-loop elements",
+        [true, "Error"],
         "Append to illegal element",
-        "Error",
+        [true, "Error"],
         "Dispatch new event on element without :target",
-        "Error"
-      ]
+        [true, "Error"]]
     </script>
 </test-html>
 
 <test-html test="../HTMLEventElement/test_error_4.html">
     <script expected>
-      ["No :uid attribute on target element", "Error"]
+      ["No :uid attribute on target element",
+        [true, "Error"]]
     </script>
 </test-html>
 
@@ -874,7 +868,7 @@
 
 <test-html test="../HTMLTaskElement/test6.html">
     <script expected>
-      [[true, true]]
+      [[false, true]]
     </script>
 </test-html>
 

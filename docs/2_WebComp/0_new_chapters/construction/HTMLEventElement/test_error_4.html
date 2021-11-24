@@ -17,7 +17,8 @@
 
   window.addEventListener("error", e => {
     e.preventDefault();
-    console.log("Error");
+    const noEventElements = !document.querySelectorAll("event").length;
+    console.log(noEventElements, "Error");
   });
 
   console.log("No :uid attribute on target element");

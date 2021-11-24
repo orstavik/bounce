@@ -19,7 +19,8 @@
 
   window.addEventListener("error", e => {
     e.preventDefault();
-    console.log("Error");
+    const severalEventLoops = !!document.querySelectorAll("event-loop").length
+    console.log(severalEventLoops, "Error");
   });
 
   const divElement = document.querySelector("div");
