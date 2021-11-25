@@ -389,7 +389,7 @@
     #nodes;
 
     end(nodes) {
-      this.#nodes = [...nodes]; //
+      this.#nodes = nodes; //
       super.end();
     }
 
@@ -405,7 +405,7 @@
     }
   }
 
-  let completedBranches = [];
+  const roots = [];
   const frames = [];
 
   function endTagRead(el, lastParsed) {
@@ -413,14 +413,14 @@
   }
 
   function onParserBreak(e) {
-    if (!frames.length)
-      return new ParserConstructionFrame().end(e.endedNodes())
     while (frames[0] && endTagRead(frames[0].el, e.target)) {
       const frame = frames.shift();
-      frame.end(completedBranches);
-      completedBranches.push(frame.el);
+      frame.end(roots);
     }
     ConstructionFrame.dropNow();
+    //todo this can be made more efficient in the long run.
+    const addedNodes = [...e.endedNodes()].filter(n => roots.findIndex(s => s === n || s.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_CONTAINED_BY) === -1);
+    addedNodes.length && new ParserConstructionFrame().end(addedNodes);
   }
 
   window.addEventListener('parser-break', onParserBreak, true);
@@ -428,7 +428,10 @@
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !ConstructionFrame.now && frames.unshift(new PredictiveConstructionFrame(this));
+      if (!ConstructionFrame.now) {
+        frames.unshift(new PredictiveConstructionFrame(this));
+        roots.push(this);
+      }
     }
   }
 
