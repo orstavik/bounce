@@ -489,6 +489,46 @@
   </script>
 </test-html>
 
+<test-html test="../constructionFrame/test_predictive_all_nodes_ended.html">
+  <script expected>
+    [
+      ["Upgrade#end", []],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY", "#text"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY", "#text", "H3", "#text", "#text"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      "constructor",
+      ["Predictive#end", ["BODY", "WEB-COMP", "#text", "#text", "#text", "H3", "#text", "#text"]],
+      ["Predictive#end", ["BODY", "#text", "H3", "#text", "#text"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      "constructor",
+      ["Predictive#end", ["BODY", "WEB-COMP", "#text", "H3", "#text", "#text", "P", "#text", "#text"]],
+      ["Predictive#end", ["BODY", "#text", "H3", "#text", "#text", "P", "#text", "#text"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      "constructor",
+      ["Predictive#end", ["BODY", "WEB-COMP", "#text", "H3", "#text", "#text"]],
+      ["Predictive#end", ["BODY", "#text", "H3", "#text", "#text"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY", "#text", "SCRIPT", "#text"]],
+      ["Parser#end", ["BODY"]],
+      "script",
+      ["Parser#end", ["BODY"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY"]],
+      ["Parser#end", []],
+      "interactive"
+    ]
+  </script>
+</test-html>
+
 <h3>attributeReadyCallback and childReadyCallback</h3>
 <test-html test="../constructionReady/test1.html">
   <script expected>
