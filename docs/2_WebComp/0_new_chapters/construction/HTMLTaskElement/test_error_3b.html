@@ -1,0 +1,31 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
+<!--<script src="../EventTarget/EventTarget.js"></script>-->
+<script src="HTMLTaskElement.js"></script>
+
+<div>
+    <task :created="1631618374262" :delay="2000" :start="1631789839348" :cb="asyncDivide">
+        <int>6</int>
+        <int>1</int>
+    </task>
+</div>
+<script>
+  console.log("Pass illegal argumentType");
+
+  window.addEventListener("error", e => {
+    e.preventDefault();
+    console.log("Error");
+  });
+
+  console.log("Error: no event-loop element, use function with arguments")
+  setTimeout(divide(4, 2), 100);
+
+  console.log("this text must log");
+
+  window.divide = function (...args) {
+    return args.reduce((sum, value) => parseInt(sum) / parseInt(value));
+  };
+</script>

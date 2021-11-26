@@ -1,0 +1,26 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
+<!--<script src="../EventTarget/EventTarget.js"></script>-->
+<script src="HTMLTaskElement.js"></script>
+
+<script>
+
+  window.addEventListener("error", e => {
+    e.preventDefault();
+    const noTasklements = !document.querySelectorAll("task").length;
+    console.log(noTasklements, "Error");
+  });
+
+  function divide() {
+    console.log("hello world")
+  };
+
+  console.log("Error: no event-loop element")
+  setTimeout(divide, 100);
+
+  console.log("this text must log")
+
+</script>
