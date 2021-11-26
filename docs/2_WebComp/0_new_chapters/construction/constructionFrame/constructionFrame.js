@@ -414,7 +414,7 @@
 
   function onParserBreak(e) {
     while (frames[0] && endTagRead(frames[0].el, e.target)) {
-      const frame = frames.shift();
+      const frame = frames.shift();       //here we can remove the root from the roots list. making the filter function more efficient.
       frame.end(roots);
     }
     ConstructionFrame.dropNow();

@@ -5,18 +5,15 @@
   (function () {
     let count = 0;
 
-    function printFrame(frame, type = '') {
-      console.log(frame.__id ??= ++count, frame + type);
-    }
-
-    ConstructionFrame.observe('start', printFrame);
-    ConstructionFrame.observe('end', printFrame);
-    ConstructionFrame.observe('complete', printFrame);
+    ConstructionFrame.observe('start', frame => console.log(`${frame.__id ??= ++count} ${frame}`));
+    ConstructionFrame.observe('end', frame => console.log(`${frame.__id} ${frame}`));
+    ConstructionFrame.observe('complete', frame => console.log(`${frame.__id} ${frame}`));
 
     customElements.define('web-comp', class WebComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, '-constructor');
+        const frame = ConstructionFrame.now;
+        console.log(`constructor ${frame.__id} ${frame}`);
       }
     });
   })();

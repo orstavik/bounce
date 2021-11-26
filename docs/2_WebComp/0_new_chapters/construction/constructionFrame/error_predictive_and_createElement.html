@@ -4,20 +4,17 @@
 <script>
   (function () {
 
-    window.addEventListener('error', e => (console.log('error') & e.preventDefault()));
+    window.addEventListener('error', e => e.preventDefault());
+    window.addEventListener('error', _ => console.log('error'));
 
-    function printFrame(frame, type = '') {
-      console.log(frame + type);
-    }
-
-    ConstructionFrame.observe('start', printFrame);
-    ConstructionFrame.observe('end', printFrame);
-    ConstructionFrame.observe('complete', printFrame);
+    ConstructionFrame.observe('start', f => console.log(f.toString()));
+    ConstructionFrame.observe('end', f => console.log(f.toString()));
+    ConstructionFrame.observe('complete', f => console.log(f.toString()));
 
     class InnerComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, '-constructor-inner');
+        console.log(`${ConstructionFrame.now} constructor-inner`.toString())
         throw new Error('test error');
       }
     }
@@ -27,10 +24,9 @@
     class OuterComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, '-constructor-outer');
+        console.log(`${ConstructionFrame.now} constructor-outer`.toString())
         this.attachShadow({mode: "open"});
         document.createElement('inner-comp');
-        /*this.shadowRoot.innerHTML= '<inner-comp></inner-comp>';*/
       }
     }
 
@@ -39,5 +35,3 @@
 </script>
 
 <outer-comp></outer-comp>
-
-<script>console.log("script")</script>
