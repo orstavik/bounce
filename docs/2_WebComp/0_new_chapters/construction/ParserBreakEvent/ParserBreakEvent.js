@@ -171,7 +171,7 @@
       const nodes = mrs[mrs.length - 1].addedNodes;
       const lastAdded = nodes[nodes.length - 1];
       //4. .connectedCallback() macro-task is a BAD parser-break
-      if (lastAdded.connectedCallback)
+      if (lastAdded?.connectedCallback)
         return;
       const previousOpen = openEnded;
       openEnded = [];

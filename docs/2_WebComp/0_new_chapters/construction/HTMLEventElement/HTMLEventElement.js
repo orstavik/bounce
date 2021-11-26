@@ -7,7 +7,11 @@
     const targetId = this.getAttribute(":uid");
     if (!targetId)
       throw new Error("No :uid attribute on target element" + e.target);
-    document.querySelector('event-loop').append(HTMLEventElement.makeEventElement(targetId, e));
+    const eventLoop = document.querySelector('event-loop');
+    if (!eventLoop)
+      throw new Error("No event-loop element in document");
+    else
+      eventLoop.append(HTMLEventElement.makeEventElement(targetId, e));
   });
 
   const events = new WeakMap();

@@ -6,11 +6,16 @@
     connectedCallback() {
       //1. verify that we are the first in the DOM
       const eventLoopElement = document.querySelectorAll("event-loop");
-      if (eventLoopElement.length !== 1 || eventLoopElement[0] !== this)
-        throw new Error("There are two event-loop elements in the DOM at the same time");
-      if (this.parentNode.tagName !== "HEAD" && this.parentNode.tagName !== "BODY")
+      if (this.parentNode.tagName !== "HEAD" && this.parentNode.tagName !== "BODY") {
+        this.parentNode.removeChild(this);
         throw new Error("event-loop element is not either a direct child of either head or body element");
-
+      }
+      if (eventLoopElement.length !== 1 || eventLoopElement[0] !== this) {
+        const toRemove = [...document.querySelectorAll("event-loop")];
+        toRemove.splice(0, 1);
+        toRemove.map(item => item.parentElement.removeChild(item));
+        throw new Error("There are two event-loop elements in the DOM at the same time");
+      }
       //3. trigger the EventLoop to process its events after DCL
       window.addEventListener('DOMContentLoaded', e => {
         this.#ready = true;
@@ -64,6 +69,7 @@
       EventTarget.cleanup && EventTarget.cleanup();
     }
   }
+
   //  const cleanup = EventTarget.cleanup;                               //todo it is possible to do this outside.
   //   Object.defineProperty(EventTarget, 'cleanup', {value: undefined});//todo But it is not good nor necessary.
 

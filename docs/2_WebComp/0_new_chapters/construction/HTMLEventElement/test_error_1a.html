@@ -7,11 +7,7 @@
 <script src="HTMLEventElement.js"></script>
 <script src="../EventLoop/EventLoop.js"></script>
 
-<event-loop>
-    <event :created="1636554478570" :type="click" :composed="true" :bubbles="true"></event>
-</event-loop>
-
-<body>
+<body :uid="1">
 <div></div>
 </body>
 
@@ -19,18 +15,30 @@
 
   window.addEventListener("error", e => {
     e.preventDefault();
-    const severalEventLoops = !!document.querySelectorAll("event-loop").length > 1;
-    console.log("several event-loops at the same time? : ", severalEventLoops, "Error");
+    const severalEventLoops = document.querySelectorAll("event-loop").length === 1;
+    console.log(severalEventLoops, "Error");
   });
 
   const divElement = document.querySelector("div");
 
+  console.log("Add incorrect event-loop");
+  divElement.appendChild(document.createElement("event-loop"));
+
+  console.log("Add correct event-loop");
+  document.body.appendChild(document.createElement("event-loop"));
+
+  console.log("dispatch new event")
+  document.body.dispatchEvent(new Event("test"));
+
   console.log("Two event-loop elements");
+  document.body.appendChild(document.createElement("event-loop"));
+
+  console.log("Three event-loop elements");
   document.body.appendChild(document.createElement("event-loop"));
 
   console.log("Append to illegal element");
   divElement.appendChild(document.createElement("event-loop"));
 
   console.log("Dispatch new event on element without :target");
-  divElement.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
+  divElement.dispatchEvent(new MouseEvent('click'));
 </script>
