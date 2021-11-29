@@ -7,25 +7,27 @@
 <script src="HTMLTaskElement.js"></script>
 
 <div>
-    <task :created="1631618374262" :delay="2000" :start="1631789839348" :cb="asyncDivide">
-        <int>6</int>
-        <int>1</int>
-    </task>
+    <task :created="1631618374262" :delay="2000" :start="1631789839348" :cb="doTimeout"></task>
 </div>
+
 <script>
-  console.log("Pass illegal argumentType");
+  console.log("Set task to illegal element");
 
   window.addEventListener("error", e => {
     e.preventDefault();
     console.log("Error");
   });
 
-  console.log("Error: no event-loop element, use function with arguments")
-  setTimeout(divide(4, 2), 100);
+  window.doTimeout = function doTimeout() {
+    setTimeout(divide(2, 4), 100);
+  }
+
+  window.divide = function divide(a, b) {
+    console.log("hello world");
+    return a / b;
+  }
+
 
   console.log("this text must log");
 
-  window.divide = function (...args) {
-    return args.reduce((sum, value) => parseInt(sum) / parseInt(value));
-  };
 </script>

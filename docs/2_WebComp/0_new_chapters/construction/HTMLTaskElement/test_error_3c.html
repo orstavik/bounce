@@ -6,22 +6,15 @@
 <!--<script src="../EventTarget/EventTarget.js"></script>-->
 <script src="HTMLTaskElement.js"></script>
 
+<event-loop>
+    <task :start="-123"></task>
+</event-loop>
 
 <script>
-  console.log("Error: no event-loop element")
+  console.log("task element has only :start attribute");
 
   window.addEventListener("error", e => {
     e.preventDefault();
-    const noTasklements = !document.querySelectorAll("task").length;
-    console.log(noTasklements, "Error");
+    console.log("Error");
   });
-
-  function divide() {
-    console.log("hello world")
-  }
-
-  setTimeout(divide, 100);
-
-  console.log("this text must log")
-
 </script>
