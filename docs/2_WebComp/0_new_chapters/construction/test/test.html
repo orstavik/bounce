@@ -812,11 +812,46 @@
 <test-html test="../HTMLEventElement/test_error_1.html">
     <script expected>
       ["Two event-loop elements",
-        [true, "Error"],
+        ["several event-loops at the same time? : ", false, "Error"],
         "Append to illegal element",
-        [true, "Error"],
-        "Dispatch new event on element without :target",
-        [true, "Error"]]
+        ["several event-loops at the same time? : ", false, "Error"],
+        "Dispatch new event on element without :target attribute",
+        ["several event-loops at the same time? : ", false, "Error"]]
+    </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_error_1a.html">
+    <script expected>
+      ["Add incorrect event-loop",
+      [false, "Error"],
+      "Add correct event-loop", "dispatch new event", "Two event-loop elements",
+      [true, "Error"],
+      "Three event-loop elements",
+      [true, "Error"],
+      "Append to illegal element",
+      [true, "Error"],
+      "Dispatch new event on element without :target",
+      [true, "Error"]]
+    </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_error_1b.html">
+    <script expected>
+      ["Error: set incorrect event-loop to incorrect element via innerHTML",
+      [false, "Error"],
+      "Expect that there is no event-element in document", true,
+      "Add correct event-loop to correct element via innerHTML", true,
+      "dispatch new event","check dispatched event inside new event-loop element", true,
+      "Error: second event-loop element",
+      [true, "Error"], "Error: third event-loop elements",
+      [true, "Error"]]
+      </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_error_1c.html">
+    <script expected>
+      ["Error: dispatch new event when no event-loop in document",
+      [false, "Error"]]
     </script>
 </test-html>
 
@@ -887,6 +922,24 @@
 <test-html test="../HTMLTaskElement/test_error_3.html">
     <script expected>
       ["Pass illegal argumentType", "Error"]
+    </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test_error_3a.html">
+    <script expected>
+      ["Error: no event-loop element", [true, "Error"]]
+    </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test_error_3b.html">
+    <script expected>
+      ["Set task to illegal element", "Nothing"]
+    </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test_error_3c.html">
+    <script expected>
+      ["Error: task element has only :start attribute", "Error"]
     </script>
 </test-html>
 
