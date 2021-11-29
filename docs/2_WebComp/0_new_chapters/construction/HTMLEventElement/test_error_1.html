@@ -31,6 +31,6 @@
   console.log("Append to illegal element");
   divElement.appendChild(document.createElement("event-loop"));
 
-  console.log("Dispatch new event on element without :target");
+  console.log("Dispatch new event on element without :target attribute");
   divElement.dispatchEvent(new MouseEvent('click', {composed: true, bubbles: true}));
 </script>
