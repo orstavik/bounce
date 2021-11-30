@@ -25,20 +25,23 @@
 </body>
 
 <script>
-  function doLog(str) {
-    const res = [...document.querySelector("event-loop").children].map(child => child.hasAttribute(":started"));
-    console.log(res, str);
+  function sayHello() {
+    console.log("hello");
+  }
+
+  function sayWorld() {
+    console.log("world");
   }
 
   const h1 = document.querySelector("h1");
   const div = document.querySelector("div");
 
-  h1.addEventListener("click", () => doLog("hello"));
-  div.addEventListener("click", () => doLog("world"));
+  h1.addEventListener("click", sayHello);
+  div.addEventListener("click", sayWorld);
   h1.dispatchEvent(new MouseEvent('click'));
   div.dispatchEvent(new MouseEvent('click'));
   setTimeoutOG(function () {
-    h1.removeEventListener("click", () => doLog("hello"));
+    h1.removeEventListener("click", sayHello);
     h1.dispatchEvent(new MouseEvent('click'));
   }, 4);
 </script>

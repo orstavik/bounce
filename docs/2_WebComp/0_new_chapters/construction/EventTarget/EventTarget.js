@@ -17,6 +17,8 @@
 
   class EventTargetExpose {
     addEventListener(type, listener) {
+      if(!listener)
+        throw new Error("Error: Illegal callback function");
       addEventListenerOG.call(this, type, listener);
       const listenersPerNode = map[type] ??= new WeakMap();
       let listeners = listenersPerNode.get(this);
