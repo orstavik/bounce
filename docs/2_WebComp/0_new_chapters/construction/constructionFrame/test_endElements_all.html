@@ -2,15 +2,17 @@
 <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="constructionFrame.js"></script>
 <script>
-  let endedNodes = [];
+  function* allElements(n = document.documentElement) {
+    yield n;
+    for (let c of n.children || [])
+      yield* allElements(c);
+  }
+
+  const endedElements = [...allElements()];
 
   function printFrame(frame) {
-    const nowEnded = [...frame.nodes()].filter(n => endedNodes.indexOf(n) !== -1);
-    if(nowEnded.length){
-      debugger
-      console.log(frame.toString(), nowEnded);
-    }
-    endedNodes.push(...frame.nodes());
+    endedElements.push(...frame.elements());
+    console.log(frame + "", [...allElements()].filter(n => endedElements.indexOf(n) === -1).map(n => n.nodeName));
   }
 
   ConstructionFrame.observe('end', printFrame);

@@ -487,6 +487,20 @@
   </script>
 </test-html>
 
+<test-html test="../constructionFrame/test_insertAdjacentHTML_context_elements.html">
+  <script expected>
+    [
+      ["HEAD", "DIV", "H1", "SPAN", "SCRIPT"],
+      [],
+      [],
+      ["H5"],
+      [],
+      ["H6"],
+      ["HTML", "BODY"]
+    ]
+  </script>
+</test-html>
+
 <test-html test="../constructionFrame/test_insertAdjacentHTML_emptyContext.html">
   <script expected>
     [
@@ -501,7 +515,21 @@
   </script>
 </test-html>
 
-<test-html test="../constructionFrame/test8_nodes_noDuplicates.html">
+<test-html test="../constructionFrame/test_insertAdjacentHTML_emptyContext_elements.html">
+  <script expected>
+    [
+      ["HEAD", "DIV", "H1", "SPAN", "SCRIPT"],
+      [],
+      [],
+      ["H5"],
+      [],
+      ["H6"],
+      ["HTML", "BODY"]
+    ]
+  </script>
+</test-html>
+
+<test-html test="../constructionFrame/test_endNodes_noDuplicates.html">
   <script expected>
     [
       "constructor",
@@ -520,7 +548,7 @@
   </script>
 </test-html>
 
-<test-html test="../constructionFrame/test_predictive_all_nodes_ended.html">
+<test-html test="../constructionFrame/test_endNodes_all.html">
   <script expected>
     [
       ["Upgrade#end", []],
@@ -548,6 +576,45 @@
       ["Parser#end", ["BODY"]],
       "constructor",
       ["Predictive#end", ["BODY", "#text", "SCRIPT", "#text"]],
+      ["Parser#end", ["BODY"]],
+      "script",
+      ["Parser#end", ["BODY"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY"]],
+      ["Parser#end", []],
+      "interactive"
+    ]
+  </script>
+</test-html>
+<test-html test="../constructionFrame/test_endElements_all.html">
+  <script expected>
+    [
+      ["Upgrade#end", []],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY", "H3"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      "constructor",
+      ["Predictive#end", ["BODY", "WEB-COMP", "H3"]],
+      ["Predictive#end", ["BODY", "H3"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      "constructor",
+      ["Predictive#end", ["BODY", "WEB-COMP", "H3", "P"]],
+      ["Predictive#end", ["BODY", "H3", "P"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      "constructor",
+      ["Predictive#end", ["BODY", "WEB-COMP", "H3"]],
+      ["Predictive#end", ["BODY", "H3"]],
+      ["Parser#end", ["BODY"]],
+      "constructor",
+      ["Predictive#end", ["BODY", "SCRIPT"]],
       ["Parser#end", ["BODY"]],
       "script",
       ["Parser#end", ["BODY"]],
