@@ -112,4 +112,16 @@
     ["No :uid attribute on target element", "Error"]
   </script>
 </test-html>
+
+<test-html test="../HTMLEventElement/test_error_7.html">
+  <script expected>
+    ["Error: Illegal callback function. Extra calls.",
+      "hello",
+      "hello world",
+      "hello",
+      "hello world",
+    ]
+  </script>
+</test-html>
+
 <script type="module" src="TestComponent.js"></script>
