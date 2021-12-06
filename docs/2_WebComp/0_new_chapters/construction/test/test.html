@@ -1,14 +1,18 @@
-<a href="testMonkeyPatch.html"></a>
-<a href="testParserBreak.html"></a>
-<a href="testConstructionFrame.html"></a>
-<a href="testReadyCallbacks.html"></a>
-<a href="testChildChangedCallback.html"></a>
-<a href="testCustomAttributes.html"></a>
-<a href="testHTMLEventElement.html"></a>
-<a href="testHTMLTaskElement.html"></a>
+<div href="testMonkeyPatch.html"></div>
+<div href="testParserBreak.html"></div>
+<div href="testConstructionFrame.html"></div>
+<div href="testReadyCallbacks.html"></div>
+<div href="testChildChangedCallback.html"></div>
+<div href="testCustomAttributes.html"></div>
+<div href="testHTMLEventElement.html"></div>
+<div href="testHTMLTaskElement.html"></div>
+<div off href="testProblems.html"></div>
 
 <script type="module" src="TestComponent.js"></script>
 <script type="module">
-  const texts = Array.from(document.querySelectorAll("a")).map(a => a.href).map(async href => await (await fetch(href)).text());
-  Promise.allSettled(texts).then(ps => document.body.innerHTML = ps.map(p => p.value).join('\n'));
+
+  for (let test of document.querySelectorAll("div:not([off])")) {
+    const href = new URL(test.getAttribute('href'), location.href);
+    test.innerHTML = await (await fetch(href)).text();
+  }
 </script>
