@@ -1,0 +1,61 @@
+<h3>HTMLTaskElement</h3>
+
+<test-html test="../HTMLTaskElement/test1.html">
+  <script expected>
+    ["a", null, "b"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test2.html">
+  <script expected>
+    [0, 1, "a"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test3.html">
+  <script expected>
+    [["63", "60", "6"]]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test4.html">
+  <script expected>
+    [["63", "60", "6"]]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test4a.html">
+  <script expected>
+    ["hello world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test5.html">
+  <script expected>
+    [["TASK", "EVENT"]]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test6.html">
+  <script expected>
+    ["dispatchEvent triggered as a task"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test7.html">
+  <script expected>
+    [["42"]]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test_error_2.html">
+  <script expected>
+    ["Create task element with anonymous function", "Error", "Error"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test_error_3.html">
+  <script expected>
+    ["Pass illegal argumentType", "Error"]
+  </script>
+</test-html>
