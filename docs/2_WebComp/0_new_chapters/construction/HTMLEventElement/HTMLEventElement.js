@@ -6,10 +6,10 @@
   MonkeyPatch.monkeyPatch(EventTarget.prototype, 'dispatchEvent', function dispatchEvent(og, e) {
     const targetId = this.getAttribute(":uid");
     if (!targetId)
-      throw new Error("No :uid attribute on target element" + e.target);
+       throw new Error("No :uid attribute on target element" + e.target);
     const eventLoop = document.querySelector('event-loop');
     if (!eventLoop)
-      throw new Error("No event-loop element in document");
+       throw new Error("No event-loop element in document");
     else
       eventLoop.append(HTMLEventElement.makeEventElement(targetId, e));
   });
