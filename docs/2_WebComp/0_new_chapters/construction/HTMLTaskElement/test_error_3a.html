@@ -1,0 +1,30 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
+<!--<script src="../EventTarget/EventTarget.js"></script>-->
+<script src="HTMLTaskElement.js"></script>
+
+
+<script>
+  console.log("Error: no event-loop element")
+
+  window.addEventListener("error", e => {
+    e.preventDefault();
+    const noTaskElements = !document.querySelectorAll("task").length;
+    console.log(noTaskElements, "Error");
+  });
+
+  function sayHello() {
+    console.log("hello")
+  }
+
+  function sayWorld() {
+    console.log("world")
+  }
+
+  setTimeout(sayWorld, 100);
+
+  sayHello();
+</script>

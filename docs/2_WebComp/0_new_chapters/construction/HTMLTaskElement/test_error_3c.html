@@ -1,0 +1,20 @@
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
+<!--<script src="../EventTarget/EventTarget.js"></script>-->
+<script src="HTMLTaskElement.js"></script>
+
+<event-loop>
+    <task :start="123"></task>
+</event-loop>
+
+<script>
+  console.log("Error: task element has only :start attribute");
+
+  window.addEventListener("error", e => {
+    e.preventDefault();
+    console.log("Error");
+  });
+</script>
