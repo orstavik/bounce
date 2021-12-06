@@ -1,0 +1,46 @@
+<script>
+  const setTimeoutOG = setTimeout;
+</script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script> <!--todo check the dependencies of customAttributes-->
+<script src="../EventTarget/EventTarget.js"></script> <!--todo the loop here is problematic.-->
+<script src="ActionAttribute.js"></script>
+
+<script src="../HTMLEventElement/ElementEvent.js"></script> <!--todo check the dependencies of ElementEvent-->
+<script src="../HTMLEventElement/HTMLEventElement.js"></script>
+<script
+    src="../EventLoop/EventLoop.js"></script> <!--todo move the locking process out of event-loop and ActionAttribute and into a separate file -->
+
+<event-loop></event-loop>
+
+<div :uid="a" :toggle>hello</div>
+
+<script>
+  const setValues = new WeakMap();
+
+  class ToggleAttribute extends ActionAttribute {
+    upgrade(setValue) {
+      setValues.set(this, setValue);
+      this.addEventListener('click', () => this.toggle());
+    }
+
+    toggle() {
+      setValues.get(this)(this.value ? "" : "on");
+    }
+  }
+
+  customAttributes.define(":toggle", ToggleAttribute);
+
+  const div = document.querySelector("div");
+  console.log(`1 ${div.getAttribute(":toggle")}`);
+  div.getAttributeNode(":toggle").toggle();
+  console.log(`2 ${div.getAttribute(":toggle")}`);
+  div.dispatchEvent(new MouseEvent("click"));
+  setTimeoutOG(function () {
+    console.log(`3 ${div.getAttribute(":toggle")}`);
+  }, 4);
+
+</script>
+
