@@ -338,7 +338,6 @@
   if (document.readyState !== 'loading')
     return;
 
-  //todo this is untested..
   function* recursiveNodesWithSkips(el, skips) {
     yield el;
     if (el.childNodes)
@@ -374,12 +373,11 @@
     }
 
     * nodes() {
-      //todo use the root and complete branch to create a correct iterator.
       for (let n of recursiveNodesWithSkips(this.#el, this.#skips))
         yield n;
     }
 
-    * elements() {        //todo use the root and complete branch to create a correct iterator.
+    * elements() {
       for (let n of recursiveElementsWithSkips(this.#el, this.#skips))
         yield n;
     }
@@ -389,7 +387,7 @@
     #nodes;
 
     end(nodes) {
-      this.#nodes = [...nodes]; //
+      this.#nodes = nodes;
       super.end();
     }
 
@@ -399,13 +397,13 @@
     }
 
     * elements() {
-      for (let n of this.nodes())
-        if (n.tagName)
+      for (let n of this.#nodes)
+        if (n instanceof Element)
           yield n;
     }
   }
 
-  let completedBranches = [];
+  const roots = [];
   const frames = [];
 
   function endTagRead(el, lastParsed) {
@@ -413,14 +411,17 @@
   }
 
   function onParserBreak(e) {
-    if (!frames.length)
-      return new ParserConstructionFrame().end(e.endedNodes())
     while (frames[0] && endTagRead(frames[0].el, e.target)) {
       const frame = frames.shift();
-      frame.end(completedBranches);
-      completedBranches.push(frame.el);
+      frame.end(roots);
     }
     ConstructionFrame.dropNow();
+    //todo Now we calculate the full list of nodes for the new FarserFrame. We only need to calculate that it has one, and then calculate the rest when queried.
+    //todo so this might be made slightly more efficient.
+    const addedNodes = [...e.endedNodes()].filter(n => roots.findIndex(s => s === n || s.compareDocumentPosition(n) & Node.DOCUMENT_POSITION_CONTAINED_BY) === -1);
+    addedNodes.length && new ParserConstructionFrame().end(addedNodes);
+    // todo here we can remove the elements that has been ended from the roots list. Not sure if this would be faster though.
+    // roots.splice(roots.indexOf(frame.el), 1); //todo this doesn't work. the roots are popping up later.
   }
 
   window.addEventListener('parser-break', onParserBreak, true);
@@ -428,7 +429,10 @@
   class PredictiveConstructionFrameHTMLElement extends HTMLElement {
     constructor() {
       super();
-      !ConstructionFrame.now && frames.unshift(new PredictiveConstructionFrame(this));
+      if (!ConstructionFrame.now) {
+        frames.unshift(new PredictiveConstructionFrame(this));
+        roots.push(this);
+      }
     }
   }
 

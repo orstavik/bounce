@@ -1,6 +1,6 @@
 <head>
   <script src="../MonkeyPatch/MonkeyPatch.js"></script>
-  <script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+  <script src="../ParserBreakEvent/ParserBreakEvent.js"></script> <!-- this one can be comment out -->
   <script src="../constructionFrame/constructionFrame.js"></script>
   <script src="../childChanged/ChildChangedCallback.js"></script>
   <script src="../EventTarget/EventTarget.js"></script>
@@ -16,8 +16,9 @@
 </body>
 
 <script>
+  const eventLoop = document.querySelector("event-loop");
   const h1 = document.querySelector("h1");
-  h1.addEventListener('click', () => console.log("hello world"));
+  h1.addEventListener('click', () => console.log([...eventLoop.children].map(c => c.hasAttribute(":started"))));
   h1.dispatchEvent(new MouseEvent('click'));
   h1.dispatchEvent(new MouseEvent('click'));
   h1.dispatchEvent(new MouseEvent('click'));

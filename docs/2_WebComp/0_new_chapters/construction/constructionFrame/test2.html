@@ -5,40 +5,35 @@
   (function () {
     let count = 0;
 
-    function printFrame(frame, type = '') {
-      frame.state === 'end' && (type += ('[' + Array.from(frame.nodes()).map(n => n.nodeName).join(',')) + ']');
-      console.log(frame.__id ??= ++count, frame + type);
-    }
-
-    ConstructionFrame.observe('start', printFrame);
-    ConstructionFrame.observe('end', printFrame);
-    ConstructionFrame.observe('complete', printFrame);
+    ConstructionFrame.observe('start', frame => console.log(`${frame.__id ??= ++count} ${frame}`));
+    ConstructionFrame.observe('end', frame => console.log(`${frame.__id} ${frame}`));
+    ConstructionFrame.observe('complete', frame => console.log(`${frame.__id} ${frame}`));
 
     customElements.define('inner-comp', class InnerComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, 'constructor');
+        console.log(`${ConstructionFrame.now} constructor`);
       }
     });
     customElements.define('middle-comp', class MiddleComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, 'constructor start');
+        console.log(`${ConstructionFrame.now} constructor start`);
         this.attachShadow({mode: "open"});
         this.shadowRoot.innerHTML = '<inner-comp></inner-comp>';
         this.shadowRoot.children[0].insertAdjacentHTML('afterend', '<h1></h1>');
-        printFrame(ConstructionFrame.now, 'constructor end');
+        console.log(`${ConstructionFrame.now.__id} constructor end`);
       }
     });
     customElements.define('outer-comp', class OuterComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, 'constructor start');
+        console.log(`${ConstructionFrame.now.__id} constructor start`);
         const a = document.createElement('middle-comp');
         const b = a.cloneNode();
         this.attachShadow({mode: "open"});
         this.shadowRoot.append(b);
-        printFrame(ConstructionFrame.now, 'constructor end');
+        console.log(`${ConstructionFrame.now.__id} constructor end`);
       }
     });
   })();

@@ -4,20 +4,17 @@
 <script>
   (function () {
 
-    window.addEventListener('error', e => (console.log('error') & e.preventDefault()));
+    window.addEventListener('error', e => e.preventDefault());
+    window.addEventListener('error', _ => console.log('error'));
 
-    function printFrame(frame, type = '') {
-      console.log(frame + type);
-    }
-
-    ConstructionFrame.observe('start', printFrame);
-    ConstructionFrame.observe('end', printFrame);
-    ConstructionFrame.observe('complete', printFrame);
+    ConstructionFrame.observe('start', f => console.log(f.toString()));
+    ConstructionFrame.observe('end', f => console.log(f.toString()));
+    ConstructionFrame.observe('complete', f => console.log(f.toString()));
 
     customElements.define('web-comp', class WebComp extends HTMLElement {
       constructor() {
         super();
-        printFrame(ConstructionFrame.now, '-constructor');
+        console.log("constructor");
         throw new Error();
       }
     });
@@ -25,5 +22,3 @@
 </script>
 
 <web-comp></web-comp>
-
-<script>console.log("script")</script>

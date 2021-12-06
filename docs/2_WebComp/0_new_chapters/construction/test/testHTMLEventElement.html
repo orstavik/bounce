@@ -1,0 +1,115 @@
+<h3>HTMLEventElement</h3>
+<test-html test="../HTMLEventElement/test1b.html">
+  <script expected>[
+    "0:ATOM-OUTER,MATROSCHKA-SLOT,OUTER-SLOT,DIV,MAIN,BODY,HTML,#document",
+    "..0:ATOM-INNER,SHADOW-INNER-SLOT,SHADOW-OUTER-SLOT,SPAN,#document-fragment",
+    "....0:U,#document-fragment",
+    "....1:SLOT,I,#document-fragment",
+    "....2:SLOT,O,#document-fragment",
+    "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
+    "....1:SLOT,I,#document-fragment",
+    "..2:SLOT,O,#document-fragment"
+  ]</script>
+</test-html>
+<test-html test="../HTMLEventElement/test1c.html">
+  <script expected>[
+    "0:H1,MATROSCHKA-SLOT,BODY,HTML,#document",
+    "..1:SLOT,MATROSCHKA-INNER,M,#document-fragment",
+    "....1:SLOT,I,#document-fragment"
+  ]</script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_old.html">
+  <script expected>[
+    "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
+    "..0:#document-fragment",
+    "..2:SLOT,FRAME-SLOT,#document-fragment",
+    "....1:SLOT,#document-fragment",
+    "0:OUTER-HOST,SPAN,LINK-SLOT,DIV,BODY,HTML,#document",
+    "..0:INNER-HOST,INNER-LINK-SLOT,UPPER-INNER-LINK-SLOT,#document-fragment",
+    "....0:H1,#document-fragment",
+    "....1:SLOT,INNER-FRAME-SLOT,#document-fragment",
+    "......1:SLOT,#document-fragment",
+    "....2:SLOT,UPPER-INNER-FRAME-SLOT,#document-fragment",
+    "......1:SLOT,#document-fragment",
+    "..2:SLOT,FRAME-SLOT,#document-fragment",
+    "....1:SLOT,#document-fragment"
+  ]</script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test1.html">
+  <script expected>
+    [0, 1, "click"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test8.html">
+  <script expected>
+    [[true, false, false], [true, true, false], [true, true, true]]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test9.html">
+  <script expected>
+    ["hello", "world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test10.html">
+  <script expected>
+    ["hello world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test11.html">
+  <script expected>
+    ["hello", "world", "world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test12.html">
+  <script expected>
+    ["hello", "world", "world", "world"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test13.html">
+  <script expected>
+    [
+      ["1", "2"],
+      ["1", "2"],
+      ["1", "2", "3"]
+    ]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test14.html">
+  <script expected>
+    [
+      ["1", "2", "3", "1"],
+      ["1", "2", "3", "1"],
+      ["1", "2", "3", "1", "2", "1"],
+      "no click will run after this"
+    ]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_error_1.html">
+  <script expected>
+    [
+      "Two event-loop elements",
+      "Error",
+      "Append to illegal element",
+      "Error",
+      "Dispatch new event on element without :target",
+      "Error"
+    ]
+  </script>
+</test-html>
+
+<test-html test="../HTMLEventElement/test_error_4.html">
+  <script expected>
+    ["No :uid attribute on target element", "Error"]
+  </script>
+</test-html>
+<script type="module" src="TestComponent.js"></script>

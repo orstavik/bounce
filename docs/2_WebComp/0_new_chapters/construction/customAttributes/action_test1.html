@@ -1,0 +1,40 @@
+<script>
+  const setTimeoutOG = setTimeout;
+</script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="customAttributes.js"></script> <!--todo check the dependencies of customAttributes-->
+<script src="../EventTarget/EventTarget.js"></script> <!--todo the loop here is problematic.-->
+<script src="ActionAttribute.js"></script>
+
+<script src="../HTMLEventElement/ElementEvent.js"></script> <!--todo check the dependencies of customAttributes-->
+<script src="../HTMLEventElement/HTMLEventElement.js"></script>
+<script src="../EventLoop/EventLoop.js"></script> <!--todo move the locking process out of event-loop and ActionAttribute and into a separate file -->
+
+<event-loop></event-loop>
+
+<div :uid="a" :counter="0">hello</div>
+
+<script>
+  class CounterAttribute extends ActionAttribute {
+    upgrade(setValue) {
+      this.addEventListener('click', () => setValue(this.count + 1));
+    }
+
+    get count() {
+      return parseInt(this.value);
+    }
+  }
+
+  customAttributes.define(":counter", CounterAttribute);
+
+  const div = document.querySelector("div");
+  console.log(div.getAttribute(":counter"));
+  div.dispatchEvent(new MouseEvent("click"));
+  setTimeoutOG(function () {
+    console.log(div.getAttribute(":counter"));
+  }, 4);
+
+</script>
+
