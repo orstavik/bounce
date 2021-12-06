@@ -1,22 +1,24 @@
-<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
 <script src="constructionFrame.js"></script>
 <script>
-  (function () {
-    let count = 0;
+  let endedElements = [];
 
-    ConstructionFrame.observe('start', frame => console.log(`${frame.__id ??= ++count} ${frame}`));
-    ConstructionFrame.observe('end', frame => console.log(`${frame.__id} ${frame}`));
-    ConstructionFrame.observe('complete', frame => console.log(`${frame.__id} ${frame}`));
+  function printFrame(frame) {
+    const nowEnded = [...frame.elements()].filter(n => endedElements.indexOf(n) !== -1);
+    if(nowEnded.length)
+      console.log(frame.toString(), nowEnded);
+    endedElements.push(...frame.nodes());
+  }
 
-    customElements.define('web-comp', class WebComp extends HTMLElement {
-      constructor() {
-        super();
-        const frame = ConstructionFrame.now;
-        console.log(`constructor ${frame.__id} ${frame}`);
-      }
-    });
-  })();
+  ConstructionFrame.observe('end', printFrame);
+
+  customElements.define('web-comp', class WebComp extends HTMLElement {
+    constructor() {
+      super();
+      console.log("constructor");
+    }
+  });
 </script>
 
 <h3>This is a test of siblings</h3>

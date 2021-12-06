@@ -1,0 +1,25 @@
+<h3>MonkeyPatch System</h3>
+<test-html test="../MonkeyPatch/test_deprecate.html">
+  <script expected>
+    [
+      "click",
+      "setAttributeNS",
+      "setAttributeNodeNS",
+      "stopProp",
+      "stopProp2"
+    ]
+  </script>
+</test-html>
+
+<test-html test="../MonkeyPatch/test_error_5.html">
+  <script expected>
+    ["Call .stopPropagation() on event", "Error"]
+  </script>
+</test-html>
+
+<test-html test="../MonkeyPatch/test_error_6.html">
+  <script expected>
+    ["Call .stopImmediatePropagation() on event", "Error"]
+  </script>
+</test-html>
+<script type="module" src="TestComponent.js"></script>

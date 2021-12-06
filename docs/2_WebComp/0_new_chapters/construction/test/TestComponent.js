@@ -97,4 +97,8 @@ class TestHtml extends HTMLElement {
   }
 }
 
-customElements.define('test-html', TestHtml);
+try{
+  customElements.define('test-html', TestHtml);
+} catch(err){
+  //test-html already defined.
+}

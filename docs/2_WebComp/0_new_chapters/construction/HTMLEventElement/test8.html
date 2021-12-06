@@ -16,13 +16,9 @@
 </body>
 
 <script>
-  function doLog() {
-    const res = [...document.querySelector("event-loop").children].map(child => child.hasAttribute(":started"));
-    console.log(res, "hello world");
-  }
-
+  const eventLoop = document.querySelector("event-loop");
   const h1 = document.querySelector("h1");
-  h1.addEventListener('click', doLog);
+  h1.addEventListener('click', () => console.log([...eventLoop.children].map(c => c.hasAttribute(":started"))));
   h1.dispatchEvent(new MouseEvent('click'));
   h1.dispatchEvent(new MouseEvent('click'));
   h1.dispatchEvent(new MouseEvent('click'));

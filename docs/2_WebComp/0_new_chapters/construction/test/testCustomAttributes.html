@@ -1,0 +1,68 @@
+<h3>customAttributes </h3>
+<test-html test="../customAttributes/test1_basic_use_protection.html">
+  <script expected>
+    [
+      [":bob", ""],
+      [":dblclick 300", ":hello sunshine"],
+      "Element.setAttribute",
+      "Element.setAttributeNode",
+      "Attr.value"
+    ]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test2a_definition_shadowListener.html">
+  <script expected>
+    ["42", 21]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test2b_definition_MO.html">
+  <script expected>
+    [
+      ["3:1", "3:1", "3:1"],
+      ["3:1", "3:1", "4:2"],
+      ["3:1", "3:1", "5:2"],
+      ["5:2", "5:2", "5:2"]
+    ]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test2c_definition_timer.html">
+  <script expected>
+    [3, 2, 1, 0, "the end"]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test2d_definition_raf.html">
+  <script expected>
+    [null, "10", "10", "20"]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test2e_definition_MO_attributes.html">
+  <script expected>
+    [
+      ["NaN", "NaN", null],
+      ["NaN", "NaN", null],
+      ["NaN", "NaN", 42],
+      ["42", "42", 42]
+    ]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test3_definition_error.html">
+  <script expected>
+    [1, "error", 2, "error", 3]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test4_listener_error.html">
+  <script expected>
+    [1, 2, "error", 3]
+  </script>
+</test-html>
+<test-html test="../customAttributes/test5_MO_error.html">
+  <script expected>
+    [1, 2, 3, "error", 4]
+  </script>
+</test-html>
+<test-html test="../customAttributes/action_test1.html">
+  <script expected>
+    ["0", "1"]
+  </script>
+</test-html>
+<script type="module" src="TestComponent.js"></script>
