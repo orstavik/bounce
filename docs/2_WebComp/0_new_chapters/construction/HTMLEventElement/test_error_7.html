@@ -1,0 +1,42 @@
+<script>const setTimeoutOG = setTimeout;</script>
+<script src="../MonkeyPatch/MonkeyPatch.js"></script>
+<script src="../ParserBreakEvent/ParserBreakEvent.js"></script>
+<script src="../constructionFrame/constructionFrame.js"></script>
+<script src="../childChanged/ChildChangedCallback.js"></script>
+<script src="../EventTarget/EventTarget.js"></script>
+<script src="ElementEvent.js"></script>
+<script src="HTMLEventElement.js"></script>
+<script src="../EventLoop/EventLoop.js"></script>
+
+<event-loop></event-loop>
+
+<body :uid="0">
+<h1 :uid="1"></h1>
+</body>
+
+<script>
+
+  window.addEventListener("error", e => {
+    e.preventDefault();
+    const noEventElements = document.querySelector("event-loop").children.length === 0;
+    console.log(noEventElements, "Error");
+  });
+
+  function doLog(message) {
+    console.log(message);
+  }
+
+  function sayHello() {
+    console.log("hello world");
+  }
+
+  const h1 = document.querySelector("h1");
+  console.log("Error: Illegal callback function")
+  h1.addEventListener("click", doLog("hello"));
+  h1.addEventListener("click", sayHello);
+  h1.dispatchEvent(new MouseEvent('click'));
+  setTimeoutOG(function () {
+    h1.removeEventListener("click", doLog("hello"));
+    h1.dispatchEvent(new MouseEvent('click'));
+  }, 4);
+</script>
