@@ -53,4 +53,23 @@
     ["Pass illegal argumentType", "Error"]
   </script>
 </test-html>
+
+<test-html test="../HTMLTaskElement/test_error_3a.html">
+  <script expected>
+    ["Error: no event-loop element", [true, "Error"]]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test_error_3b.html">
+  <script expected>
+    ["Set task to illegal element", "No error, just ignore"]
+  </script>
+</test-html>
+
+<test-html test="../HTMLTaskElement/test_error_3c.html">
+  <script expected>
+    ["Error: task element has only :start attribute", "Error"]
+  </script>
+</test-html>
+
 <script type="module" src="TestComponent.js"></script>

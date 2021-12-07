@@ -86,7 +86,11 @@
         throw new Error("setTimeout(function) only accepts functions whose function.name === window[name]");
       //todo we should also actually specify that the cb should be a frozen, non mutable property on window.
       //todo or, better, we should have two different tasks. those that are supposed to be resumable, and those that are same session only
-      document.querySelector('event-loop').prepend(HTMLTaskElement.makeTaskElement(cb.name, ms));
+      const eventLoop = document.querySelector('event-loop');
+      if (!eventLoop)
+        throw new Error("No event-loop element in document");
+      else
+        eventLoop.prepend(HTMLTaskElement.makeTaskElement(cb.name, ms));
     }).bind(window);
   }
 
