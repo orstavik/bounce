@@ -99,7 +99,7 @@
           }
           if (target.attributes)
             for (let i = 0; i < target.attributes.length; i++)          //second attributes
-              yield {target: target.attributes[i], root: target, depth: depth + i, pos};
+              yield {target: target.attributes[i], root: target.attributes[i], depth: depth + i, pos: pos+1};
         }
       }
     }
@@ -127,7 +127,7 @@
 
     static* dynamo_preventDefaultStops(t, eventEl) {
       let previousRoot;
-      for (let {target, root} of this.dynamo_neverSameTargetTwice(t, eventEl.composed, true)) {
+      for (let {target, root} of this.dynamo_neverSameTargetTwice(t, eventEl.composed, false)) {
         if (previousRoot === root)
           yield {target, newDocument: false};
         else if (eventEl.defaultPrevented)  //defaultPrevented is a global variable... this could be a problem...
