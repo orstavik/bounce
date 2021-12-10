@@ -127,7 +127,7 @@
 
     static* dynamo_preventDefaultStops(t, eventEl) {
       let previousRoot;
-      for (let {target, root} of this.dynamo_neverSameTargetTwice(t, eventEl.composed, false)) {
+      for (let {target, root} of this.dynamo_neverSameTargetTwice(t, eventEl.composed === "true", false)) {
         if (previousRoot === root)
           yield {target, newDocument: false};
         else if (eventEl.defaultPrevented)  //defaultPrevented is a global variable... this could be a problem...
