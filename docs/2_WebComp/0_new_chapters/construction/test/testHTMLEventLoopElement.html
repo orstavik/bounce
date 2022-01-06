@@ -1,36 +1,28 @@
 <h3>HTMLEventLoopElement</h3>
-<test-html test="../EventLoop/test_error_1a.html">
+<test-html test="../EventLoop/test_error_event_loop_construction.html">
     <script expected>
-      ["Add incorrect event-loop",
+      ["Error: Append event-loop to illegal element",
         [false, "Error"],
-        "Add correct event-loop", "dispatch new event", "Two event-loop elements",
+        "Error: Add incorrect event-loop to incorrect element via innerHTML",
+        [false, "Error"],
+        "First event-loop element",
+        "Error: second event-loop element",
         [true, "Error"],
-        "Three event-loop elements",
-        [true, "Error"],
-        "Append to illegal element",
-        [true, "Error"],
-        "Dispatch new event on element without :target",
+        "Error: third event-loop element",
         [true, "Error"]]
     </script>
 </test-html>
 
-<test-html test="../EventLoop/test_error_1b.html">
+<test-html test="../EventLoop/test_error_after_error_behaviour.html">
     <script expected>
-      ["Error: set incorrect event-loop to incorrect element via innerHTML",
+      ["Error: Append incorrect event-loop",
         [false, "Error"],
         "Expect that there is no event-element in document", true,
         "Add correct event-loop to correct element via innerHTML", true,
-        "dispatch new event","check dispatched event inside new event-loop element", true,
-        "Error: second event-loop element",
-        [true, "Error"], "Error: third event-loop elements",
-        [true, "Error"]]
-    </script>
-</test-html>
-
-<test-html test="../EventLoop/test_error_1c.html">
-    <script expected>
-      ["Error: dispatch new event when no event-loop in document",
-        [false, "Error"]]
+        "Check dispatched event inside new event-loop element", true,
+        [true, "Error"],
+        "a"
+      ]
     </script>
 </test-html>
 

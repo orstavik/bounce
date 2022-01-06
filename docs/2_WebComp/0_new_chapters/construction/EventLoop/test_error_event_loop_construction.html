@@ -15,30 +15,28 @@
 
   window.addEventListener("error", e => {
     e.preventDefault();
-    const severalEventLoops = document.querySelectorAll("event-loop").length === 1;
-    console.log(severalEventLoops, "Error");
+    const singleEventLoop = document.querySelectorAll("event-loop").length === 1;
+    console.log(singleEventLoop, "Error");
   });
 
   const divElement = document.querySelector("div");
 
-  console.log("Add incorrect event-loop");
+  console.log("Error: Append event-loop to illegal element");
   divElement.appendChild(document.createElement("event-loop"));
 
-  console.log("Add correct event-loop");
+  console.log("Error: Add incorrect event-loop to incorrect element via innerHTML");
+  divElement.innerHTML = `
+    <event-loop>
+        <event-loop></event-loop>
+    </event-loop>`;
+
+  console.log("First event-loop element");
   document.body.appendChild(document.createElement("event-loop"));
 
-  console.log("dispatch new event")
-  document.body.dispatchEvent(new Event("test"));
-
-  console.log("Two event-loop elements");
+  console.log("Error: second event-loop element");
   document.body.appendChild(document.createElement("event-loop"));
 
-  console.log("Three event-loop elements");
-  document.body.appendChild(document.createElement("event-loop"));
+  console.log("Error: third event-loop element");
+  document.body.innerHTML += `<event-loop></event-loop>`;
 
-  console.log("Append to illegal element");
-  divElement.appendChild(document.createElement("event-loop"));
-
-  console.log("Dispatch new event on element without :target");
-  divElement.dispatchEvent(new MouseEvent('click'));
 </script>
