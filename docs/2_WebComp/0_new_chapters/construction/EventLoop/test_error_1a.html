@@ -39,6 +39,6 @@
   console.log("Append to illegal element");
   divElement.appendChild(document.createElement("event-loop"));
 
-  console.log("Dispatch new event on element without :target");
+  console.log("Dispatch new event on element without :target"); //without :uid
   divElement.dispatchEvent(new MouseEvent('click'));
 </script>
