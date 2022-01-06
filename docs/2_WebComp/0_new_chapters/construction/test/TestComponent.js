@@ -27,7 +27,7 @@ const template = `
   <div id="code"></div>
 `;
 
-import {} from "https://unpkg.com/diff@5.0.0/dist/diff.js";
+import("https://unpkg.com/diff@5.0.0/dist/diff.js");
 
 class TestHtml extends HTMLElement {
 
