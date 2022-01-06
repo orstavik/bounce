@@ -9,11 +9,12 @@
 <div href="testHTMLTaskElement.html"></div>
 <div off href="testProblems.html"></div>
 
-<script type="module" src="TestComponent.js"></script>
-<script type="module">
-
-  for (let test of document.querySelectorAll("div:not([off])")) {
-    const href = new URL(test.getAttribute('href'), location.href);
-    test.innerHTML = await (await fetch(href)).text();
-  }
+<script>
+  (async function () {
+    for (let test of document.querySelectorAll("div:not([off])")) {
+      const href = new URL(test.getAttribute('href'), location.href);
+      test.innerHTML = await (await fetch(href)).text();
+    }
+  })();
 </script>
+<script src="https://cdn.jsdelivr.net/gh/orstavik/TestHTML/TestHTML.js"></script>
