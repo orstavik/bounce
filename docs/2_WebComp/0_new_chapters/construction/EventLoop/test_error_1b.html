@@ -6,6 +6,14 @@
 <script src="../HTMLEventElement/ElementEvent.js"></script>
 <script src="../HTMLEventElement/HTMLEventElement.js"></script>
 <script src="EventLoop.js"></script>
+<script>
+
+    window.addEventListener("error", e => {
+        e.preventDefault();
+        const severalEventLoops = document.querySelectorAll("event-loop").length === 1;
+        console.log(severalEventLoops, "Error");
+    });
+</script>
 
 <body :uid="1">
 <div :uid="2">
@@ -17,12 +25,6 @@
 
 <script>
 
-  window.addEventListener("error", e => {
-    e.preventDefault();
-    const singleEventLoop = document.querySelectorAll("event-loop").length === 1;
-    console.log(singleEventLoop, "Error");
-  });
-
   const divElement = document.querySelector("div");
 
   console.log("Error: Append incorrect event-loop");
@@ -33,7 +35,7 @@
 
   console.log("Add correct event-loop to correct element via innerHTML");
   document.body.innerHTML = `<event-loop></event-loop>`;
-  console.log(!!document.querySelectorAll("event-loop").length)
+  console.log(document.querySelectorAll("event-loop").length === 1)
 
   document.body.dispatchEvent(new Event("test"));
   console.log("Check dispatched event inside new event-loop element");
