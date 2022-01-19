@@ -1,29 +1,41 @@
 (function () {
+  const setValueOG = Object.getOwnPropertyDescriptor(Attr.prototype, "value").set;
+
+  function monkeyPatch(proto, prop, valueOrSet, hoFun, desc = Object.getOwnPropertyDescriptor(proto, prop)) {
+    desc[valueOrSet] = hoFun(desc[valueOrSet]);
+    Object.defineProperty(proto, prop, desc);
+  }
+
   //todo deprecate the setAttributeNode??? maybe YES, but problem is that we can't deprecate getAttributeNode...
-  MonkeyPatch.monkeyPatch(Element.prototype, 'setAttributeNode', function setAttributeNode_CA(og, attr) {
-    if (attr.name[0] === ':' && attr.name[1] !== ':' && this.hasAttribute(attr.name))
-      throw new SyntaxError(`The value of the custom attribute "${attr.name}" can only be *changed* from the CustomAttribute definition.`);
-    const res = og.call(this, attr);
-    upgradeAttribute(attr);
-    return res;
+  monkeyPatch(Element.prototype, 'setAttributeNode', 'value', function (og) {
+    return function setAttributeNode_CA(attr) {
+      if (attr.name[0] === ':' && attr.name[1] !== ':' && this.hasAttribute(attr.name))
+        throw new SyntaxError(`The value of the custom attribute "${attr.name}" can only be *changed* from the CustomAttribute definition.`);
+      const res = og.call(this, attr);
+      upgradeAttribute(attr);
+      return res;
+    }
   });
   //todo MonkeyPatch.deprecate(Element.prototype, 'removeAttributeNode');
-  MonkeyPatch.monkeyPatch(Element.prototype, 'setAttribute', function setAttribute_CA(og, name, value) {
-    if (name[0] === ':' && name[1] !== ':' && this.hasAttribute(name))
-      throw new SyntaxError(`The value of the custom attribute "${name}" can only be *changed* from the CustomAttribute definition.`);
-    const res = og.call(this, name, value);
-    upgradeAttribute(this.getAttributeNode(name));
-    return res;
+  monkeyPatch(Element.prototype, 'setAttribute', "value", function (og) {
+    return function setAttribute_CA(name, value) {
+      if (name[0] === ':' && name[1] !== ':' && this.hasAttribute(name))
+        throw new SyntaxError(`The value of the custom attribute "${name}" can only be *changed* from the CustomAttribute definition.`);
+      const res = og.call(this, name, value);
+      upgradeAttribute(this.getAttributeNode(name));
+      return res;
+    }
   });
-  MonkeyPatch.monkeyPatchSetter(Attr.prototype, 'value', function value_CA(og, val) {
-    if (this.name[0] === ':' && this.name[1] !== ':')
-      throw new SyntaxError(`The value of the custom attribute "${this.name}" can only be *changed* from the CustomAttribute definition.`);
-    return og.call(this, val);
+  monkeyPatch(Attr.prototype, 'value', "set", function (og) {
+    return function value_CA(val) {
+      if (this.name[0] === ':' && this.name[1] !== ':')
+        throw new SyntaxError(`The value of the custom attribute "${this.name}" can only be *changed* from the CustomAttribute definition.`);
+      return og.call(this, val);
+    }
   });
   //todo MonkeyPatch.monkeyPatch(Element.prototype, 'removeAttribute', function removeAttribute_CA(og, val) {
   //todo remove attribute will delete the prototype?? If we remove the attribute, we should have a remove callback. This will essentially delete the attribute as it cannot be reattached to another element.
 
-  const setValueOG = MonkeyPatch.lockOG("Attr.value");
 
   const defs = {};
   const cache = {};
