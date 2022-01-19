@@ -30,7 +30,8 @@
   const lastSeen = new WeakMap();
   const listeners = new WeakMap();
 
-  function callChildChanged(el, nodes, oldNodes) {
+  function callChildChanged(el, slots, nodes, oldNodes) {
+    updateSlotchangeListener(el, slots);
     lastSeen.set(el, nodes);
     try {
       el.childChangedCallback(new ChildChangedRecord(nodes, oldNodes));
@@ -54,15 +55,13 @@
 
   function updateSlotchangeListener(el, slots) {
     const previousSlotChangeListener = listeners.get(el);
-    if ((previousSlotChangeListener && !slots.length)) {
+    if (previousSlotChangeListener && !slots.length) {
       removeEventListener.call(el, 'slotchange', listeners.get(el), true);
       listeners.delete(el);
     } else if (!previousSlotChangeListener && slots.length) {
-      let listener = checkChildChangedFromEvent.bind(el);
+      const listener = checkChildChangedFromEvent.bind(el);
       listeners.set(el, listener);
       addEventListener.call(el, 'slotchange', listener, true);
-    } else {
-      //nothing to see
     }
   }
 
@@ -73,8 +72,7 @@
   function setupChildChanged(el) {
     MO.observe(el, {childList: true});
     const {nodes, slots} = getSlotsAndFlattenChildren(el);
-    updateSlotchangeListener(el, slots);
-    callChildChanged(el, nodes);
+    callChildChanged(el, slots, nodes);
   }
 
   function checkChildChanged(el) {
@@ -82,14 +80,13 @@
     const previousNodes = lastSeen.get(el);
     if (arraysAreTheSame(nodes, previousNodes))
       return;
-    updateSlotchangeListener(el, slots);
-    callChildChanged(el, nodes, previousNodes);
+    callChildChanged(el, slots, nodes, previousNodes);
   }
 
   function checkChildChangedFromEvent(e) {
     for (let el of e.composedPath()) {
-      if(!(el instanceof HTMLSlotElement))
-        return;  //slotchangeNipSlip
+      if(!(el instanceof HTMLSlotElement))   //slotchangeNipSlip
+        return;
       if(el.parentNode === this)
         return checkChildChanged(this);
     }
