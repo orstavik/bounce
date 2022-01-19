@@ -1,5 +1,5 @@
 (function () {
-  //todo deprecate the setAttributeNode???
+  //todo deprecate the setAttributeNode??? maybe YES, but problem is that we can't deprecate getAttributeNode...
   MonkeyPatch.monkeyPatch(Element.prototype, 'setAttributeNode', function setAttributeNode_CA(og, attr) {
     if (attr.name[0] === ':' && attr.name[1] !== ':' && this.hasAttribute(attr.name))
       throw new SyntaxError(`The value of the custom attribute "${attr.name}" can only be *changed* from the CustomAttribute definition.`);
@@ -47,21 +47,15 @@
     }
   }
 
-  function* customAttributes(elements) {
-    for (let el of elements)
-      for (let a of el.attributes)
-        if (a.name[0] === ':' && a.name[1] !== ':')
-          yield a;
-  }
-
   class CustomAttributeRegistry {
 
-    //the upgrade happens at ConstructionFrame end.
-    //ConstructionFrame end is the time that we are most assure that no elements with attributes have been created without us knowing.
+    //the upgrade happens at ElementObserver.end.
+    //ElementObserver.end is the time that we are most assure that no elements with attributes have been created without us knowing.
     constructor() {
-      ConstructionFrame.observe('end', frame => {
-        for (let ca of customAttributes(frame.elements()))
-          upgradeAttribute(ca, undefined);
+      ElementObserver.end(el => {
+        for (let a of el.attributes)
+          if (a.name[0] === ':' && a.name[1] !== ':')
+            upgradeAttribute(a, undefined);
       });
     }
 
