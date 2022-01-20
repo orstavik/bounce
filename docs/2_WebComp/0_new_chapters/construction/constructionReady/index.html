@@ -46,7 +46,7 @@
       "/10: childReady",
       "dom interactive"
     ]
-</script>
+  </script>
 </test-html>
 
 <test-html test="../constructionReady/test2.html">
@@ -84,6 +84,25 @@
       "6, INNER-COMP, childReady",
       "7, MIDDLE-COMP, childReady",
       "8, INNER-COMP, childReady"
+    ]
+  </script>
+</test-html>
+
+<test-html test="../constructionReady/test3.html">
+  <script expected>
+    [
+      "constructor",
+      "ARcb",
+      "accb",
+      "ccb",
+      "CCcb",
+      "constructor",
+      "ARcb",
+      "ccb",
+      "CCcb",
+      "constructor",
+      "ARcb",
+      "CCcb"
     ]
   </script>
 </test-html>
