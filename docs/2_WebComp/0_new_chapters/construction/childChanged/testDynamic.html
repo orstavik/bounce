@@ -13,8 +13,8 @@
       console.log('connected', this.tagName);
     }
 
-    childChangedCallback(rec) {
-      console.log("childChanged", this.tagName, rec.newNodes.length);
+    childChangedCallback(nodes) {
+      console.log("childChanged", this.tagName, nodes.now.length);
     }
   }
 
@@ -30,8 +30,8 @@
       console.log('connected', this.tagName);
     }
 
-    childChangedCallback(rec) {
-      console.log("childChanged", this.tagName, rec.newNodes.length);
+    childChangedCallback(nodes) {
+      console.log("childChanged", this.tagName, nodes.now.length);
     }
   }
 
@@ -47,8 +47,8 @@
       console.log('connected', this.tagName);
     }
 
-    childChangedCallback(rec) {
-      console.log("childChanged", this.tagName, rec.newNodes.length);
+    childChangedCallback(nodes) {
+      console.log("childChanged", this.tagName, nodes.now.length);
     }
   }
 

@@ -2,8 +2,8 @@
 <script src="../MonkeyPatch/MonkeyPatch.js"></script>
 <script src="ChildChangedCallback.js"></script>
 <script>
-  function print(type, el, rec) {
-    console.log(type, el.tagName, el.shadowRoot.children[0].assignedNodes().length, rec?.newNodes.length);
+  function print(type, el, nodes) {
+    console.log(type, el.tagName, el.shadowRoot.children[0].assignedNodes().length, nodes?.now.length);
   }
 
   class CompA extends HTMLElement {

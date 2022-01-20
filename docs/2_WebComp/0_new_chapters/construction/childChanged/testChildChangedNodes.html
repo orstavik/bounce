@@ -3,7 +3,14 @@
 
 <script>
 
-  window.addEventListener("error", e => console.log(e.type))
+  function recordToArray(rec) {
+    return [
+      ["new", rec.now?.map(n => n.nodeName)],
+      ["old", rec.old?.map(n => n.nodeName)],
+      ["added", rec.added?.map(n => n.nodeName)],
+      ["removed", rec.removed?.map(n => n.nodeName)]
+    ];
+  }
 
   class WebcompA extends HTMLElement {
     constructor() {
@@ -12,10 +19,8 @@
       this.shadowRoot.innerHTML = `<slot></slot>`;
     }
 
-    childChangedCallback(nodes) {
-      console.log(this.tagName + " childChanged");
-      console.log(nodes.now.map(n => n.nodeName));
-      throw new Error("test-error-1");
+    childChangedCallback(rec) {
+      console.log(this.tagName, ...recordToArray(rec));
     }
   }
 
@@ -26,15 +31,19 @@
       this.shadowRoot.innerHTML = `<slot></slot>`;
     }
 
-    childChangedCallback(nodes) {
-      console.log(this.tagName + " childChanged");
-      console.log(nodes.now.map(n => n.nodeName));
-      throw new Error("test-error-2");
+    childChangedCallback(rec) {
+      console.log(this.tagName, ...recordToArray(rec));
     }
   }
 
   customElements.define("webcomp-a", WebcompA);
   customElements.define("webcomp-b", WebcompB);
+
+  // setTimeout(() => {
+  //   const compA = document.querySelector("webcomp-a");
+  //   const compB = document.querySelector("webcomp-b");
+  //   compA.removeChild(compB)
+  // }, 100);
 
 </script>
 

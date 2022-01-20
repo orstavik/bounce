@@ -1,29 +1,30 @@
 (function (addEventListener, removeEventListener) {
 
-  class ChildChangedRecord {
+  class ChildChangedNodes {
 
     #now;
     #old;
+    static #empty = [];
 
     constructor(now, old) {
       this.#now = now;
-      this.#old = old;
+      this.#old = old || ChildChangedNodes.#empty;
     }
 
-    get oldNodes(){
+    get old() {
       return this.#old.slice();
     }
 
-    get newNodes() {
+    get now() {
       return this.#now.slice();
     }
 
-    get addedNodes() {
-      return this.#now.filter(n=> this.#old.indexOf(n) === -1);
+    get added() {
+      return this.#now.filter(n => this.#old.indexOf(n) === -1);
     }
 
-    get removedNodes() {
-      return this.#old.filter(n=> this.#now.indexOf(n) === -1);
+    get removed() {
+      return this.#old.filter(n => this.#now.indexOf(n) === -1);
     }
   }
 
@@ -34,7 +35,7 @@
     updateSlotchangeListener(el, slots);
     lastSeen.set(el, nodes);
     try {
-      el.childChangedCallback(new ChildChangedRecord(nodes, oldNodes));
+      el.childChangedCallback(new ChildChangedNodes(nodes, oldNodes));
     } catch (error) {
       window.dispatchEvent(new ErrorEvent('error', {error}));
     }
@@ -85,9 +86,9 @@
 
   function checkChildChangedFromEvent(e) {
     for (let el of e.composedPath()) {
-      if(!(el instanceof HTMLSlotElement))   //slotchangeNipSlip
+      if (!(el instanceof HTMLSlotElement))   //slotchangeNipSlip
         return;
-      if(el.parentNode === this)
+      if (el.parentNode === this)
         return checkChildChanged(this);
     }
   }
