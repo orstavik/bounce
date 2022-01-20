@@ -39,11 +39,11 @@
   customElements.define("webcomp-a", WebcompA);
   customElements.define("webcomp-b", WebcompB);
 
-  // setTimeout(() => {
-  //   const compA = document.querySelector("webcomp-a");
-  //   const compB = document.querySelector("webcomp-b");
-  //   compA.removeChild(compB)
-  // }, 100);
+  setTimeout(() => {
+    const compA = document.querySelector("webcomp-a");
+    const compB = document.querySelector("webcomp-b");
+    compA.removeChild(compB)
+  }, 100);
 
 </script>
 
