@@ -1,37 +1,6 @@
 <script src="https://cdn.jsdelivr.net/combine/gh/orstavik/parse@v1.0.0/parse.js,gh/orstavik/ElementObserver@v1.0.1/constructionFrame.js"></script>
-<script src="../MonkeyPatch/MonkeyPatch.js"></script>
 <script src="ChildChangedCallback.js"></script>
-<script>
-  function print(type, el, nodes) {
-    console.log(type, el.tagName, el.shadowRoot.children[0].assignedNodes().length, nodes?.now.length);
-  }
 
-  class CompA extends HTMLElement {
-
-    constructor() {
-      super();
-      this.attachShadow({mode: "open", slotAssignment: "manual"});
-      this.shadowRoot.innerHTML = '<slot></slot>';
-      print('constructor', this);
-    }
-
-    connectedCallback() {
-      this.shadowRoot.children[0].assign(...this.childNodes);
-      print('connected', this);
-    }
-
-    childChangedCallback(rec) {
-      this.shadowRoot.children[0].assign(...this.childNodes);
-      print("childChanged", this, rec);
-    }
-  }
-
-  customElements.define('comp-a', CompA);
-  customElements.define('comp-b', class CompB extends CompA {
-  });
-  customElements.define('comp-c', class CompC extends CompA {
-  });
-</script>
 <h3>Test of assignNodes 2</h3>
 <comp-a>
   <comp-b>
@@ -42,3 +11,37 @@
   </comp-b>
   <h1>hello sunshine</h1>
 </comp-a>
+
+<script>
+  function assignables(el) {
+    const res = [];
+    for (let n of el.childNodes) {
+      if (n instanceof HTMLSlotElement) {
+        const assigned = n.assignedNodes({flatten: true});
+        assigned.length ? res.push(...assigned) : res.push(n);
+      } else {
+        res.push(n);
+      }
+    }
+    return res.map(n=>n.nodeName).join(',');
+  }
+
+  class CompA extends HTMLElement {
+
+    constructor() {
+      super();
+      this.attachShadow();
+      this.shadowRoot.innerHTML = '<slot></slot>';
+    }
+
+    childChangedCallback(nodes) {
+      console.log(nodes.now.map(n=>n.nodeName).join(',') === assignables(this));
+    }
+  }
+
+  customElements.define('comp-a', CompA);
+  customElements.define('comp-b', class CompB extends CompA {
+  });
+  customElements.define('comp-c', class CompC extends CompA {
+  });
+</script>
