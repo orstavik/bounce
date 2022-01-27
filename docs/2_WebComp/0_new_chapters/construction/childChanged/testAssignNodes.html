@@ -1,15 +1,17 @@
 <script src="https://cdn.jsdelivr.net/combine/gh/orstavik/parse@v1.0.0/parse.js,gh/orstavik/ElementObserver@v1.0.1/constructionFrame.js"></script>
-<script src="../MonkeyPatch/MonkeyPatch.js"></script>
 <script src="ChildChangedCallback.js"></script>
 <script>
-  function print(type, el, rec) {
-    console.log(
-      type,
-      el.tagName,
-      el.shadowRoot.querySelector('slot').assignedNodes({flatten: true}).map(n=>n.nodeName),
-      el.shadowRoot.querySelector('slot').assignedNodes().map(n=>n.nodeName),
-      rec?.now.map(n=>n.nodeName)
-    );
+  function assignables(el) {
+    const res = [];
+    for (let n of el.childNodes) {
+      if (n instanceof HTMLSlotElement) {
+        const assigned = n.assignedNodes({flatten: true});
+        assigned.length ? res.push(...assigned) : res.push(n);
+      } else {
+        res.push(n);
+      }
+    }
+    return res.length ? res.map(n => n.nodeName).join(',') : null;
   }
 
   const templates = {
@@ -24,18 +26,29 @@
       super();
       this.attachShadow({mode: "open", slotAssignment: "manual"});
       this.shadowRoot.innerHTML = templates[this.tagName];
-      print('constructor', this);
+      this._constructor = assignables(this);
     }
 
     connectedCallback() {
-      this.shadowRoot.querySelector('slot').assign(...this.childNodes);
-      print('connected', this);
+      this._connected = assignables(this);
     }
 
     childChangedCallback(nodes) {
-      print("childChanged before", this, nodes);
-      this.shadowRoot.querySelector('slot').assign(...this.childNodes);
-      print("childChanged after", this, nodes);
+      this._childChangedBefore = assignables(this);
+      try {
+        this.shadowRoot.querySelector('slot').assign(...this.childNodes);
+      } catch (error) {
+        console.log("slot.assign is not implemented, the manual slot assign should kick in");
+      }
+      this._childChangedAfter = assignables(this);
+      console.log(
+        this.tagName.substr(0, 10),
+        this._constructor,
+        this._connected,
+        this._childChangedBefore,
+        this._childChangedAfter,
+        nodes.now.map(n => n.nodeName).join(',')
+      );
     }
   }
 

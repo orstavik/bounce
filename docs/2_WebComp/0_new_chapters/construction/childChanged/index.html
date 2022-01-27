@@ -77,22 +77,19 @@
 </test-html>
 
 <test-html test="../childChanged/testAssignNodes.html">
-  <script expected>
-    [
-      ["constructor", "INNER-COMP", [], [], null],
-      ["constructor", "MIDDLE-COMP", [], [], null],
-      ["constructor", "OUTER-COMP", [], [], null],
-      ["connected", "OUTER-COMP", [], [], null],
-      ["connected", "MIDDLE-COMP", [], ["SLOT"], null],
-      ["connected", "INNER-COMP", [], ["SLOT"], null],
-      ["childChanged before", "OUTER-COMP", [], [], ["H1"]],
-      ["childChanged after", "OUTER-COMP", ["H1"], ["H1"], ["H1"]],
-      ["childChanged before", "MIDDLE-COMP", ["H1"], ["SLOT"], ["H1"]],
-      ["childChanged after", "MIDDLE-COMP", ["H1"], ["SLOT"], ["H1"]],
-      ["childChanged before", "INNER-COMP", ["H1"], ["SLOT"], ["H1"]],
-      ["childChanged after", "INNER-COMP", ["H1"], ["SLOT"], ["H1"]]
-    ]
-  </script>
+  <script expected>[
+    ["OUTER-COMP", null, null, "H1", "H1", "H1"],
+    ["MIDDLE-COM", "SLOT", "SLOT", "H1", "H1", "H1"],
+    ["INNER-COMP", "SLOT", "SLOT", "H1", "H1", "H1"]
+  ]</script>
+  <script expected="slot.assign_not_implemented_">[
+    "slot.assign is not implemented, the manual slot assign should kick in",
+    ["OUTER-COMP", null, null, "H1", "H1", "H1"],
+    "slot.assign is not implemented, the manual slot assign should kick in",
+    ["MIDDLE-COM", "SLOT", "SLOT", "H1", "H1", "H1"],
+    "slot.assign is not implemented, the manual slot assign should kick in",
+    ["INNER-COMP", "SLOT", "SLOT", "H1", "H1", "H1"]
+  ]</script>
 </test-html>
 
 <test-html test="../childChanged/testAssignNodes2.html">
@@ -131,4 +128,4 @@
     ]
   </script>
 </test-html>
-<script type="module" src="https://cdn.jsdelivr.net/gh/orstavik/TestHTML@v1.0.0/TestHTML.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/orstavik/TestHTML@v1.0.2/TestHTML.js"></script>
