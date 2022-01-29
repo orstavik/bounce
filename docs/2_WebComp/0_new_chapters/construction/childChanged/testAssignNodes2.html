@@ -30,7 +30,7 @@
 
     constructor() {
       super();
-      this.attachShadow();
+      this.attachShadow({mode: "open"});
       this.shadowRoot.innerHTML = '<slot></slot>';
     }
 
