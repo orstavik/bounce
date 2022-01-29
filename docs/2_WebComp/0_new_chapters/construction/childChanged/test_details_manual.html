@@ -2,106 +2,81 @@
 <script src="ChildChangedCallback.js"></script>
 <script>
 
-  class MyDetailsWithFrame extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: 'open', slotAssignment: "manual"});
-      this.shadowRoot.innerHTML = `<my-details><slot slot="summary" name="summary"> Summary</slot> <slot id="content">Everything another 1</slot> </my-details>`
-      console.log("constructor", this.tagName);
-    }
-
-    childChangedCallback(nodes) {
-      console.log("childChangedCallback", this.tagName);
-      console.log(nodes.now.map(n => n.nodeName));
-
-      const firstIsSummary = nodes.now[0].nodeName === "MY-SUMMARY";
-
-      if (firstIsSummary) {
-        nodes.now[0].setAttribute("slot", "summary");
-        // remove the slot attribute on old summary elements that are no longer the first summary element in auto mode
-        [...nodes.now].splice(1, nodes.now.length).filter(item => item.nodeName === "MY-SUMMARY").forEach(
-          item => item.removeAttribute("slot"));
-      }
-      this.shadowRoot.querySelector('slot[slot=summary]').assign(...document.querySelectorAll('my-summary'))
-      this.shadowRoot.querySelector('#content').assign(...document.querySelectorAll(':not([slot]'))
-    }
-  }
-
-  customElements.define("my-details-with-frame", MyDetailsWithFrame);
+  const myDetailsHTML = `
+<style>
+  slot#content{display: none;}
+  b {display: inline-block;}
+  :host([open]) slot#content{display: block;}
+  :host([open]) b {transform: rotate(90deg);}
+</style>
+<span><b>&#x25BA;</b><slot id="summary" summary>default summary</slot></span>
+<slot id="content">default content</slot>`;
 
   class MyDetails extends HTMLElement {
     constructor() {
       super();
-      this.attachShadow({mode: "open", slotAssignment: "manual"});
-      this.shadowRoot.innerHTML = `
-        <style>
-          :host(:not([open])) slot:not([name="summary"]) {
-            display: none;
-          }
-
-          b {
-            display: inline-block;
-          }
-
-          :host([open]) b {
-            transform: rotate(90deg);
-          }
-        </style>
-        <b>&#x25BA;</b>
-        <slot name="summary">Details</slot>
-        <slot id="content1">Everything another</slot>
-      `;
-      this.shadowRoot.querySelector("b").addEventListener("click", function () {
-        this.hasAttribute("open") ? this.removeAttribute("open") : this.setAttribute("open", "");
-      }.bind(this));
+      console.log(this.tagName, "constructor");
+      this.attachShadow({mode: 'open', slotAssignment: "manual"});
+      this.shadowRoot.innerHTML = myDetailsHTML;
+      this.shadowRoot.querySelector('span').addEventListener('click', e =>
+        this.hasAttribute('open') ? this.removeAttribute('open') : this.setAttribute('open', ''));
     }
 
     childChangedCallback(nodes) {
-      this.shadowRoot.querySelector('slot[name=summary]').assign(
-        ...this.querySelectorAll('slot[name=summary][slot=summary]'));
-      this.shadowRoot.querySelector('slot#content1').assign(...this.querySelectorAll('#content'));
-      console.log("childChangedCallback", this.tagName);
-      console.log(nodes.now.map(n => n.nodeName));
+      console.log(this.tagName, "childChangedCallback", ...nodes.now.map(n => n.nodeName));
+      const slottables = [...this.childNodes].filter(n => !(n instanceof Comment));
+      const summaryPosition = slottables.findIndex(n => n.hasAttribute && n.hasAttribute("summary"));
+      let summary;
+      if (summaryPosition >= 0)
+        summary = slottables.splice(summaryPosition, 1)[0];
+      const summarySlot = this.shadowRoot.getElementById("summary");
+      const contentSlot = this.shadowRoot.getElementById("content");
+      summarySlot.assign(summary);
+      contentSlot.assign(...slottables);
+      console.log(summarySlot.assignedNodes({flatten: true}).map(el => el.textContent));
+      console.log(contentSlot.assignedNodes({flatten: true}).map(el => el.textContent));
+    }
+  }
+
+  class MyDetailsFrame extends HTMLElement {
+    constructor() {
+      super();
+      console.log(this.tagName, "constructor");
+      this.attachShadow({mode: 'open', slotAssignment: 'manual'});
+      this.shadowRoot.innerHTML = `
+      <my-details style="border: 2px solid green; display: block;">
+        <slot summary id="summary"></slot>
+        <slot id="content"></slot>
+      </my-details>`;
+    }
+
+    childChangedCallback(nodes) {
+      console.log(this.tagName, "childChangedCallback", ...nodes.now.map(n => n.nodeName));
+      const slottables = [...this.childNodes].filter(n => !(n instanceof Comment));
+      const summaryPosition = slottables.findIndex(n => n.hasAttribute && n.hasAttribute("summary"));
+      let summary;
+      if (summaryPosition >= 0)
+        summary = slottables.splice(summaryPosition, 1)[0];
+      const summarySlot = this.shadowRoot.getElementById("summary");
+      const contentSlot = this.shadowRoot.getElementById("content");
+      summarySlot.assign(summary);
+      contentSlot.assign(...slottables);
+      console.log(summarySlot.assignedNodes({flatten: true}).map(el => el.textContent));
+      console.log(contentSlot.assignedNodes({flatten: true}).map(el => el.textContent));
     }
   }
 
   customElements.define("my-details", MyDetails);
-
-  class MySummary extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: 'open', slotAssignment: "manual"});
-      this.shadowRoot.innerHTML = `<slot>wtf</slot>`;
-      console.log("constructor", this.tagName);
-    }
-
-    childChangedCallback(nodes) {
-      console.log("childChangedCallback", this.tagName);
-      console.log(nodes.now.map(n => n.nodeName));
-      this.shadowRoot.querySelector("slot").assign(nodes.now[0]);
-    }
-  }
-
-  customElements.define("my-summary", MySummary);
+  customElements.define("my-details-frame", MyDetailsFrame);
 </script>
 
-<my-details-with-frame>
-    <my-summary id="one" slot="summary"> one</my-summary>
-    <div>sunshine</div>
-</my-details-with-frame>
-
+<my-details-frame>
+  <span summary>one</span>
+  <div>sunshine</div>
+</my-details-frame>
 <script>
-  const framedDetails = document.querySelector("my-details-with-frame");
-
-  const summaryElement = document.createElement("my-summary");
-  const h1 = document.createElement("h1");
-  h1.textContent = "hello";
-
-  summaryElement.innerText = "two";
-  summaryElement.setAttribute("id", "two");
-  summaryElement.setAttribute("slot", "summary");
-
-  setTimeout(() => {
-    framedDetails.prepend(summaryElement, h1)
-  }, 10);
+  setTimeout(function () {
+    const details = document.querySelector("my-details-frame");
+    details.insertAdjacentHTML('afterbegin', '<h1>hello</h1><span summary>two</span>');
+  }, 50);
 </script>

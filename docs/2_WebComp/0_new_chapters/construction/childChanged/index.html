@@ -118,4 +118,31 @@
     ]
   </script>
 </test-html>
+<test-html test="../childChanged/test_details_auto.html">
+  <script expected>[
+    ["MY-DETAILS-WITH-FRAME","constructor"],
+    ["MY-DETAILS-WITH-FRAME","childChangedCallback","#text","SPAN","#text","DIV","#text"],
+    ["MY-DETAILS","childChangedCallback","#text","#comment","#text","SPAN","#text","#comment","#text","#text","#text","DIV","#text","#text"],
+    ["MY-DETAILS-WITH-FRAME","childChangedCallback","#text","SPAN","#text","DIV","#text","SPAN","H1"],
+    ["MY-DETAILS","childChangedCallback","#text","#comment","#text","SPAN","SPAN","#text","#comment","#text","#text","#text","DIV","#text","H1","#text"]
+  ]</script>
+</test-html>
+<test-html test="../childChanged/test_details_manual.html">
+  <script expected>[
+    ["MY-DETAILS-FRAME","constructor"],
+    ["MY-DETAILS","constructor"],
+    ["MY-DETAILS-FRAME","childChangedCallback","#text","SPAN","#text","DIV","#text"],
+    ["one"],
+    ["\n  ","\n  ","sunshine","\n"],
+    ["MY-DETAILS","childChangedCallback","#text","SPAN","#text","#text","#text","DIV","#text","#text"],
+    ["one"],
+    ["\n        ","\n        ","\n  ","\n  ","sunshine","\n","\n      "],
+    ["MY-DETAILS-FRAME","childChangedCallback","H1","SPAN","#text","SPAN","#text","DIV","#text"],
+    ["two"],
+    ["hello","\n  ","one","\n  ","sunshine","\n"],
+    ["MY-DETAILS","childChangedCallback","#text","SPAN","#text","H1","#text","SPAN","#text","DIV","#text","#text"],
+    ["two"],
+    ["\n        ","\n        ","hello","\n  ","one","\n  ","sunshine","\n","\n      "]
+  ]</script>
+</test-html>
 <script type="module" src="https://cdn.jsdelivr.net/gh/orstavik/TestHTML@v1.0.2/TestHTML.js"></script>
